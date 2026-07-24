@@ -4,7 +4,7 @@ import { documentosEsperados } from '@turenta/core';
 import { useRef, useState } from 'react';
 
 import { ChecklistEsperados } from './checklist-esperados';
-import { aplicarPrecarga, NOMBRES_TIPO, subirArchivo } from './pipeline-documentos';
+import { aplicarPrecarga, NOMBRES_TIPO, subirArchivo, useSubidas } from './pipeline-documentos';
 import { TarjetaDocumento } from './tarjeta-documento';
 import { ValoresManuales } from './valores-manuales';
 import { useDeclaracion } from '@/lib/store';
@@ -67,6 +67,7 @@ const SLOTS: Slot[] = [
 export function PasoDocumentos() {
   const documentos = useDeclaracion((s) => s.documentos);
   const irAPaso = useDeclaracion((s) => s.irAPaso);
+  const subiendo = useSubidas((s) => s.enCurso > 0);
   const esperados = esperadosSegunExogena(documentos);
   const hayExogena = documentos.some((d) => d.tipo === 'exogena');
   return (
@@ -93,11 +94,11 @@ export function PasoDocumentos() {
         </button>
         <button
           type="button"
-          disabled={!hayExogena && documentos.length === 0}
+          disabled={subiendo || (!hayExogena && documentos.length === 0)}
           onClick={() => irAPaso('entrevista')}
           className="h-13 w-full rounded-2xl bg-primario py-3.5 font-semibold text-white transition hover:bg-primario-oscuro disabled:opacity-40"
         >
-          Continuar a la entrevista
+          {subiendo ? 'Leyendo documento con IA…' : 'Continuar a la entrevista'}
         </button>
       </div>
     </section>

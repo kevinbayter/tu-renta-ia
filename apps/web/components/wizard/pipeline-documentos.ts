@@ -1,6 +1,7 @@
 'use client';
 
 import { mesesTrabajadosSegunCertificados, precargarDesdeExogena } from '@turenta/core';
+import { create } from 'zustand';
 
 import { useDeclaracion } from '@/lib/store';
 
@@ -21,11 +22,27 @@ export const NOMBRES_TIPO: Record<DocumentoProcesado['tipo'], string> = {
   otro: 'Otro documento',
 };
 
+interface EstadoSubidas {
+  enCurso: number;
+  iniciar: () => void;
+  terminar: () => void;
+}
+
+/** Subidas en curso (efímero, NO persistido): bloquea "Continuar" mientras la IA lee. */
+export const useSubidas = create<EstadoSubidas>((set) => ({
+  enCurso: 0,
+  iniciar: () => set((s) => ({ enCurso: s.enCurso + 1 })),
+  terminar: () => set((s) => ({ enCurso: Math.max(0, s.enCurso - 1) })),
+}));
+
 export async function subirArchivo(archivo: File): Promise<DocumentoProcesado | { error: string }> {
+  useSubidas.getState().iniciar();
   try {
     return await enviarArchivo(archivo);
   } catch {
     return { error: 'Error de conexión. Intenta de nuevo.' };
+  } finally {
+    useSubidas.getState().terminar();
   }
 }
 

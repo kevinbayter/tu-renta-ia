@@ -13,6 +13,9 @@ model Usuario {
   nombres        String         @default("")
   apellidos      String         @default("")
   identificacion String         @default("")
+  /// Preferencias de UI y notificaciones (widgets del panel, emails de vencimiento)
+  preferencias   Json           @default("{}")
+  fotoAvatar     Bytes?
   creadoEn       DateTime       @default(now())
   declaraciones  Declaracion[]
   codigosOtp     CodigoOtp[]

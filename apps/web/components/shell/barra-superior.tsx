@@ -72,7 +72,7 @@ function MenuUsuario({ nombre }: { nombre: string }) {
   return (
     <div className="relative">
       <button type="button" onClick={() => setAbierto(!abierto)} className="flex items-center gap-2.5" aria-expanded={abierto}>
-        <Avatar nombre={nombre} />
+        <Avatar nombre={nombre} fotoUrl="/api/avatar" />
         <span className="hidden text-left sm:block">
           <span className="block text-sm font-semibold leading-tight">{nombre}</span>
           <span className="block text-xs text-texto-suave">Administrador</span>

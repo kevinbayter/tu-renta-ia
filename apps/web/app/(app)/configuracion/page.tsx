@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { SeccionAvatar } from '@/components/configuracion/seccion-avatar';
+import { SeccionNotificaciones } from '@/components/configuracion/seccion-notificaciones';
 import { DialogoConfirmar } from '@/components/ui/dialogo-confirmar';
 import { useSesionCliente } from '@/lib/sesion-cliente';
 
@@ -28,6 +30,8 @@ export default function PaginaConfiguracion() {
       <h1 className="text-3xl font-bold">Configuración</h1>
       <p className="mt-1 text-sm text-texto-suave">Tu cuenta: {sesion.email}</p>
       <FormularioPerfil inicial={sesion.perfil ?? { nombres: '', apellidos: '', identificacion: '' }} />
+      <SeccionAvatar nombre={`${sesion.perfil?.nombres ?? ''} ${sesion.perfil?.apellidos ?? ''}`.trim() || sesion.email} />
+      <SeccionNotificaciones />
       <ZonaPeligro />
     </main>
   );

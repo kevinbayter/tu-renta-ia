@@ -1,6 +1,33 @@
-/** Círculo con iniciales (foto opcional llegará en la etapa de Configuración). */
-export function Avatar({ nombre, tamano = 'md' }: { nombre: string; tamano?: 'sm' | 'md' | 'lg' }) {
-  const clases = { sm: 'h-8 w-8 text-xs', md: 'h-9 w-9 text-sm', lg: 'h-11 w-11 text-base' }[tamano];
+'use client';
+
+import { useState } from 'react';
+
+const TAMANOS = { sm: 'h-8 w-8 text-xs', md: 'h-9 w-9 text-sm', lg: 'h-11 w-11 text-base' };
+
+/** Círculo con iniciales; si se pasa una URL de foto, la intenta y cae a iniciales si falla. */
+export function Avatar({
+  nombre,
+  tamano = 'md',
+  fotoUrl,
+}: {
+  nombre: string;
+  tamano?: keyof typeof TAMANOS;
+  fotoUrl?: string;
+}) {
+  const [fotoFallo, setFotoFallo] = useState(false);
+  const clases = TAMANOS[tamano];
+  if (fotoUrl && !fotoFallo) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- la foto viene de nuestra propia API con bytes en BD
+      <img
+        src={fotoUrl}
+        alt=""
+        aria-hidden
+        onError={() => setFotoFallo(true)}
+        className={`shrink-0 rounded-full object-cover ${clases}`}
+      />
+    );
+  }
   return (
     <span
       aria-hidden

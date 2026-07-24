@@ -1,4 +1,4 @@
-import { notificacionesDeVencimiento } from '@turenta/core';
+import { normalizarPreferencias, notificacionesDeVencimiento } from '@turenta/core';
 import { NextResponse } from 'next/server';
 
 import { obtenerEmail, obtenerRepositorio } from '@/server/composicion';
@@ -33,7 +33,11 @@ export async function POST(): Promise<NextResponse> {
 
 async function evaluarVencimientos(usuarioId: string, email: string): Promise<void> {
   const repositorio = obtenerRepositorio();
-  const lista = await repositorio.listarDeclaraciones(usuarioId);
+  const [lista, crudas] = await Promise.all([
+    repositorio.listarDeclaraciones(usuarioId),
+    repositorio.obtenerPreferencias(usuarioId),
+  ]);
+  const conEmail = normalizarPreferencias(crudas).emailsVencimiento;
   const vencimientos = vencimientosDe(lista, new Date()).map((v) => ({
     titular: v.titular,
     identificacion: v.identificacion,
@@ -42,12 +46,17 @@ async function evaluarVencimientos(usuarioId: string, email: string): Promise<vo
     dias: v.dias,
   }));
   const nuevas = notificacionesDeVencimiento(vencimientos);
-  await Promise.all(nuevas.map((n) => crearYAvisar(usuarioId, email, n)));
+  await Promise.all(nuevas.map((n) => crearYAvisar(usuarioId, email, n, conEmail)));
 }
 
-async function crearYAvisar(usuarioId: string, email: string, notificacion: NotificacionNueva): Promise<void> {
+async function crearYAvisar(
+  usuarioId: string,
+  email: string,
+  notificacion: NotificacionNueva,
+  conEmail: boolean,
+): Promise<void> {
   const creada = await obtenerRepositorio().crearNotificacionSiNueva(usuarioId, notificacion);
-  if (!creada || !notificacion.esCritica) {
+  if (!creada || !notificacion.esCritica || !conEmail) {
     return;
   }
   await obtenerEmail()

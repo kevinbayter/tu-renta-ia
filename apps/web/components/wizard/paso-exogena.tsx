@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight, CloudUpload, ExternalLink, Lock } from 'lucide-r
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 
-import { aplicarPrecarga, NOMBRES_TIPO, subirArchivo } from './pipeline-documentos';
+import { aplicarPrecarga, NOMBRES_TIPO, subirArchivo, useSubidas } from './pipeline-documentos';
 import { TarjetaDocumento } from './tarjeta-documento';
 import { useDeclaracion } from '@/lib/store';
 
@@ -48,7 +48,7 @@ export function PasoExogena() {
           {!exogena && <GuiaDescarga />}
         </div>
       </div>
-      <PieNavegacion continuar={Boolean(exogena)} alContinuar={() => irAPaso('documentos')} />
+      <PieNavegacion habilitado={Boolean(exogena)} alContinuar={() => irAPaso('documentos')} />
     </section>
   );
 }
@@ -189,7 +189,8 @@ function VistaPrevia({ exogena }: { exogena: ExogenaParseada }) {
   );
 }
 
-function PieNavegacion({ continuar, alContinuar }: { continuar: boolean; alContinuar: () => void }) {
+function PieNavegacion({ habilitado, alContinuar }: { habilitado: boolean; alContinuar: () => void }) {
+  const subiendo = useSubidas((s) => s.enCurso > 0);
   return (
     <div className="mt-6 flex items-center justify-between gap-3">
       <Link
@@ -200,11 +201,11 @@ function PieNavegacion({ continuar, alContinuar }: { continuar: boolean; alConti
       </Link>
       <button
         type="button"
-        disabled={!continuar}
+        disabled={!habilitado || subiendo}
         onClick={alContinuar}
         className="flex items-center gap-2 rounded-2xl bg-primario px-6 py-3 font-semibold text-white transition hover:bg-primario-oscuro disabled:opacity-40"
       >
-        Continuar <ArrowRight size={16} aria-hidden />
+        {subiendo ? 'Leyendo documento…' : 'Continuar'} <ArrowRight size={16} aria-hidden />
       </button>
     </div>
   );

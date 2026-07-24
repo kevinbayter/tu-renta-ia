@@ -44,6 +44,40 @@ export function idDeclaracionPropia(lista: DeclaracionResumen[], anioGravable: n
   return lista.find((d) => d.titular.esPropia && d.anioGravable === anioGravable)?.id ?? null;
 }
 
+/** Guarda el avance del wizard en la nube (upsert por titular + año). */
+export async function guardarDeclaracionEnNube(): Promise<{ ok: boolean; mensaje: string }> {
+  const s = useDeclaracion.getState();
+  if (!s.declarante.nombres || !s.declarante.identificacion) {
+    return { ok: false, mensaje: 'Completa el titular (nombres y cédula) en el paso Revisión antes de guardar' };
+  }
+  const respuesta = await fetch('/api/declaraciones', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ anioGravable: 2025, titular: { ...s.declarante, esPropia: s.esPropia ?? true }, estado: estadoParaGuardar() }),
+  }).catch(() => null);
+  if (!respuesta?.ok) {
+    return { ok: false, mensaje: 'No se pudo guardar' };
+  }
+  const cuerpo = (await respuesta.json()) as { id?: string };
+  if (cuerpo.id) {
+    useDeclaracion.getState().establecerDeclaracionId(cuerpo.id);
+  }
+  return { ok: true, mensaje: '✓ Avance guardado en la nube' };
+}
+
+function estadoParaGuardar(): Record<string, unknown> {
+  const s = useDeclaracion.getState();
+  return {
+    paso: s.paso,
+    documentos: s.documentos,
+    respuestas: s.respuestas,
+    mensajes: s.mensajes,
+    entrevistaCompleta: s.entrevistaCompleta,
+    resultado: s.resultado,
+    declarante: s.declarante,
+  };
+}
+
 /** Prepara el store para una declaración nueva de un tercero (persona administrada). */
 export function iniciarDeclaracionDeTercero(
   titular: { nombres: string; apellidos: string; identificacion: string },

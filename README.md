@@ -26,8 +26,13 @@ pnpm test          # tests de paquetes + tests de arquitectura
 pnpm lint          # reglas estrictas (max-depth 1, 25 líneas/función, capas)
 pnpm typecheck
 pnpm smoke:llm     # prueba de humo del LLM (Kimi K3 vía OpenCode Go)
-pnpm --filter web dev
+
+docker compose up -d                                    # Postgres (OrbStack, puerto 5433)
+nohup bash scripts/servir.sh > /tmp/turenta-servir.log 2>&1 &   # app estable en :3210 (producción + auto-restart)
+pnpm --filter web dev -- -p 3210                        # o modo desarrollo (hot reload)
 ```
+
+⚠️ **Puerto 3210, no 3000**: el contenedor de Grafana en OrbStack publica el 3000 y mata/pelea el puerto cuando OrbStack se reinicia.
 
 Secretos en `.env.local` (nunca se commitea). Variables: `OPENCODE_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` — cambiar de proveedor de IA es solo cambiar estas variables (adaptador OpenAI-compatible genérico).
 

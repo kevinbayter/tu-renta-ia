@@ -12,6 +12,7 @@ Investigación realizada el 23 de julio de 2026 como base para planificar el pro
 | [03-aspectos-legales.md](03-aspectos-legales.md)                               | Legal: no se requiere contador para el segmento objetivo (art. 596-6 E.T.), Ley 1581/2012 y transferencia internacional de datos, T&C de referencia (garantía acotada, obligaciones de medio), credenciales MUISCA, regulación de IA (Circular SIC 002/2024). |
 | [04-mercado-referencia-competidores.md](04-mercado-referencia-competidores.md)       | referencia (flujo, precios $170-550K, 300K declaraciones/año, YC, Bancolombia), competidores (Contadia, SaraDeclara $59.900, DIAN gratis), referentes IA (Intuit Assist, Taxfix, april, TaxGPT), oportunidades.                                               |
 | [05-apis-ia-openai-compatibles.md](05-apis-ia-openai-compatibles.md)           | APIs de IA compatibles con OpenAI: Kimi/Moonshot, DeepSeek, Qwen, GLM, Gemini, OpenAI, Claude — precios, visión, structured output, privacidad (riesgo China vs. Ley 1581), arquitectura recomendada, costo ~US$0.10-0.70 por declaración.                 |
+| [06-integracion-dian-referencia.md](06-integracion-dian-referencia.md)               | Cómo se conecta referencia/Contadia con la DIAN: no hay API oficial de renta PN; es RPA sobre MUISCA con credenciales del usuario, presentación por mandato (art. 572-1 E.T.), riesgos Ley 1273, recomendación (Opción A = carga manual, lo que ya hacemos).  |
 
 ## Conclusiones ejecutivas
 

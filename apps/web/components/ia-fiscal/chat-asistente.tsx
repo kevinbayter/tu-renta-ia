@@ -84,7 +84,7 @@ export function ChatAsistente({ preguntaInicial }: { preguntaInicial?: string })
         </button>
       </form>
       <p className="mt-2 text-[11px] text-texto-suave">
-        Orientación general — no sustituye asesoría profesional. Los cálculos los hace el motor determinista.
+        Responde con tu contexto real; los cálculos exactos siempre los hace el motor determinista.
       </p>
     </section>
   );

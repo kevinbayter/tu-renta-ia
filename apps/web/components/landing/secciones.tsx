@@ -1,5 +1,6 @@
 import { CloudUpload, FileCheck2, FolderOpen, MessagesSquare } from 'lucide-react';
 
+import { AnimacionFlujo } from './animacion-flujo';
 import { IconoCircular, TituloSeccion } from './iconos';
 
 const PASOS = [
@@ -36,7 +37,10 @@ export function ComoFunciona() {
           Declarar nunca fue tan <span className="text-primario">fácil</span>
         </h2>
       </div>
-      <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-10">
+        <AnimacionFlujo />
+      </div>
+      <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
         {PASOS.map((paso, i) => (
           <PasoLandingItem key={paso.titulo} paso={paso} numero={i + 1} />
         ))}

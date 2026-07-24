@@ -94,3 +94,100 @@ body {
     cursor: not-allowed;
   }
 }
+
+/* Animación del flujo de declaración en la landing (componente animacion-flujo).
+   Con prefers-reduced-motion todo queda estático y el dato se fija a mitad de camino. */
+.flujo-linea {
+  stroke-dasharray: 6 8;
+  animation: flujo-dash 1.1s linear infinite;
+}
+
+.flujo-dato {
+  offset-path: path('M 112 104 L 748 104');
+  animation: flujo-viaje 7s ease-in-out infinite;
+}
+
+.flujo-flotar {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: flujo-flotar 4.5s ease-in-out infinite;
+}
+
+.flujo-escaneo {
+  animation: flujo-escaneo 2.2s ease-in-out infinite;
+}
+
+.flujo-pulso {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: flujo-pulso 2.6s ease-out infinite;
+}
+
+@keyframes flujo-dash {
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+
+@keyframes flujo-viaje {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes flujo-flotar {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes flujo-escaneo {
+  0%,
+  100% {
+    transform: translateY(-7px);
+  }
+  50% {
+    transform: translateY(7px);
+  }
+}
+
+@keyframes flujo-pulso {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.8;
+  }
+  70%,
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flujo-linea,
+  .flujo-dato,
+  .flujo-flotar,
+  .flujo-escaneo,
+  .flujo-pulso {
+    animation: none;
+  }
+
+  .flujo-dato {
+    offset-distance: 50%;
+  }
+}

@@ -117,7 +117,8 @@ export function PiePagina() {
         <div>
           <LogoMarca />
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-texto-suave">
-            La plataforma de IA que te acompaña a preparar tu declaración de renta en Colombia.
+            La plataforma de IA con la que haces tu declaración de renta tú mismo, sin conocimientos
+            previos — paso a paso y con cada cifra explicada.
           </p>
         </div>
         {COLUMNAS_PIE.map((columna) => (
@@ -137,7 +138,7 @@ export function PiePagina() {
       </div>
       <div className="border-t border-borde">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-5 text-xs text-texto-suave">
-          <p>© 2026 TuRenta AI · Herramienta de autopreparación asistida — no sustituye asesoría profesional.</p>
+          <p>© 2026 TuRenta AI · Todos los derechos reservados.</p>
           <p>
             Hecho con <span aria-hidden>💚</span> en Colombia
           </p>

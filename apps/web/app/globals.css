@@ -1,34 +1,43 @@
 @import "tailwindcss";
 
-/* Design tokens TuRenta AI — paleta corporativa clara:
-   azul confianza (primario) + esmeralda (éxito/dinero) + neutros slate.
-   Distinta del teal de referencia y del morado de Nu. */
+/* Design tokens TuRenta AI — fintech moderno:
+   verde esmeralda (marca/acento) + navy profundo (hero, bandas, footer) + neutros slate. */
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
   --card: #ffffff;
-  --primario: #1d4ed8;
-  --primario-oscuro: #1e3a8a;
-  --primario-suave: #eff6ff;
-  --exito: #059669;
-  --exito-suave: #ecfdf5;
+  --primario: #16a34a;
+  --primario-oscuro: #15803d;
+  --primario-suave: #ecfdf3;
+  --acento: #22c55e;
+  --marino: #0b1a2e;
+  --marino-suave: #14273f;
+  --marino-borde: #24374f;
+  --marino-texto: #a9bacf;
+  --exito: #16a34a;
+  --exito-suave: #ecfdf3;
   --alerta: #b45309;
   --alerta-suave: #fffbeb;
   --error: #dc2626;
-  --borde: #e2e8f0;
+  --borde: #e5eaf0;
   --texto-suave: #64748b;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b1526;
+    --background: #0a1524;
     --foreground: #f1f5f9;
-    --card: #12203a;
-    --primario: #60a5fa;
-    --primario-oscuro: #3b82f6;
-    --primario-suave: #172a54;
+    --card: #10203a;
+    --primario: #22c55e;
+    --primario-oscuro: #16a34a;
+    --primario-suave: #10241d;
+    --acento: #4ade80;
+    --marino: #060f1c;
+    --marino-suave: #10203a;
+    --marino-borde: #24374f;
+    --marino-texto: #a9bacf;
     --exito: #34d399;
-    --exito-suave: #093f31;
+    --exito-suave: #10241d;
     --alerta: #fbbf24;
     --alerta-suave: #3a2c07;
     --error: #f87171;
@@ -44,6 +53,11 @@
   --color-primario: var(--primario);
   --color-primario-oscuro: var(--primario-oscuro);
   --color-primario-suave: var(--primario-suave);
+  --color-acento: var(--acento);
+  --color-marino: var(--marino);
+  --color-marino-suave: var(--marino-suave);
+  --color-marino-borde: var(--marino-borde);
+  --color-marino-texto: var(--marino-texto);
   --color-exito: var(--exito);
   --color-exito-suave: var(--exito-suave);
   --color-alerta: var(--alerta);

@@ -13,6 +13,7 @@ export {
   rendimientosReportados,
   saldosPatrimonialesReportados,
   obligadoADeclarar,
+  umbralesObligadoADeclarar,
 } from './exogena/interpretar';
 export { type RespuestasEntrevista } from './perfil/respuestas';
 export { construirPerfilFiscal, type InsumosPerfil } from './perfil/construir-perfil';

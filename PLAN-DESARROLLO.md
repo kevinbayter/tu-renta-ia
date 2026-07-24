@@ -209,7 +209,15 @@ Se adopta el eslint de `un proyecto interno` (backend `.eslintrc.cjs` + frontend
 - [ ] Beta cerrada: 5-10 declaraciones reales de conocidos comparadas contra referencia/contador.
 - **Gate**: ≥ 3 declaraciones reales reproducidas correctamente además del caso dorado.
 
-**Post-MVP (backlog):** cédula de pensiones y dividendos, ganancias ocasionales, activos en el exterior (formato 160), independientes con costos, comparador "sugerida DIAN vs nosotros", conexión DIAN con mandato (research/03 §5 — alto riesgo, fase tardía), B2B cupones, pagos (calcular gratis → pagar para descargar, modelo Taxfix), multi-año gravable.
+### Fase 6 — Monetización con Wompi (post-beta)
+
+- [ ] Modelo de negocio "calcula gratis → paga para descargar" (Taxfix): el usuario ve su resultado (cifra grande) gratis; el borrador PDF + guía + casillas se desbloquean pagando.
+- [ ] Integración **Wompi** (checkout web / widget): crear transacción, redirect/webhook de confirmación, verificación de firma de eventos, estados (pendiente/aprobada/rechazada) persistidos.
+- [ ] Requiere primero Fase 5 (auth + persistencia Postgres) para asociar pagos a declaraciones.
+- [ ] Facturación electrónica de los cobros (obligación DIAN, research/03 §7) e IVA 19% en el precio.
+- [ ] Cupones/planes B2B (modelo referencia para empresas) como segunda ola.
+
+**Post-MVP (backlog):** cédula de pensiones y dividendos, ganancias ocasionales, activos en el exterior (formato 160), independientes con costos, comparador "sugerida DIAN vs nosotros", conexión DIAN con mandato (research/03 §5 — alto riesgo, fase tardía), multi-año gravable, visión K3 para PDFs escaneados, streaming en el chat de entrevista.
 
 ---
 

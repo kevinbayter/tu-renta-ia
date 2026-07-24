@@ -26,6 +26,18 @@ export function saldosPatrimonialesReportados(exogena: ExogenaParseada): FilaExo
   return exogena.filas.filter((f) => esSaldoPatrimonial(f));
 }
 
+/** Umbrales de obligados a declarar en pesos, desde las constantes del año. */
+export function umbralesObligadoADeclarar(uvt: number, patrimonioUvt: number, ingresosUvt: number): TopesExogena {
+  const topeGeneral = ingresosUvt * uvt;
+  return {
+    ingresos: topeGeneral,
+    patrimonio: patrimonioUvt * uvt,
+    consumoTarjetas: topeGeneral,
+    movimientos: topeGeneral,
+    compras: topeGeneral,
+  };
+}
+
 export function obligadoADeclarar(topes: TopesExogena, umbrales: TopesExogena): boolean {
   return (
     topes.ingresos >= umbrales.ingresos ||

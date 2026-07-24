@@ -1,8 +1,12 @@
 'use client';
 
+import { obligadoADeclarar, umbralesObligadoADeclarar } from '@turenta/core';
+import { obtenerConstantes } from '@turenta/motor-fiscal';
+
 import { useDeclaracion } from '@/lib/store';
 import { formatearPesos } from '@/lib/tipos';
 
+import type { ExogenaParseada } from '@turenta/core';
 import type { DocumentoProcesado } from '@/lib/tipos';
 
 const TITULOS: Record<string, string> = {
@@ -39,13 +43,16 @@ export function TarjetaDocumento({ documento }: { documento: DocumentoProcesado 
 function ContenidoDocumento({ documento }: { documento: DocumentoProcesado }) {
   if (documento.tipo === 'exogena') {
     return (
-      <DatosExtraidos
-        datos={[
-          ['Año gravable', String(documento.exogena.anioGravable)],
-          ['Reportes de terceros', String(documento.exogena.filas.length)],
-          ['Tope ingresos', formatearPesos(documento.exogena.topes.ingresos)],
-        ]}
-      />
+      <>
+        <BannerObligado exogena={documento.exogena} />
+        <DatosExtraidos
+          datos={[
+            ['Año gravable', String(documento.exogena.anioGravable)],
+            ['Reportes de terceros', String(documento.exogena.filas.length)],
+            ['Tope ingresos', formatearPesos(documento.exogena.topes.ingresos)],
+          ]}
+        />
+      </>
     );
   }
   if (documento.tipo === 'certificado_220') {
@@ -102,6 +109,36 @@ function DatosExtraidos({ datos }: { datos: [string, string][] }) {
       ))}
     </dl>
   );
+}
+
+function BannerObligado({ exogena }: { exogena: ExogenaParseada }) {
+  const obligado = estaObligado(exogena);
+  if (obligado === null) {
+    return null;
+  }
+  if (obligado) {
+    return (
+      <p className="mt-2 rounded-lg bg-primario-suave px-2 py-1 text-xs">
+        ✓ Según lo reportado por terceros, <strong>estás obligado a declarar</strong> este año.
+      </p>
+    );
+  }
+  return (
+    <p className="mt-2 rounded-lg bg-exito-suave px-2 py-1 text-xs text-exito">
+      Según lo reportado, podrías <strong>no estar obligado</strong> a declarar — aun así puedes declarar
+      voluntariamente para recuperar retenciones.
+    </p>
+  );
+}
+
+function estaObligado(exogena: ExogenaParseada): boolean | null {
+  try {
+    const c = obtenerConstantes(exogena.anioGravable);
+    const umbrales = umbralesObligadoADeclarar(c.uvt, c.topesDeclarar.patrimonioUvt, c.topesDeclarar.ingresosUvt);
+    return obligadoADeclarar(exogena.topes, umbrales);
+  } catch {
+    return null;
+  }
 }
 
 function AvisoDiscrepancias({ coinciden }: { coinciden: boolean }) {

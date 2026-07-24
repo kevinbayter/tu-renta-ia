@@ -6,8 +6,17 @@ import type { NextConfig } from 'next';
 // Carga el .env.local de la RAÍZ del monorepo (secretos únicos para todo el repo).
 cargarEnvRaiz();
 
+// Hay un package-lock.json suelto en ~/projects que hace que Turbopack infiera
+// mal el root (<ruta-local>) y vigile todos los repos hermanos →
+// presión de memoria y caídas con exit 143 (SIGTERM). Fijar el monorepo real.
+const monorepoRoot = join(__dirname, '../..');
+
 const nextConfig: NextConfig = {
   transpilePackages: ['@turenta/motor-fiscal', '@turenta/core', '@turenta/adaptadores', '@turenta/shared'],
+  outputFileTracingRoot: monorepoRoot,
+  turbopack: {
+    root: monorepoRoot,
+  },
 };
 
 function cargarEnvRaiz(): void {

@@ -1,5 +1,6 @@
 'use client';
 
+import { precargarDesdeExogena } from '@turenta/core';
 import { useRef, useState } from 'react';
 
 import { TarjetaDocumento } from './tarjeta-documento';
@@ -50,6 +51,7 @@ function ZonaDeCarga() {
       return;
     }
     agregarDocumento(resultado);
+    aplicarPrecarga(resultado);
   };
 
   const procesar = async (archivos: FileList | null) => {
@@ -99,6 +101,15 @@ function ZonaDeCarga() {
       )}
     </div>
   );
+}
+
+/** Lo reportado en la exógena no se pregunta: se precarga y la entrevista solo lo confirma. */
+function aplicarPrecarga(doc: DocumentoProcesado): void {
+  if (doc.tipo !== 'exogena') {
+    return;
+  }
+  const precarga = precargarDesdeExogena(doc.exogena);
+  useDeclaracion.getState().actualizarRespuestas(precarga.respuestas);
 }
 
 async function subirArchivo(archivo: File): Promise<DocumentoProcesado | { error: string }> {

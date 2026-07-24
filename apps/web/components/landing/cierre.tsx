@@ -26,7 +26,7 @@ export function BandaEjemplo() {
   );
 }
 
-const PREGUNTAS = [
+export const PREGUNTAS = [
   {
     pregunta: '¿Necesito saber de impuestos?',
     respuesta:

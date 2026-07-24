@@ -1,3 +1,5 @@
+import type { ProgresoDeclaracion } from '../declaracion/progreso';
+
 export interface UsuarioRegistrado {
   id: string;
   email: string;
@@ -24,6 +26,7 @@ export interface DeclaracionResumen {
   /** null si aún no se ha calculado. */
   saldoAFavor: number | null;
   saldoAPagar: number | null;
+  progreso: ProgresoDeclaracion;
 }
 
 /** Puerto de persistencia (usuarios, OTP, perfil y declaraciones). */

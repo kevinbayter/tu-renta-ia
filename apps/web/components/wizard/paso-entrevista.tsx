@@ -1,11 +1,12 @@
 'use client';
 
+import { precargarDesdeExogena } from '@turenta/core';
 import { useEffect, useRef, useState } from 'react';
 
 import { useDeclaracion } from '@/lib/store';
 import { formatearPesos } from '@/lib/tipos';
 
-import type { RespuestasEntrevista } from '@/lib/tipos';
+import type { DocumentoProcesado, RespuestasEntrevista } from '@/lib/tipos';
 import type { TurnoEntrevista } from '@turenta/shared';
 
 export function PasoEntrevista() {
@@ -171,21 +172,24 @@ function asignarCampo(parcial: Partial<RespuestasEntrevista>, campo: string, val
 function resumirDocumentos(): string {
   const documentos = useDeclaracion.getState().documentos;
   return documentos
-    .map((d) => {
-      if (d.tipo === 'certificado_220') {
-        return `220 de NIT ${d.datos.nitRetenedor}: ingresos ${formatearPesos(d.datos.totalIngresosBrutos)}`;
-      }
-      if (d.tipo === 'certificado_bancario') {
-        return `Bancario ${d.datos.entidad}: rendimientos ${formatearPesos(d.datos.rendimientos)}`;
-      }
-      if (d.tipo === 'medicina_prepagada') {
-        return `Prepagada ${d.datos.entidad}: ${d.datos.amparos.length} amparo(s)`;
-      }
-      if (d.tipo === 'exogena') {
-        return `Exógena AG${d.exogena.anioGravable} con ${d.exogena.filas.length} reportes`;
-      }
-      return null;
-    })
+    .map((d) => resumirDocumento(d))
     .filter(Boolean)
-    .join(' | ');
+    .join('\n');
+}
+
+function resumirDocumento(d: DocumentoProcesado): string | null {
+  if (d.tipo === 'certificado_220') {
+    return `Certificado 220 de NIT ${d.datos.nitRetenedor}: ingresos brutos ${formatearPesos(d.datos.totalIngresosBrutos)}, aportes salud+pensión ${formatearPesos(d.datos.aportesSalud + d.datos.aportesPension)}, retención ${formatearPesos(d.datos.retencionFuente)}.`;
+  }
+  if (d.tipo === 'certificado_bancario') {
+    return `Certificado bancario ${d.datos.entidad}: saldo 31-dic ${formatearPesos(d.datos.saldoCuentas)} (ya contado como activo), rendimientos ${formatearPesos(d.datos.rendimientos)}, GMF ${formatearPesos(d.datos.gmf)} (parcial: confirma el GMF TOTAL del año con el usuario), retención ${formatearPesos(d.datos.retencionFuente)}.`;
+  }
+  if (d.tipo === 'medicina_prepagada') {
+    const amparos = d.datos.amparos.map((a) => `${formatearPesos(a.valor)} (${a.vigenciaInicio}→${a.vigenciaFin})`).join(', ');
+    return `Certificado medicina prepagada ${d.datos.entidad}: ${amparos}. Propón el valor que corresponde al año gravable y pide confirmación.`;
+  }
+  if (d.tipo === 'exogena') {
+    return precargarDesdeExogena(d.exogena).resumen;
+  }
+  return null;
 }

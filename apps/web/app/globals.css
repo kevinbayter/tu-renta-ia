@@ -1,38 +1,39 @@
 @import "tailwindcss";
 
-/* Design tokens tu-renta-ai — identidad propia (no clon de referencia):
-   primario índigo profundo, acento esmeralda para "saldo a favor", ámbar para alertas. */
+/* Design tokens TuRenta AI — paleta corporativa clara:
+   azul confianza (primario) + esmeralda (éxito/dinero) + neutros slate.
+   Distinta del teal de referencia y del morado de Nu. */
 :root {
-  --background: #fafaf9;
-  --foreground: #1c1917;
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --primario: #4f46e5;
-  --primario-oscuro: #4338ca;
-  --primario-suave: #eef2ff;
+  --primario: #1d4ed8;
+  --primario-oscuro: #1e3a8a;
+  --primario-suave: #eff6ff;
   --exito: #059669;
   --exito-suave: #ecfdf5;
-  --alerta: #d97706;
+  --alerta: #b45309;
   --alerta-suave: #fffbeb;
   --error: #dc2626;
-  --borde: #e7e5e4;
-  --texto-suave: #78716c;
+  --borde: #e2e8f0;
+  --texto-suave: #64748b;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0c0a09;
-    --foreground: #f5f5f4;
-    --card: #1c1917;
-    --primario: #818cf8;
-    --primario-oscuro: #6366f1;
-    --primario-suave: #1e1b4b;
+    --background: #0b1526;
+    --foreground: #f1f5f9;
+    --card: #12203a;
+    --primario: #60a5fa;
+    --primario-oscuro: #3b82f6;
+    --primario-suave: #172a54;
     --exito: #34d399;
-    --exito-suave: #064e3b;
+    --exito-suave: #093f31;
     --alerta: #fbbf24;
-    --alerta-suave: #451a03;
+    --alerta-suave: #3a2c07;
     --error: #f87171;
-    --borde: #292524;
-    --texto-suave: #a8a29e;
+    --borde: #1f3252;
+    --texto-suave: #94a3b8;
   }
 }
 

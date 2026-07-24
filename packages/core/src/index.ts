@@ -20,5 +20,6 @@ export {
   obligadoADeclarar,
   umbralesObligadoADeclarar,
 } from './exogena/interpretar';
+export { precargarDesdeExogena, type PrecargaExogena } from './exogena/precarga';
 export { type RespuestasEntrevista } from './perfil/respuestas';
 export { construirPerfilFiscal, type InsumosPerfil } from './perfil/construir-perfil';

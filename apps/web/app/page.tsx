@@ -1,18 +1,20 @@
-import { BandaEjemplo, CierreCta, PiePagina, PreguntasFrecuentes } from '@/components/landing/cierre';
-import { Hero } from '@/components/landing/hero';
-import { ComoFunciona, LoQueRecibes, PorQueConfiar } from '@/components/landing/secciones';
+import { Caracteristicas, Precios } from '@/components/landing/caracteristicas';
+import { CtaFinal, PiePagina, PreguntasFrecuentes } from '@/components/landing/cierre';
+import { BandaConfianza, Hero } from '@/components/landing/hero';
+import { ComoFunciona, PorQueConfiar } from '@/components/landing/secciones';
 
 export default function PaginaInicio() {
   return (
     <div className="flex flex-1 flex-col">
       <Hero />
       <main className="flex-1">
+        <BandaConfianza />
+        <Caracteristicas />
         <ComoFunciona />
         <PorQueConfiar />
-        <LoQueRecibes />
-        <BandaEjemplo />
+        <Precios />
         <PreguntasFrecuentes />
-        <CierreCta />
+        <CtaFinal />
       </main>
       <PiePagina />
     </div>

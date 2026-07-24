@@ -153,7 +153,7 @@ function GuiaPresentacion() {
       <p className="mt-5 flex items-center gap-2 rounded-xl bg-primario-suave px-4 py-3 text-sm">
         <span className="text-primario">📅</span>
         <span>
-          Tu fecha límite para presentar es: <strong className="text-primario">24 de septiembre de 2026</strong>
+          Tu fecha límite se calcula automáticamente <strong className="text-primario">según los dígitos de tu cédula</strong>
         </span>
       </p>
     </div>

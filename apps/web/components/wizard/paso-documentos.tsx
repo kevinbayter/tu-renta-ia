@@ -8,99 +8,171 @@ import { useDeclaracion } from '@/lib/store';
 
 import type { DocumentoProcesado } from '@/lib/tipos';
 
+type TipoDocumento = DocumentoProcesado['tipo'];
+
+interface Slot {
+  clave: string;
+  titulo: string;
+  descripcion: string;
+  accept: string;
+  tipos: TipoDocumento[];
+  opcional?: boolean;
+}
+
+const SLOTS: Slot[] = [
+  {
+    clave: 'exogena',
+    titulo: 'Exógena DIAN',
+    descripcion: 'El Excel "información reportada por terceros" que descargas del portal de la DIAN.',
+    accept: '.xlsx,.xls',
+    tipos: ['exogena'],
+  },
+  {
+    clave: '220',
+    titulo: 'Certificados 220 (ingresos y retenciones)',
+    descripcion: 'Uno por cada empleador que tuviste en el año. Te lo entrega la empresa.',
+    accept: '.pdf',
+    tipos: ['certificado_220'],
+  },
+  {
+    clave: 'bancarios',
+    titulo: 'Certificados bancarios',
+    descripcion: 'Certificado tributario de cada banco: saldos, rendimientos, GMF y retenciones.',
+    accept: '.pdf',
+    tipos: ['certificado_bancario'],
+  },
+  {
+    clave: 'prepagada',
+    titulo: 'Medicina prepagada (si aplica)',
+    descripcion: 'Certificado anual de tu medicina prepagada o seguro de salud, para la deducción.',
+    accept: '.pdf',
+    tipos: ['medicina_prepagada'],
+    opcional: true,
+  },
+  {
+    clave: 'otros',
+    titulo: 'Otros deducibles (si aplican)',
+    descripcion: 'Intereses de vivienda, ICETEX, pensiones voluntarias… La IA intentará clasificarlos; lo que no reconozca lo capturas en la entrevista.',
+    accept: '.pdf,.xlsx,.xls',
+    tipos: ['otro'],
+    opcional: true,
+  },
+];
+
 export function PasoDocumentos() {
   const documentos = useDeclaracion((s) => s.documentos);
   const irAPaso = useDeclaracion((s) => s.irAPaso);
-  const tieneExogena = documentos.some((d) => d.tipo === 'exogena');
   return (
     <section aria-label="Carga de documentos">
       <h2 className="text-2xl font-bold">Sube tus documentos</h2>
       <p className="mt-1 text-sm text-texto-suave">
-        Empieza con tu <strong>exógena</strong> (el Excel de la DIAN) y agrega tus certificados: 220 de cada
-        empleador, bancarios y de medicina prepagada. La IA los lee y tú confirmas.
+        La IA lee cada documento y tú confirmas los valores. Si subes algo en la sección equivocada, no
+        pasa nada: lo clasificamos y lo ubicamos donde corresponde.
       </p>
-      <ZonaDeCarga />
-      <ul className="mt-4 space-y-3">
-        {documentos.map((doc) => (
-          <TarjetaDocumento key={doc.id} documento={doc} />
+      <div className="mt-5 space-y-4">
+        {SLOTS.map((slot) => (
+          <SlotDocumento key={slot.clave} slot={slot} documentos={documentos} />
         ))}
-      </ul>
+      </div>
       <button
         type="button"
         disabled={documentos.length === 0}
         onClick={() => irAPaso('entrevista')}
         className="mt-6 h-13 w-full rounded-2xl bg-primario py-3.5 font-semibold text-white transition hover:bg-primario-oscuro disabled:opacity-40"
       >
-        {tieneExogena ? 'Continuar a la entrevista' : 'Continuar sin exógena'}
+        Continuar a la entrevista
       </button>
     </section>
   );
 }
 
-function ZonaDeCarga() {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [cargando, setCargando] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const agregarDocumento = useDeclaracion((s) => s.agregarDocumento);
+function SlotDocumento({ slot, documentos }: { slot: Slot; documentos: DocumentoProcesado[] }) {
+  const propios = documentos.filter((d) => slot.tipos.includes(d.tipo));
+  const completo = propios.length > 0;
+  return (
+    <div className={`rounded-2xl border p-4 ${completo ? 'border-primario/40 bg-primario-suave/40' : 'border-borde bg-card'}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="font-semibold">
+            {completo ? '✅' : slot.opcional ? '▫️' : '⬜'} {slot.titulo}
+            {slot.opcional && <span className="ml-1 text-xs font-normal text-texto-suave">opcional</span>}
+          </p>
+          <p className="mt-0.5 text-xs text-texto-suave">{slot.descripcion}</p>
+        </div>
+        <BotonSubir slot={slot} />
+      </div>
+      {propios.length > 0 && (
+        <ul className="mt-3 space-y-3">
+          {propios.map((doc) => (
+            <TarjetaDocumento key={doc.id} documento={doc} />
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
-  const procesarUno = async (archivo: File) => {
-    setCargando(archivo.name);
-    const resultado = await subirArchivo(archivo);
-    if ('error' in resultado) {
-      setError(`${archivo.name}: ${resultado.error}`);
-      return;
-    }
-    agregarDocumento(resultado);
-    aplicarPrecarga(resultado);
-  };
+function BotonSubir({ slot }: { slot: Slot }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [cargando, setCargando] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
 
   const procesar = async (archivos: FileList | null) => {
     if (!archivos) {
       return;
     }
-    setError(null);
+    setCargando(true);
+    setAviso(null);
     for (const archivo of Array.from(archivos)) {
-      await procesarUno(archivo);
+      setAviso(await procesarArchivo(archivo, slot));
     }
-    setCargando(null);
+    setCargando(false);
   };
 
   return (
-    <div className="mt-5">
+    <div className="shrink-0 text-right">
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        disabled={cargando !== null}
-        className="flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-borde bg-card px-4 py-8 text-center transition hover:border-primario"
+        disabled={cargando}
+        className="rounded-xl bg-primario px-4 py-2 text-xs font-semibold text-white transition hover:bg-primario-oscuro disabled:opacity-50"
       >
-        <span className="text-3xl" aria-hidden>
-          📄
-        </span>
-        {cargando ? (
-          <span className="text-sm font-medium text-primario">
-            Leyendo {cargando} con IA… esto toma ~1 minuto
-          </span>
-        ) : (
-          <span className="text-sm font-medium">
-            Toca para elegir archivos <span className="text-texto-suave">(PDF o Excel)</span>
-          </span>
-        )}
+        {cargando ? 'Leyendo con IA…' : '⬆ Subir'}
       </button>
-      <input
-        ref={inputRef}
-        type="file"
-        accept=".pdf,.xlsx,.xls"
-        multiple
-        hidden
-        onChange={(e) => void procesar(e.target.files)}
-      />
-      {error && (
-        <p role="alert" className="mt-2 rounded-xl bg-alerta-suave px-3 py-2 text-sm text-alerta">
-          {error}
+      <input ref={inputRef} type="file" accept={slot.accept} multiple hidden onChange={(e) => void procesar(e.target.files)} />
+      {aviso && (
+        <p role="alert" className="mt-1 max-w-[200px] text-[11px] text-alerta">
+          {aviso}
         </p>
       )}
     </div>
   );
+}
+
+/** Sube por el MISMO pipeline de siempre; el documento se agrupa por su tipo real. */
+async function procesarArchivo(archivo: File, slot: Slot): Promise<string | null> {
+  const resultado = await subirArchivo(archivo);
+  if ('error' in resultado) {
+    return `${archivo.name}: ${resultado.error}`;
+  }
+  useDeclaracion.getState().agregarDocumento(resultado);
+  aplicarPrecarga(resultado);
+  if (!slot.tipos.includes(resultado.tipo)) {
+    return `Lo clasificamos como "${nombreTipo(resultado.tipo)}" y lo ubicamos en su sección.`;
+  }
+  return null;
+}
+
+const NOMBRES_TIPO: Record<TipoDocumento, string> = {
+  exogena: 'Exógena DIAN',
+  certificado_220: 'Certificado 220',
+  certificado_bancario: 'Certificado bancario',
+  medicina_prepagada: 'Medicina prepagada',
+  otro: 'Otro documento',
+};
+
+function nombreTipo(tipo: TipoDocumento): string {
+  return NOMBRES_TIPO[tipo];
 }
 
 /** Lo reportado en la exógena no se pregunta: se precarga y la entrevista solo lo confirma. */

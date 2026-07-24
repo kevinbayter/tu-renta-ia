@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarDays, CheckCircle2, Download, FileUp, Trash2, UserPlus } from 'lucide-react';
+import { CalendarDays, CheckCircle2, Download, FileUp, Sparkles, Trash2, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -11,9 +11,51 @@ import type { DeclaracionResumen, EventoActividad } from '@turenta/core';
 export function PanelDerecho({ lista }: { lista: DeclaracionResumen[] }) {
   return (
     <aside className="space-y-4" aria-label="Resumen lateral">
+      <AsistenteWidget />
       <ProximosVencimientos lista={lista} />
       <ActividadReciente />
     </aside>
+  );
+}
+
+const PREGUNTAS_SUGERIDAS = [
+  '¿Debo declarar renta este año?',
+  '¿Qué significa saldo a favor?',
+  '¿Qué gastos puedo deducir?',
+];
+
+function AsistenteWidget() {
+  return (
+    <section className="rounded-2xl border border-borde bg-card p-5">
+      <h2 className="flex items-center gap-2 font-semibold">
+        <Sparkles size={16} className="text-primario" aria-hidden /> Asistente Fiscal IA
+        <span className="rounded-md bg-primario-suave px-1.5 py-0.5 text-[10px] font-bold text-primario">Beta</span>
+      </h2>
+      <p className="mt-1 text-xs text-texto-suave">Pregúntame cualquier duda sobre tu declaración.</p>
+      <div className="mt-3 space-y-1.5">
+        {PREGUNTAS_SUGERIDAS.map((p) => (
+          <Link
+            key={p}
+            href={`/ia-fiscal?q=${encodeURIComponent(p)}`}
+            className="block rounded-xl border border-borde bg-background px-3 py-2 text-xs transition hover:border-primario/40"
+          >
+            {p}
+          </Link>
+        ))}
+        <Link
+          href="/ia-fiscal?q=Simular mi declaración"
+          className="block rounded-xl border border-borde bg-background px-3 py-2 text-xs transition hover:border-primario/40"
+        >
+          Simular mi declaración
+        </Link>
+      </div>
+      <Link
+        href="/ia-fiscal"
+        className="mt-3 flex h-10 items-center justify-center gap-1.5 rounded-xl border border-primario/40 text-sm font-semibold text-primario transition hover:bg-primario-suave"
+      >
+        <Sparkles size={14} aria-hidden /> Hacer una pregunta
+      </Link>
+    </section>
   );
 }
 

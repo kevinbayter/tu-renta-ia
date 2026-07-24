@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { DatosDeclarante } from './datos-declarante';
 import { useDeclaracion } from '@/lib/store';
 import { formatearPesos } from '@/lib/tipos';
 
@@ -49,6 +50,7 @@ export function PasoRevision() {
       <p className="mt-3 rounded-xl bg-primario-suave px-3 py-2 text-sm">
         📄 {documentos.length} documento(s) procesado(s) · usa el paso Documentos para cambiarlos
       </p>
+      <DatosDeclarante />
       <FormularioRespuestas />
       <DependienteToggle />
       <ListaActivos />

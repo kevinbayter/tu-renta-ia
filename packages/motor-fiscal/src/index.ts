@@ -5,6 +5,7 @@ export { redondearMil, pisoMil } from './redondeo';
 export { impuestoTabla241 } from './liquidacion/tabla-241';
 export { calcularAnticipo, porcentajeAnticipo } from './liquidacion/anticipo';
 export { porcentajeCesantiasExentas } from './depuracion/rentas-trabajo';
+export { fechaVencimiento, ultimosDosDigitos } from './calendario/vencimientos';
 export type { ConstantesAnio, RangoTarifa, TramoCesantias } from './constantes/tipos';
 export type {
   PerfilFiscal,

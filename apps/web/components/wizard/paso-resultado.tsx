@@ -1,5 +1,6 @@
 'use client';
 
+import { BotonDescargarBorrador, GuiaPresentacion } from './guia-presentacion';
 import { useDeclaracion } from '@/lib/store';
 import { formatearPesos } from '@/lib/tipos';
 
@@ -21,7 +22,9 @@ export function PasoResultado() {
   return (
     <section aria-label="Resultado">
       <CifraPrincipal resultado={resultado} />
+      <BotonDescargarBorrador resultado={resultado} />
       <Desglose resultado={resultado} />
+      <GuiaPresentacion resultado={resultado} />
       <Casillas resultado={resultado} />
       <button
         type="button"
@@ -31,8 +34,8 @@ export function PasoResultado() {
         ← Ajustar datos y recalcular
       </button>
       <p className="mt-4 rounded-xl bg-primario-suave p-3 text-xs text-texto-suave">
-        Próximamente: descarga del borrador 210 en PDF y guía paso a paso para presentarlo en MUISCA. Este
-        borrador es informativo; la declaración la presentas y firmas tú ante la DIAN.
+        Este borrador es informativo: la declaración oficial la diligencias, firmas y presentas tú en el
+        portal MUISCA de la DIAN siguiendo la guía de arriba.
       </p>
     </section>
   );

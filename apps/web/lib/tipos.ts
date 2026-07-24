@@ -19,6 +19,12 @@ export interface MensajeChat {
   contenido: string;
 }
 
+export interface Declarante {
+  nombres: string;
+  apellidos: string;
+  identificacion: string;
+}
+
 export type { RespuestasEntrevista, ResultadoDeclaracion };
 
 export const RESPUESTAS_INICIALES: RespuestasEntrevista = {

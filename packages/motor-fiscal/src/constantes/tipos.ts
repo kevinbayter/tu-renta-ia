@@ -67,4 +67,10 @@ export interface ConstantesAnio {
   anticipo: {
     porcentajePorDeclaracion: [number, number, number];
   };
+
+  /**
+   * Fechas de vencimiento (ISO) para presentar la declaración, en orden de
+   * pares de dígitos: índice 0 = terminaciones 01-02, ..., índice 49 = 99-00.
+   */
+  calendarioVencimientos: string[];
 }

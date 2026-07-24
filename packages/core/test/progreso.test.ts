@@ -42,14 +42,24 @@ describe('progresoDeclaracion — 5 pasos', () => {
     expect(progresoDeclaracion(estado)).toEqual({ paso: 5, totalPasos: 5, porcentaje: 100 });
   });
 
-  it('terminada pero sin certificados: 80% — el hito de certificados queda pendiente', () => {
+  it('finalizada sin certificados: 100% igualmente — la completitud documental la mide la confiabilidad', () => {
     const estado = {
       paso: 'resultado',
       documentos: [{ tipo: 'exogena' }],
       entrevistaCompleta: true,
       resultado: { casillas: {} },
     };
-    expect(progresoDeclaracion(estado)).toEqual({ paso: 5, totalPasos: 5, porcentaje: 80 });
+    expect(progresoDeclaracion(estado)).toEqual({ paso: 5, totalPasos: 5, porcentaje: 100 });
+  });
+
+  it('con resultado pero devuelta a revisión: los hitos mandan (80%)', () => {
+    const estado = {
+      paso: 'revision',
+      documentos: [{ tipo: 'exogena' }, { tipo: 'certificado_220' }],
+      entrevistaCompleta: true,
+      resultado: { casillas: {} },
+    };
+    expect(progresoDeclaracion(estado)).toEqual({ paso: 4, totalPasos: 5, porcentaje: 80 });
   });
 
   it('tolera estados desconocidos o corruptos', () => {

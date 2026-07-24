@@ -59,7 +59,7 @@ function ContenidoDocumento({ documento }: { documento: DocumentoProcesado }) {
   if (documento.tipo === 'certificado_220') {
     return (
       <>
-        <AvisoDiscrepancias coinciden={documento.pasadasCoinciden} />
+        <AvisoDiscrepancias coinciden={documento.pasadasCoinciden} discrepancias={documento.discrepancias} />
         <DatosExtraidos
           datos={[
             ['Empleador (NIT)', documento.datos.nitRetenedor],
@@ -74,7 +74,7 @@ function ContenidoDocumento({ documento }: { documento: DocumentoProcesado }) {
   if (documento.tipo === 'certificado_bancario') {
     return (
       <>
-        <AvisoDiscrepancias coinciden={documento.pasadasCoinciden} />
+        <AvisoDiscrepancias coinciden={documento.pasadasCoinciden} discrepancias={documento.discrepancias} />
         <DatosExtraidos
           datos={[
             ['Entidad', documento.datos.entidad],
@@ -88,12 +88,15 @@ function ContenidoDocumento({ documento }: { documento: DocumentoProcesado }) {
   }
   if (documento.tipo === 'medicina_prepagada') {
     return (
-      <DatosExtraidos
-        datos={documento.datos.amparos.map((a, i) => [
-          `Amparo ${i + 1} (${a.vigenciaInicio} → ${a.vigenciaFin})`,
-          formatearPesos(a.valor),
-        ])}
-      />
+      <>
+        <AvisoDiscrepancias coinciden={documento.pasadasCoinciden} discrepancias={documento.discrepancias} />
+        <DatosExtraidos
+          datos={documento.datos.amparos.map((a, i) => [
+            `Amparo ${i + 1} (${a.vigenciaInicio} → ${a.vigenciaFin})`,
+            formatearPesos(a.valor),
+          ])}
+        />
+      </>
     );
   }
   return <p className="mt-2 text-sm text-alerta">No pudimos clasificar este documento. Puedes eliminarlo.</p>;
@@ -159,13 +162,45 @@ function estaObligado(exogena: ExogenaParseada): boolean | null {
   }
 }
 
-function AvisoDiscrepancias({ coinciden }: { coinciden: boolean }) {
+function AvisoDiscrepancias({ coinciden, discrepancias }: { coinciden: boolean; discrepancias: string[] }) {
   if (coinciden) {
     return <p className="mt-2 inline-block rounded-lg bg-exito-suave px-2 py-0.5 text-xs text-exito">✓ Verificado con doble lectura</p>;
   }
   return (
-    <p role="alert" className="mt-2 rounded-lg bg-alerta-suave px-2 py-1 text-xs text-alerta">
-      ⚠ Las dos lecturas de IA no coincidieron — revisa estos valores con tu documento a la mano.
-    </p>
+    <div role="alert" className="mt-2 rounded-lg bg-alerta-suave px-2 py-1.5 text-xs text-alerta">
+      <p>⚠ Las dos lecturas de IA no coincidieron en estos campos (usamos la primera). Compáralos con tu documento y, si el valor mostrado abajo está mal, elimina el documento y súbelo de nuevo:</p>
+      <ul className="mt-1 list-inside list-disc">
+        {discrepancias.map((d) => (
+          <li key={d}>{describirDiscrepancia(d)}</li>
+        ))}
+      </ul>
+    </div>
   );
+}
+
+const NOMBRES_CAMPO: Record<string, string> = {
+  pagosSalarios: 'Pagos por salarios',
+  pagosPrestaciones: 'Pagos por prestaciones',
+  otrosPagos: 'Otros pagos',
+  cesantiasPagadas: 'Cesantías e intereses pagados',
+  cesantiasConsignadas: 'Cesantías consignadas al fondo',
+  totalIngresosBrutos: 'Total ingresos brutos',
+  aportesSalud: 'Aportes a salud',
+  aportesPension: 'Aportes a pensión',
+  ingresoPromedioSeisMeses: 'Ingreso promedio últimos 6 meses',
+  retencionFuente: 'Retención en la fuente',
+  saldoCuentas: 'Saldo de cuentas',
+  rendimientos: 'Rendimientos',
+  gmf: 'GMF (4×1000)',
+  componenteInflacionarioInformado: 'Componente inflacionario',
+};
+
+/** Convierte ".otrosPagos: pasada1=409000 pasada2=0" en texto legible para el usuario. */
+function describirDiscrepancia(cruda: string): string {
+  const partes = /^\.?(\w+): pasada1=(\d+) pasada2=(\d+)$/.exec(cruda);
+  if (!partes || !partes[1] || partes[2] === undefined || partes[3] === undefined) {
+    return cruda;
+  }
+  const campo = NOMBRES_CAMPO[partes[1]] ?? partes[1];
+  return `${campo}: una lectura vio ${formatearPesos(Number(partes[2]))} y la otra ${formatearPesos(Number(partes[3]))}`;
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { saldoAFavorAnterior } from '@turenta/core';
 import { useState } from 'react';
 
 import { DatosDeclarante } from './datos-declarante';
@@ -21,6 +22,7 @@ const CAMPOS_EDITABLES: { campo: keyof RespuestasEntrevista; etiqueta: string }[
   { campo: 'deudas', etiqueta: 'Deudas al 31 de diciembre ($)' },
   { campo: 'declaracionesPrevias', etiqueta: 'Declaraciones presentadas antes' },
   { campo: 'impuestoNetoAnioAnterior', etiqueta: 'Impuesto neto del año anterior ($)' },
+  { campo: 'anticipoLiquidadoAnioAnterior', etiqueta: 'Anticipo liquidado en tu declaración anterior ($)' },
 ];
 
 export function PasoRevision() {
@@ -79,8 +81,13 @@ export function PasoRevision() {
 function AvisosDeCompletitud() {
   const documentos = useDeclaracion((s) => s.documentos);
   const declarante = useDeclaracion((s) => s.declarante);
+  const respuestas = useDeclaracion((s) => s.respuestas);
   const exogena = documentos.find((d) => d.tipo === 'exogena');
   const avisos: string[] = [];
+  const saldoAnterior = exogena?.tipo === 'exogena' ? saldoAFavorAnterior(exogena.exogena) : 0;
+  if (saldoAnterior > 0 && respuestas.anticipoLiquidadoAnioAnterior > 0) {
+    avisos.push(`Tu exógena ya aplica automáticamente el saldo a favor del año anterior (${formatearPesos(saldoAnterior)}). El campo "anticipo liquidado" (${formatearPesos(respuestas.anticipoLiquidadoAnioAnterior)}) es SOLO para la casilla de anticipo de tu declaración pasada — si pusiste ahí el mismo saldo a favor, déjalo en $0 o se restará dos veces.`);
+  }
   const cedulaExogena = exogena?.tipo === 'exogena' ? (exogena.exogena.identificacionConsultante ?? '') : '';
   const cedulaTitular = declarante.identificacion.replace(/\D/g, '');
   if (cedulaExogena && cedulaTitular && cedulaExogena !== cedulaTitular) {

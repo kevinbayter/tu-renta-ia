@@ -7,3 +7,6 @@ export { ExtractorCertificados } from './extraccion/certificados/extractor-certi
 export { generarPdfBorrador210, type DatosDeclarante } from './generacion/pdf-borrador-210';
 export { RepositorioPrisma } from './persistencia/repositorio-prisma';
 export { EmailConsolaAdapter } from './email/email-consola';
+export { EmailSmtpAdapter, type SmtpConfig } from './email/email-smtp';
+export { EmailBrevoAdapter, type BrevoConfig } from './email/email-brevo';
+export { crearEmailDesdeEnv } from './email/crear-email';

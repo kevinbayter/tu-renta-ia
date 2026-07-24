@@ -1,4 +1,4 @@
-import { CheckCircle2, Lock, Timer } from 'lucide-react';
+import { CheckCircle2, FileCheck2, Lock, ShieldCheck, Timer } from 'lucide-react';
 import Link from 'next/link';
 
 import { LogoMarca } from './iconos';
@@ -13,13 +13,25 @@ const ENLACES_NAV = [
 
 export function Hero() {
   return (
-    <section className="border-b border-borde bg-background">
+    <section className="relative overflow-hidden border-b border-borde bg-background">
       <BarraNavegacion />
-      <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 pb-14 pt-10 lg:grid-cols-[1.02fr_1fr] lg:items-center lg:pb-20 lg:pt-14">
+      <FondoHero />
+      <div className="relative mx-auto grid w-full max-w-6xl gap-12 px-5 pb-16 pt-12 lg:grid-cols-[1.02fr_1fr] lg:items-center lg:pb-24 lg:pt-16">
         <ContenidoHero />
-        <MockupPanel />
+        <VitrinaMockup />
       </div>
     </section>
+  );
+}
+
+/** Capa decorativa: patrón de puntos + brillos verdes difuminados. */
+function FondoHero() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0">
+      <div className="heroe-puntos absolute inset-0" />
+      <div className="heroe-brillo absolute -top-32 left-[-10%] h-[480px] w-[480px] rounded-full" />
+      <div className="heroe-brillo absolute right-[-12%] top-16 h-[560px] w-[560px] rounded-full opacity-80" />
+    </div>
   );
 }
 
@@ -41,7 +53,7 @@ function BarraNavegacion() {
           </Link>
           <Link
             href="/declaracion"
-            className="rounded-xl bg-primario px-4 py-2 text-sm font-semibold text-white transition hover:bg-primario-oscuro"
+            className="rounded-xl bg-primario px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primario/25 transition hover:-translate-y-0.5 hover:bg-primario-oscuro"
           >
             Comenzar gratis
           </Link>
@@ -54,35 +66,96 @@ function BarraNavegacion() {
 function ContenidoHero() {
   return (
     <div>
-      <span className="inline-block rounded-full bg-primario-suave px-3 py-1 text-xs font-semibold text-primario">
+      <span className="animar-entrada inline-flex items-center gap-2 rounded-full bg-primario-suave px-3.5 py-1.5 text-xs font-semibold text-primario">
+        <span className="relative flex h-2 w-2" aria-hidden>
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primario opacity-70 motion-reduce:animate-none" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-primario" />
+        </span>
         IA Fiscal que trabaja por ti
       </span>
-      <h1 className="mt-4 text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-        Tu declaración de renta, <span className="text-primario">sin enredos</span>
+      <h1 className="animar-entrada mt-5 text-4xl font-bold leading-tight tracking-tight sm:text-6xl" style={{ animationDelay: '0.1s' }}>
+        Tu declaración de renta, <PalabraSubrayada>sin enredos</PalabraSubrayada>
       </h1>
-      <p className="mt-4 max-w-lg text-base leading-relaxed text-texto-suave">
-        TuRenta AI te guía paso a paso: sube tu exógena y tus certificados, la IA los lee con doble
-        verificación, tú confirmas cada dato y un motor auditado calcula tu formulario 210.
+      <p className="animar-entrada mt-5 max-w-lg text-lg leading-relaxed text-texto-suave" style={{ animationDelay: '0.2s' }}>
+        Sube tu exógena y tus certificados: la IA los lee con doble verificación, tú confirmas cada dato
+        y un motor auditado calcula tu formulario 210.
       </p>
-      <div className="mt-7 flex flex-wrap items-center gap-3">
+      <div className="animar-entrada mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: '0.3s' }}>
         <Link
           href="/declaracion"
-          className="rounded-2xl bg-primario px-6 py-3.5 font-semibold text-white transition hover:bg-primario-oscuro"
+          className="rounded-2xl bg-primario px-7 py-4 font-semibold text-white shadow-xl shadow-primario/30 transition hover:-translate-y-0.5 hover:bg-primario-oscuro"
         >
           Comenzar gratis
         </Link>
         <a
           href="#como"
-          className="rounded-2xl border border-borde bg-card px-6 py-3.5 font-semibold transition hover:border-primario/40"
+          className="rounded-2xl border border-borde bg-card px-7 py-4 font-semibold transition hover:-translate-y-0.5 hover:border-primario/40"
         >
           Ver cómo funciona
         </a>
       </div>
-      <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2">
+      <ul className="animar-entrada mt-8 flex flex-wrap gap-x-5 gap-y-2" style={{ animationDelay: '0.45s' }}>
         <ChipConfianza Icono={Lock} texto="Cifrado y habeas data (Ley 1581)" />
         <ChipConfianza Icono={CheckCircle2} texto="Validado contra declaraciones reales" />
         <ChipConfianza Icono={Timer} texto="Gratis durante la beta" />
       </ul>
+    </div>
+  );
+}
+
+/** Subrayado a mano alzada que se dibuja solo al cargar. */
+function PalabraSubrayada({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="relative inline-block whitespace-nowrap text-primario">
+      {children}
+      <svg viewBox="0 0 320 24" aria-hidden className="absolute -bottom-3 left-0 w-full">
+        <path
+          d="M6 17 C 80 6, 150 20, 314 9"
+          fill="none"
+          stroke="var(--acento)"
+          strokeWidth="7"
+          strokeLinecap="round"
+          opacity="0.55"
+          className="trazo-subrayado"
+        />
+      </svg>
+    </span>
+  );
+}
+
+function VitrinaMockup() {
+  return (
+    <div className="animar-entrada-derecha relative" style={{ animationDelay: '0.25s' }}>
+      <div aria-hidden className="heroe-brillo absolute -inset-10 rounded-full opacity-90" />
+      <div className="relative transition-transform duration-500 lg:rotate-1 lg:hover:rotate-0">
+        <MockupPanel />
+      </div>
+      <TarjetaFlotante posicion="-left-5 top-8" retardo="0s" Icono={ShieldCheck} texto="Doble verificación IA" />
+      <TarjetaFlotante posicion="-right-4 bottom-14" retardo="1.6s" Icono={FileCheck2} texto="Borrador 210 oficial" />
+    </div>
+  );
+}
+
+function TarjetaFlotante({
+  posicion,
+  retardo,
+  Icono,
+  texto,
+}: {
+  posicion: string;
+  retardo: string;
+  Icono: typeof ShieldCheck;
+  texto: string;
+}) {
+  return (
+    <div
+      className={`flotante absolute z-10 hidden items-center gap-2 rounded-2xl border border-borde bg-card px-3.5 py-2.5 text-xs font-semibold shadow-xl lg:flex ${posicion}`}
+      style={{ animationDelay: retardo }}
+    >
+      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primario-suave text-primario" aria-hidden>
+        <Icono size={15} />
+      </span>
+      {texto}
     </div>
   );
 }

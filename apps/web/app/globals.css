@@ -191,3 +191,93 @@ body {
     offset-distance: 50%;
   }
 }
+
+/* Hero de la landing: brillos, patrón de puntos, entradas escalonadas y flotantes. */
+.heroe-puntos {
+  background-image: radial-gradient(color-mix(in srgb, var(--texto-suave) 30%, transparent) 1.2px, transparent 1.2px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(ellipse 90% 70% at 45% 25%, black 30%, transparent 75%);
+}
+
+.heroe-brillo {
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--primario) 26%, transparent), transparent 72%);
+}
+
+.animar-entrada,
+.animar-entrada-derecha {
+  opacity: 0;
+}
+
+.animar-entrada {
+  animation: aparecer 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animar-entrada-derecha {
+  animation: aparecer-derecha 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.flotante {
+  animation: flotar-suave 6s ease-in-out infinite;
+}
+
+.trazo-subrayado {
+  stroke-dasharray: 330;
+  stroke-dashoffset: 330;
+  animation: trazar 0.9s ease-out 0.8s forwards;
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes aparecer-derecha {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes flotar-suave {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes trazar {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animar-entrada,
+  .animar-entrada-derecha,
+  .flotante,
+  .trazo-subrayado {
+    animation: none;
+  }
+
+  .animar-entrada,
+  .animar-entrada-derecha {
+    opacity: 1;
+  }
+
+  .trazo-subrayado {
+    stroke-dashoffset: 0;
+  }
+}

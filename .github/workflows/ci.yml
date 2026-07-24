@@ -16,6 +16,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Generar cliente Prisma
+        run: pnpm --filter @turenta/adaptadores db:generate
       - name: Lint
         run: pnpm lint
       - name: Typecheck

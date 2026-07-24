@@ -20,3 +20,6 @@ docs/
 
 # Artefactos de pruebas de navegador
 .playwright-mcp/
+
+# Prisma client generado (se regenera con pnpm --filter @turenta/adaptadores db:generate)
+packages/adaptadores/src/persistencia/generado/

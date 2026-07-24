@@ -26,6 +26,7 @@ interface EstadoDeclaracion {
   agregarMensaje: (mensaje: MensajeChat) => void;
   marcarEntrevistaCompleta: () => void;
   guardarResultado: (resultado: ResultadoDeclaracion) => void;
+  hidratar: (estado: Partial<EstadoDeclaracion>) => void;
   reiniciar: () => void;
 }
 
@@ -52,6 +53,7 @@ function accionesGenerales(set: SetEstado): Partial<EstadoDeclaracion> {
     agregarMensaje: (mensaje) => set((s) => ({ mensajes: [...s.mensajes, mensaje] })),
     marcarEntrevistaCompleta: () => set({ entrevistaCompleta: true }),
     guardarResultado: (resultado) => set({ resultado }),
+    hidratar: (estado) => set(estado),
     reiniciar: () => set(ESTADO_INICIAL),
   };
 }

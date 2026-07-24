@@ -1,6 +1,6 @@
-import { crearLlmDesdeEnv, ExtractorCertificados } from '@turenta/adaptadores';
+import { crearLlmDesdeEnv, EmailConsolaAdapter, ExtractorCertificados, RepositorioPrisma } from '@turenta/adaptadores';
 
-import type { LlmPort } from '@turenta/core';
+import type { EmailPort, LlmPort, RepositorioPort } from '@turenta/core';
 
 /**
  * Composición hexagonal del lado servidor: único lugar de apps/web
@@ -9,6 +9,8 @@ import type { LlmPort } from '@turenta/core';
 
 let llmSingleton: LlmPort | undefined;
 let extractorSingleton: ExtractorCertificados | undefined;
+let repositorioSingleton: RepositorioPort | undefined;
+let emailSingleton: EmailPort | undefined;
 
 export function obtenerLlm(): LlmPort {
   llmSingleton ??= crearLlmDesdeEnv(process.env);
@@ -18,4 +20,18 @@ export function obtenerLlm(): LlmPort {
 export function obtenerExtractor(): ExtractorCertificados {
   extractorSingleton ??= new ExtractorCertificados(obtenerLlm());
   return extractorSingleton;
+}
+
+export function obtenerRepositorio(): RepositorioPort {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error('DATABASE_URL no configurada');
+  }
+  repositorioSingleton ??= new RepositorioPrisma(url);
+  return repositorioSingleton;
+}
+
+export function obtenerEmail(): EmailPort {
+  emailSingleton ??= new EmailConsolaAdapter();
+  return emailSingleton;
 }

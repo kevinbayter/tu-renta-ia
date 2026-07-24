@@ -5,6 +5,11 @@ export {
   type DocumentoFuente,
   type ResultadoExtraccion,
 } from './puertos/extractor-documentos-port';
+export {
+  type RepositorioPort,
+  type EmailPort,
+  type UsuarioRegistrado,
+} from './puertos/repositorio-port';
 export { type FilaExogena, type TopesExogena, type ExogenaParseada } from './exogena/tipos';
 export {
   saldoAFavorAnterior,

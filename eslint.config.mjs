@@ -157,6 +157,7 @@ export default tseslint.config(
       '**/.next/',
       '**/.turbo/',
       '**/coverage/',
+      'packages/adaptadores/src/persistencia/generado/**',
       'apps/**',
       'scripts/**',
       '**/*.config.{js,mjs,cjs,ts}',

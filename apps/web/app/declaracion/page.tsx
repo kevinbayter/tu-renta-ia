@@ -1,5 +1,6 @@
 'use client';
 
+import { BarraSesion } from '@/components/wizard/barra-sesion';
 import { PasoDocumentos } from '@/components/wizard/paso-documentos';
 import { PasoEntrevista } from '@/components/wizard/paso-entrevista';
 import { PasoResultado } from '@/components/wizard/paso-resultado';
@@ -11,6 +12,7 @@ export default function PaginaDeclaracion() {
   const paso = useDeclaracion((s) => s.paso);
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pb-24 pt-6 sm:px-6">
+      <BarraSesion />
       <Stepper />
       <div className="mt-6 flex-1">
         {paso === 'documentos' && <PasoDocumentos />}

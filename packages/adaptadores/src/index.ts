@@ -5,3 +5,5 @@ export { parsearExogena } from './extraccion/exogena/parser-exogena';
 export { extraerTextoPdf, type TextoPdf } from './extraccion/pdf/extraer-texto';
 export { ExtractorCertificados } from './extraccion/certificados/extractor-certificados';
 export { generarPdfBorrador210, type DatosDeclarante } from './generacion/pdf-borrador-210';
+export { RepositorioPrisma } from './persistencia/repositorio-prisma';
+export { EmailConsolaAdapter } from './email/email-consola';

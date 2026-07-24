@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/persistencia/generado"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Usuario {
+  id            String        @id @default(uuid())
+  email         String        @unique
+  creadoEn      DateTime      @default(now())
+  declaraciones Declaracion[]
+  codigosOtp    CodigoOtp[]
+}
+
+model CodigoOtp {
+  id         String    @id @default(uuid())
+  usuarioId  String
+  usuario    Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  codigoHash String
+  expiraEn   DateTime
+  usadoEn    DateTime?
+  creadoEn   DateTime  @default(now())
+
+  @@index([usuarioId, expiraEn])
+}
+
+model Declaracion {
+  id            String   @id @default(uuid())
+  usuarioId     String
+  usuario       Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  anioGravable  Int
+  /// Estado completo del wizard (documentos extraídos, respuestas, declarante, resultado)
+  estado        Json
+  creadaEn      DateTime @default(now())
+  actualizadaEn DateTime @updatedAt
+
+  @@unique([usuarioId, anioGravable])
+}

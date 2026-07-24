@@ -39,6 +39,19 @@ export default function PaginaInicio() {
       <p className="mt-4 text-center text-xs text-texto-suave">
         Año gravable 2025 · Herramienta de autopreparación asistida · No sustituye asesoría profesional
       </p>
+      <p className="mt-2 text-center text-xs text-texto-suave">
+        <Link href="/terminos" className="underline">
+          Términos y Condiciones
+        </Link>{' '}
+        ·{' '}
+        <Link href="/privacidad" className="underline">
+          Privacidad
+        </Link>{' '}
+        ·{' '}
+        <Link href="/ingresar" className="underline">
+          Ingresar
+        </Link>
+      </p>
     </main>
   );
 }

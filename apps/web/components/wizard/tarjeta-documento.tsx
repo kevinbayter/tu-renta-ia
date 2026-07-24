@@ -44,6 +44,7 @@ function ContenidoDocumento({ documento }: { documento: DocumentoProcesado }) {
   if (documento.tipo === 'exogena') {
     return (
       <>
+        <BannerTitularExogena exogena={documento.exogena} />
         <BannerObligado exogena={documento.exogena} />
         <DatosExtraidos
           datos={[
@@ -108,6 +109,23 @@ function DatosExtraidos({ datos }: { datos: [string, string][] }) {
         </div>
       ))}
     </dl>
+  );
+}
+
+/** Alerta si la exógena subida no pertenece al titular de la declaración. */
+function BannerTitularExogena({ exogena }: { exogena: ExogenaParseada }) {
+  const declarante = useDeclaracion((s) => s.declarante);
+  const cedulaTitular = declarante.identificacion.replace(/\D/g, '');
+  const cedulaExogena = exogena.identificacionConsultante ?? '';
+  if (!cedulaTitular || !cedulaExogena || cedulaTitular === cedulaExogena) {
+    return null;
+  }
+  return (
+    <p role="alert" className="mt-2 rounded-lg bg-alerta-suave px-2 py-1.5 text-xs text-error">
+      ⚠️ Esta exógena es de la cédula {cedulaExogena}, pero la declaración es de{' '}
+      {declarante.nombres} (C.C. {cedulaTitular}). Sube la exógena del titular o cambia el titular en
+      Mis declaraciones — con documentos de otra persona el resultado será incorrecto.
+    </p>
   );
 }
 

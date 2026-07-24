@@ -12,11 +12,20 @@ import type { WorkSheet } from 'xlsx';
  */
 export function parsearExogena(contenido: Uint8Array): ExogenaParseada {
   const filasCrudas = leerMatriz(contenido).map(aFilaCruda);
+  const identificacion = detectarIdentificacion(filasCrudas);
   return {
     anioGravable: detectarAnio(filasCrudas),
+    ...(identificacion ? { identificacionConsultante: identificacion } : {}),
     topes: extraerTopes(filasCrudas),
     filas: filasCrudas.filter(esFilaDeTercero).map(aFilaExogena),
   };
+}
+
+/** Cédula del consultante en el encabezado ("Identificación: | | 1234567890"). */
+function detectarIdentificacion(filas: FilaCruda[]): string | null {
+  const fila = filas.find((f) => f.celdas.some((c) => c.startsWith('Identificación')));
+  const valor = fila?.celdas.find((c) => /^\d{5,}$/.test(c));
+  return valor ?? null;
 }
 
 interface FilaCruda {

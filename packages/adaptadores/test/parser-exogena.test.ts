@@ -57,6 +57,7 @@ describe('parser de exógena (determinista)', () => {
   it('extrae año, topes y filas de terceros', () => {
     const exogena = parsearExogena(construirExogenaSintetica());
     expect(exogena.anioGravable).toBe(2025);
+    expect(exogena.identificacionConsultante).toBe('1234567890');
     expect(exogena.topes).toEqual({
       ingresos: 114_456_920,
       patrimonio: 45_053_000,

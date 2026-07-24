@@ -11,6 +11,7 @@ export type {
   PerfilFiscal,
   CertificadoLaboral,
   RentasCapitalInput,
+  RentasNoLaboralesInput,
   RentasPensionesInput,
   DeduccionesInput,
   PatrimonioInput,

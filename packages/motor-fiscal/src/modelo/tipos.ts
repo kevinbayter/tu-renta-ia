@@ -36,6 +36,14 @@ export interface DeduccionesInput {
   interesesIcetex: number;
 }
 
+export interface RentasNoLaboralesInput {
+  /** Arriendos vía mandato, honorarios sin vínculo y demás del art. 335 (ya deduplicados). */
+  ingresosBrutos: number;
+  /** Costos y gastos procedentes con soporte (num. 4 art. 336). */
+  costosYGastos: number;
+  retencionFuente: number;
+}
+
 export interface RentasPensionesInput {
   /** Pensiones de jubilación, invalidez, vejez, sobrevivientes y riesgos laborales (art. 337). */
   ingresosBrutos: number;
@@ -68,6 +76,8 @@ export interface PerfilFiscal {
   anioGravable: number;
   certificadosLaborales: CertificadoLaboral[];
   rentasCapital: RentasCapitalInput;
+  /** Rentas no laborales de la cédula general (art. 335); ausente = sin estos ingresos. */
+  rentasNoLaborales?: RentasNoLaboralesInput;
   /** Cédula de pensiones (art. 337); ausente = sin ingresos pensionales. */
   rentasPensiones?: RentasPensionesInput;
   deducciones: DeduccionesInput;

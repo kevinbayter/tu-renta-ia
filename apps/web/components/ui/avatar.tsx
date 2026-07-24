@@ -12,7 +12,7 @@ export function Avatar({
 }: {
   nombre: string;
   tamano?: keyof typeof TAMANOS;
-  fotoUrl?: string;
+  fotoUrl?: string | undefined;
 }) {
   const [fotoFallo, setFotoFallo] = useState(false);
   const clases = TAMANOS[tamano];

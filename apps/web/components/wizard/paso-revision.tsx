@@ -19,6 +19,8 @@ const CAMPOS_EDITABLES: { campo: keyof RespuestasEntrevista; etiqueta: string }[
   { campo: 'gmfTotalPagado', etiqueta: 'GMF (4×1000) total pagado ($)' },
   { campo: 'rendimientosAdicionalesConComponente', etiqueta: 'Otros rendimientos financieros ($)' },
   { campo: 'rendimientosSinComponente', etiqueta: 'Rendimientos de cesantías ($)' },
+  { campo: 'ingresosNoLaborales', etiqueta: 'Ingresos no laborales: arriendos, mandato ($)' },
+  { campo: 'costosNoLaborales', etiqueta: 'Costos de esos ingresos, con soporte ($)' },
   { campo: 'deudas', etiqueta: 'Deudas al 31 de diciembre ($)' },
   { campo: 'mesesConPension', etiqueta: 'Meses con pensión en 2025 (si aplica)' },
   { campo: 'declaracionesPrevias', etiqueta: 'Declaraciones presentadas antes' },

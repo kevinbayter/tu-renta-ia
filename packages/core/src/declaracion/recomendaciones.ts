@@ -1,5 +1,6 @@
 import { documentosEsperados } from '../exogena/documentos-esperados';
 import { saldoAFavorAnterior } from '../exogena/interpretar';
+import { ingresosNoLaboralesReportados } from '../exogena/no-laborales';
 
 import type { ExogenaParseada } from '../exogena/tipos';
 
@@ -32,7 +33,11 @@ interface EstadoWizard {
   entrevistaCompleta?: boolean;
   resultado?: unknown;
   declarante?: { identificacion?: string };
-  respuestas?: { anticipoLiquidadoAnioAnterior?: number; tieneDependiente387?: boolean };
+  respuestas?: {
+    anticipoLiquidadoAnioAnterior?: number;
+    tieneDependiente387?: boolean;
+    ingresosNoLaborales?: number;
+  };
 }
 
 interface Hallazgo {
@@ -48,6 +53,7 @@ export function evaluarDeclaracion(estado: unknown): EvaluacionDeclaracion {
     reglaSinExogena,
     reglaExogenaAjena,
     reglaCertificadosFaltantes,
+    reglaNoLaboralesOmitidos,
     reglaDiscrepancias,
     reglaEntrevista,
     reglaSinResultado,
@@ -119,6 +125,26 @@ function hay220Para(e: EstadoWizard, nit: string): boolean {
 
 function coincideNit(a: string, b: string): boolean {
   return a !== '' && b !== '' && (a.startsWith(b) || b.startsWith(a));
+}
+
+/** La exógena reporta ingresos no laborales (mandato/arriendos) y la declaración va en $0. */
+function reglaNoLaboralesOmitidos(e: EstadoWizard): Hallazgo | null {
+  const exogena = exogenaDe(e);
+  if (!exogena || (e.respuestas?.ingresosNoLaborales ?? 0) > 0) {
+    return null;
+  }
+  const reportados = ingresosNoLaboralesReportados(exogena);
+  if (reportados.total === 0) {
+    return null;
+  }
+  const nota = reportados.duplicados.length > 0 ? ' (ya contamos una sola vez los reportes duplicados del mandato)' : '';
+  return {
+    recomendacion: {
+      nivel: 'critica',
+      texto: `Tu exógena reporta $${reportados.total.toLocaleString('es-CO')} de ingresos no laborales (arriendos/mandato)${nota} y tu declaración va en $0: confírmalos en la entrevista o en Revisión — la DIAN cruza este dato.`,
+    },
+    penalizacion: 25,
+  };
 }
 
 function reglaDiscrepancias(e: EstadoWizard): Hallazgo | null {

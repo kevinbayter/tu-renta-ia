@@ -41,6 +41,11 @@ export function construirPerfilFiscal(insumos: InsumosPerfil): PerfilFiscal {
     anioGravable: insumos.anioGravable,
     certificadosLaborales: laborales.map(aCertificadoLaboral),
     rentasCapital: armarRentasCapital(insumos.exogena, insumos.certificadosBancarios, respuestas),
+    rentasNoLaborales: {
+      ingresosBrutos: respuestas.ingresosNoLaborales ?? 0,
+      costosYGastos: respuestas.costosNoLaborales ?? 0,
+      retencionFuente: 0,
+    },
     rentasPensiones: armarPensiones(insumos.exogena, insumos.certificados220, respuestas),
     deducciones: armarDeducciones(respuestas),
     comprasFacturaElectronica: comprasFacturaElectronicaConBeneficio(insumos.exogena),

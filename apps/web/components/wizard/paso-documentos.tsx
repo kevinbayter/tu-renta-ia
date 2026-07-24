@@ -1,12 +1,16 @@
 'use client';
 
-import { precargarDesdeExogena } from '@turenta/core';
+import { documentosEsperados, mesesTrabajadosSegunCertificados, precargarDesdeExogena } from '@turenta/core';
 import { useRef, useState } from 'react';
 
+import { ChecklistEsperados } from './checklist-esperados';
 import { TarjetaDocumento } from './tarjeta-documento';
 import { useDeclaracion } from '@/lib/store';
 
+import type { DocumentoEsperado } from '@turenta/core';
 import type { DocumentoProcesado } from '@/lib/tipos';
+
+const ANIO_GRAVABLE = 2025;
 
 type TipoDocumento = DocumentoProcesado['tipo'];
 
@@ -62,6 +66,7 @@ const SLOTS: Slot[] = [
 export function PasoDocumentos() {
   const documentos = useDeclaracion((s) => s.documentos);
   const irAPaso = useDeclaracion((s) => s.irAPaso);
+  const esperados = esperadosSegunExogena(documentos);
   return (
     <section aria-label="Carga de documentos">
       <h2 className="text-2xl font-bold">Sube tus documentos</h2>
@@ -71,7 +76,7 @@ export function PasoDocumentos() {
       </p>
       <div className="mt-5 space-y-4">
         {SLOTS.map((slot) => (
-          <SlotDocumento key={slot.clave} slot={slot} documentos={documentos} />
+          <SlotDocumento key={slot.clave} slot={slot} documentos={documentos} esperados={esperados} />
         ))}
       </div>
       <button
@@ -86,9 +91,18 @@ export function PasoDocumentos() {
   );
 }
 
-function SlotDocumento({ slot, documentos }: { slot: Slot; documentos: DocumentoProcesado[] }) {
+function SlotDocumento({
+  slot,
+  documentos,
+  esperados,
+}: {
+  slot: Slot;
+  documentos: DocumentoProcesado[];
+  esperados: DocumentoEsperado[];
+}) {
   const propios = documentos.filter((d) => slot.tipos.includes(d.tipo));
   const completo = propios.length > 0;
+  const esperadosDelSlot = esperados.filter((e) => slot.tipos.includes(e.tipo));
   return (
     <div className={`rounded-2xl border p-4 ${completo ? 'border-primario/40 bg-primario-suave/40' : 'border-borde bg-card'}`}>
       <div className="flex items-start justify-between gap-3">
@@ -98,6 +112,7 @@ function SlotDocumento({ slot, documentos }: { slot: Slot; documentos: Documento
             {slot.opcional && <span className="ml-1 text-xs font-normal text-texto-suave">opcional</span>}
           </p>
           <p className="mt-0.5 text-xs text-texto-suave">{slot.descripcion}</p>
+          <ChecklistEsperados esperados={esperadosDelSlot} documentos={propios} />
         </div>
         <BotonSubir slot={slot} />
       </div>
@@ -180,13 +195,33 @@ function nombreTipo(tipo: TipoDocumento): string {
   return NOMBRES_TIPO[tipo];
 }
 
-/** Lo reportado en la exógena no se pregunta: se precarga y la entrevista solo lo confirma. */
+/** Lo reportado en los documentos no se pregunta: se precarga y la entrevista solo lo confirma. */
 function aplicarPrecarga(doc: DocumentoProcesado): void {
-  if (doc.tipo !== 'exogena') {
+  if (doc.tipo === 'exogena') {
+    const precarga = precargarDesdeExogena(doc.exogena);
+    useDeclaracion.getState().actualizarRespuestas(precarga.respuestas);
     return;
   }
-  const precarga = precargarDesdeExogena(doc.exogena);
-  useDeclaracion.getState().actualizarRespuestas(precarga.respuestas);
+  precargarMesesDesde220(doc);
+}
+
+/** Los meses trabajados salen del "período de la certificación" de los 220 (unión entre empleadores). */
+function precargarMesesDesde220(doc: DocumentoProcesado): void {
+  if (doc.tipo !== 'certificado_220') {
+    return;
+  }
+  const certificados = useDeclaracion
+    .getState()
+    .documentos.filter((d): d is Extract<DocumentoProcesado, { tipo: 'certificado_220' }> => d.tipo === 'certificado_220');
+  const meses = mesesTrabajadosSegunCertificados(certificados.map((d) => d.datos), ANIO_GRAVABLE);
+  if (meses !== null) {
+    useDeclaracion.getState().actualizarRespuestas({ mesesConRelacionLaboral: meses });
+  }
+}
+
+function esperadosSegunExogena(documentos: DocumentoProcesado[]): DocumentoEsperado[] {
+  const exogena = documentos.find((d) => d.tipo === 'exogena');
+  return exogena?.tipo === 'exogena' ? documentosEsperados(exogena.exogena) : [];
 }
 
 async function subirArchivo(archivo: File): Promise<DocumentoProcesado | { error: string }> {

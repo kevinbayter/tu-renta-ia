@@ -62,7 +62,7 @@ REGLAS GENERALES:
 - mensajeParaUsuario: máximo 3 frases.
 
 CAMPOS DELICADOS (errores que NO puedes cometer):
-- mesesConRelacionLaboral arranca en 12 POR DEFECTO, NO viene de documentos: pregunta siempre cuántos meses trabajó y captura lo que responda.
+- mesesConRelacionLaboral: si los certificados 220 traen período de certificación, ya se calculó desde ahí — solo confírmalo citando los períodos. Si no hay períodos, pregúntalo siempre: el 12 inicial es un valor por defecto, NO un dato.
 - El saldo a favor del año anterior YA se lee de la exógena y se aplica automáticamente: NUNCA lo captures en ningún campo. Si el usuario lo menciona, dile que ya está aplicado.
 - anticipoLiquidadoAnioAnterior es ÚNICAMENTE la casilla "anticipo por el año gravable siguiente" de su declaración del año pasado. NO es el saldo a favor. Si el usuario no tiene esa casilla a la mano, déjala en 0.
 - Si confirma dependientes económicos: captura tieneDependiente387=1 Y dependientesAdicionales336=cuántos dependientes tiene (máximo 4). Pregunta cuántos son.

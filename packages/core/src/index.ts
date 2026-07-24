@@ -24,5 +24,7 @@ export {
   umbralesObligadoADeclarar,
 } from './exogena/interpretar';
 export { precargarDesdeExogena, type PrecargaExogena } from './exogena/precarga';
+export { documentosEsperados, type DocumentoEsperado } from './exogena/documentos-esperados';
+export { mesesTrabajadosSegunCertificados } from './perfil/meses-trabajados';
 export { type RespuestasEntrevista } from './perfil/respuestas';
 export { construirPerfilFiscal, type InsumosPerfil } from './perfil/construir-perfil';

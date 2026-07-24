@@ -54,6 +54,8 @@ export class ExtractorCertificados implements ExtractorDocumentosPort {
     const instruccion = `Documento: certificado de ingresos y retenciones (formulario 220 DIAN).
 OJO con el layout: el texto extraído del PDF puede traer las etiquetas y los valores en bloques
 separados; empareja cada valor con su casilla por el ORDEN del formulario (casillas 36 a 60).
+El encabezado trae el "Período de la certificación: DE ... A ..." — extrae ambas fechas como
+periodoInicio y periodoFin en formato YYYY-MM-DD ("" si no aparecen); indican los meses trabajados.
 Campos → casilla: pagos por salarios (36); pagos por prestaciones sociales (42); otros pagos (46);
 auxilio de cesantía e intereses EFECTIVAMENTE PAGADOS al empleado (47); auxilio de cesantía
 CONSIGNADO al fondo de cesantías (49); total de ingresos brutos (52 = suma de 36 a 51);

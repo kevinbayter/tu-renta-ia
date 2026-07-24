@@ -1,0 +1,19 @@
+# Secretos — nunca commitear
+.env
+.env.local
+.env.*.local
+
+# Dependencias y builds
+node_modules/
+dist/
+build/
+.next/
+.turbo/
+coverage/
+
+# Sistema
+.DS_Store
+*.log
+
+# Documentos personales del caso dorado (contienen PII real)
+docs/

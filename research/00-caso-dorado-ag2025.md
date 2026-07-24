@@ -80,8 +80,8 @@ Nota: patrimonio bruto año anterior (AG2024): 45.053.000. No incluyó saldos me
 2. `reporteExogena2025.xlsx` — Consulta información reportada por terceros DIAN (topes: ingresos 114.456.920, patrimonio 45.053.000, TC 42.112.060, movimientos 143.226.272, compras 44.694.376).
 3. `2026-04-01_Certificado…PTC.pdf` — 220 Servicios Telecom 04/11–31/12/2025: brutos 17.493.000, salud 631.000, pensión 789.000, ret. 396.000, prom. 6 meses 7.885.000.
 4. `certificado-220-empleador-1.pdf` — 220 ANDINA 01/01–09/09/2025: brutos 95.741.000 (salarios 52.926.000, prestaciones 9.275.000, otros 21.849.000, cesantías pagadas 5.535.000, cesantías consignadas 6.156.000), salud 2.126.000, pensión 2.638.000, ret. 386.000, prom. 6 meses 6.403.000.
-5. `Retefuente_…unlocked.pdf` — Nu: saldo 20.902.486, rendimientos 786.273, GMF 2.019, ret. 42.541, componente inflacionario 435.831 (55,43%).
-6. `certificado-bancario.pdf` — Salud Prepagada medicina prepagada: 3.199.749 (vig. hasta 31/10/2025) + 407.793 (vig. 24/11/2025–30/04/2026, no usado por referencia).
+5. `certificado-bancario.pdf` — Nu: saldo 20.902.486, rendimientos 786.273, GMF 2.019, ret. 42.541, componente inflacionario 435.831 (55,43%).
+6. `Retefuente_…unlocked.pdf` — Salud Prepagada medicina prepagada: 3.199.749 (vig. hasta 31/10/2025) + 407.793 (vig. 24/11/2025–30/04/2026, no usado por referencia). ⚠️ Los nombres de archivo están cruzados respecto a su contenido.
 
 ## Preguntas abiertas a validar con la investigación
 

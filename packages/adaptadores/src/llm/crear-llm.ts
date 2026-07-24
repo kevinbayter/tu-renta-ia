@@ -23,5 +23,11 @@ function leerConfig(env: Record<string, string | undefined>): LlmProviderConfig 
   if (!baseUrl || !apiKey || !modelo) {
     throw new Error('Config LLM incompleta: define LLM_BASE_URL, LLM_MODEL y LLM_API_KEY/OPENCODE_API_KEY');
   }
-  return { baseUrl, apiKey, modelo };
+  const esfuerzo = env['LLM_REASONING_EFFORT'];
+  return {
+    baseUrl,
+    apiKey,
+    modelo,
+    ...(esfuerzo ? { parametrosExtra: { reasoning_effort: esfuerzo } } : {}),
+  };
 }

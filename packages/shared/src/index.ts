@@ -1,3 +1,14 @@
-// Esquemas Zod y tipos compartidos entre core, adaptadores y web.
-// Se poblará en Fase 2 (schemas de extracción de documentos).
-export const SHARED_PACKAGE = '@turenta/shared';
+export {
+  clasificacionDocumentoSchema,
+  certificado220Schema,
+  certificadoBancarioSchema,
+  certificadoPrepagadaSchema,
+  jsonSchemas,
+} from './extraccion/certificados';
+export type {
+  ClasificacionDocumento,
+  Certificado220Extraido,
+  CertificadoBancarioExtraido,
+  CertificadoPrepagadaExtraido,
+  CertificadoExtraido,
+} from './extraccion/certificados';

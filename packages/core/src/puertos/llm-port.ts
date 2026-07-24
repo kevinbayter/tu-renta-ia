@@ -9,6 +9,8 @@ export interface LlmPort {
     user: string;
     imagenesBase64?: string[];
     jsonSchema: Record<string, unknown>;
+    /** Esfuerzo de razonamiento: 'low' para tareas mecánicas, 'high' para montos críticos. */
+    esfuerzo?: 'low' | 'medium' | 'high';
   }): Promise<unknown>;
 
   /** Turno conversacional de la entrevista (streaming se maneja en el adaptador web). */

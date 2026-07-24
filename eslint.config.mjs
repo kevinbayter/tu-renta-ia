@@ -123,6 +123,18 @@ const capaCore = {
   },
 };
 
+// Adaptadores que interactúan con librerías externas poco tipadas (patrón un proyecto interno).
+const capaInfraestructura = {
+  files: ['packages/adaptadores/src/**/*.ts'],
+  rules: {
+    '@typescript-eslint/no-unsafe-member-access': 'off',
+    '@typescript-eslint/no-unsafe-assignment': 'off',
+    '@typescript-eslint/no-unsafe-argument': 'off',
+    '@typescript-eslint/no-unsafe-call': 'off',
+    '@typescript-eslint/no-unsafe-return': 'off',
+  },
+};
+
 const archivosTest = {
   files: ['packages/**/test/**/*.ts', 'packages/**/*.test.ts'],
   rules: {
@@ -131,6 +143,9 @@ const archivosTest = {
     'max-depth': 'off',
     'no-console': 'off',
     'sonarjs/no-duplicate-string': 'off',
+    '@typescript-eslint/no-unsafe-member-access': 'off',
+    '@typescript-eslint/no-unsafe-assignment': 'off',
+    '@typescript-eslint/no-unsafe-argument': 'off',
   },
 };
 
@@ -165,5 +180,6 @@ export default tseslint.config(
   },
   capaMotorFiscal,
   capaCore,
+  capaInfraestructura,
   archivosTest,
 );

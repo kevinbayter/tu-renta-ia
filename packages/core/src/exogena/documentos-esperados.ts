@@ -55,7 +55,7 @@ function esperadoDelInformante(filas: FilaExogena[]): DocumentoEsperado | null {
     return { ...base, tipo: 'certificado_220', opcional: false, motivo: 'te reportó pagos laborales en la exógena' };
   }
   if (detalles.some((d) => DETALLE_FINANCIERO.test(d))) {
-    return { ...base, tipo: 'certificado_bancario', opcional: false, motivo: 'reportó saldos o rendimientos financieros tuyos' };
+    return { ...base, tipo: 'certificado_bancario', opcional: true, motivo: 'si no subes su certificado, tomamos sus saldos y rendimientos de la exógena' };
   }
   if (detalles.some((d) => DETALLE_INVERSION.test(d))) {
     return { ...base, tipo: 'certificado_bancario', opcional: true, motivo: 'sus saldos y rendimientos ya se precargaron desde la exógena' };

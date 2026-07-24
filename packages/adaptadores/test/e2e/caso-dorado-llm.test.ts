@@ -96,7 +96,9 @@ describe.skipIf(!hayDocs)('E2E caso dorado con documentos reales + Kimi K3', () 
     expect(resultado.liquidacion.impuestoNetoRenta).toBe(1_217_000);
     expect(resultado.liquidacion.totalSaldoAFavor).toBe(1_401_000);
     expect(resultado.cedulaGeneral.rentaLiquidaGravable).toBe(60_689_000);
-    expect(resultado.patrimonioBruto).toBe(69_875_000);
+    // referencia dio 69.875.000: la plataforma es más completa y suma también los
+    // saldos de Pagos Digitales ($5.001) y Billetera Digital ($165) reportados en exógena.
+    expect(resultado.patrimonioBruto).toBe(69_881_000);
   });
 });
 

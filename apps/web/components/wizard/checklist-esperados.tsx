@@ -1,5 +1,7 @@
 'use client';
 
+import { coincideEntidad, tokensDeEntidad } from '@turenta/core';
+
 import type { DocumentoEsperado } from '@turenta/core';
 import type { DocumentoProcesado } from '@/lib/tipos';
 
@@ -42,15 +44,10 @@ function ChipEsperado({ esperado, cubierto }: { esperado: DocumentoEsperado; cub
   );
 }
 
-const PALABRAS_GENERICAS = new Set([
-  'SA', 'S', 'A', 'DE', 'LA', 'EL', 'Y', 'LTDA', 'SAS', 'COMPANIA', 'FINANCIAMIENTO',
-  'BANCO', 'FIDUCIARIA', 'COLOMBIA', 'COMISIONISTA', 'BOLSA', 'FONDO', 'CAPITAL',
-]);
-
 function nombreCortoEntidad(nombre: string): string {
-  const significativos = tokensSignificativos(nombre);
+  const significativos = tokensDeEntidad(nombre);
   if (significativos.length === 0) {
-    return nombre.split(' ').slice(0, 2).join(' ');
+    return nombre.split(/\s+/).slice(0, 2).join(' ');
   }
   return significativos.slice(0, 2).join(' ');
 }
@@ -64,7 +61,7 @@ function coincideConEsperado(esperado: DocumentoEsperado, doc: DocumentoProcesad
     return coincideNit(esperado.nit, doc.datos.nitRetenedor);
   }
   if (doc.tipo === 'certificado_bancario' && esperado.tipo === 'certificado_bancario') {
-    return coincideNombre(esperado.nombre, doc.datos.entidad);
+    return coincideEntidad(esperado.nombre, doc.datos.entidad);
   }
   return false;
 }
@@ -79,16 +76,3 @@ function coincideNit(a: string, b: string): boolean {
   return digitosA.startsWith(digitosB) || digitosB.startsWith(digitosA);
 }
 
-function coincideNombre(a: string, b: string): boolean {
-  const tokensB = new Set(tokensSignificativos(b));
-  return tokensSignificativos(a).some((token) => tokensB.has(token));
-}
-
-function tokensSignificativos(nombre: string): string[] {
-  return nombre
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toUpperCase()
-    .split(/[^A-Z0-9]+/)
-    .filter((token) => token.length > 1 && !PALABRAS_GENERICAS.has(token));
-}

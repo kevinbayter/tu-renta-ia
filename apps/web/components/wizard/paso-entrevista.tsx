@@ -1,6 +1,10 @@
 'use client';
 
-import { precargarDesdeExogena } from '@turenta/core';
+import {
+  precargarDesdeExogena,
+  rendimientosBancariosSinCertificado,
+  saldosBancariosSinCertificado,
+} from '@turenta/core';
 import { useEffect, useRef, useState } from 'react';
 
 import { useDeclaracion } from '@/lib/store';
@@ -171,10 +175,27 @@ function asignarCampo(parcial: Partial<RespuestasEntrevista>, campo: string, val
 
 function resumirDocumentos(): string {
   const documentos = useDeclaracion.getState().documentos;
-  return documentos
-    .map((d) => resumirDocumento(d))
-    .filter(Boolean)
-    .join('\n');
+  const resumenes = documentos.map((d) => resumirDocumento(d)).filter(Boolean);
+  const bancosSinCertificado = resumirBancosSinCertificado(documentos);
+  return [...resumenes, ...(bancosSinCertificado ? [bancosSinCertificado] : [])].join('\n');
+}
+
+/** Sin certificado bancario, los valores salen de la exógena: el motor ya los cuenta. */
+function resumirBancosSinCertificado(documentos: DocumentoProcesado[]): string | null {
+  const exogena = documentos.find((d) => d.tipo === 'exogena');
+  if (exogena?.tipo !== 'exogena') {
+    return null;
+  }
+  const entidades = documentos
+    .filter((d): d is Extract<DocumentoProcesado, { tipo: 'certificado_bancario' }> => d.tipo === 'certificado_bancario')
+    .map((d) => d.datos.entidad);
+  const saldos = saldosBancariosSinCertificado(exogena.exogena, entidades);
+  const rendimientos = rendimientosBancariosSinCertificado(exogena.exogena, entidades);
+  if (saldos.length === 0 && rendimientos === 0) {
+    return null;
+  }
+  const listaSaldos = saldos.map((s) => `${s.descripcion}: ${formatearPesos(s.valor)}`).join('; ');
+  return `BANCOS SIN CERTIFICADO — valores tomados automáticamente de la exógena y YA CONTADOS (solo informa al usuario, NO los captures como activos ni rendimientos): saldos [${listaSaldos || 'ninguno'}], rendimientos ${formatearPesos(rendimientos)}.`;
 }
 
 function resumirDocumento(d: DocumentoProcesado): string | null {

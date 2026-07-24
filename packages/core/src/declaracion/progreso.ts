@@ -23,21 +23,30 @@ const ORDEN_PASOS = ['exogena', 'documentos', 'entrevista', 'revision', 'resulta
 
 export function progresoDeclaracion(estado: unknown): ProgresoDeclaracion {
   const e = (typeof estado === 'object' && estado !== null ? estado : {}) as EstadoWizard;
-  const documentos = e.documentos ?? [];
-  const hayExogena = documentos.some((d) => d.tipo === 'exogena');
-  const hayCertificados = documentos.some((d) => d.tipo !== 'exogena');
-  const tieneResultado = e.resultado !== null && e.resultado !== undefined;
-  const hitos = [
-    hayExogena,
-    hayCertificados,
-    e.entrevistaCompleta === true,
-    tieneResultado,
-    tieneResultado && e.paso === 'resultado',
-  ];
   const indice = ORDEN_PASOS.indexOf(e.paso ?? 'exogena');
   return {
     paso: (indice >= 0 ? indice : 0) + 1,
     totalPasos: ORDEN_PASOS.length,
-    porcentaje: hitos.filter(Boolean).length * 20,
+    porcentaje: porcentajeDe(e),
   };
+}
+
+/**
+ * El progreso mide el AVANCE del flujo: una declaración que llegó al resultado
+ * está 100% recorrida aunque le falten soportes — la completitud documental la
+ * miden la confiabilidad y las recomendaciones, no esta barra.
+ */
+function porcentajeDe(e: EstadoWizard): number {
+  const documentos = e.documentos ?? [];
+  const tieneResultado = e.resultado !== null && e.resultado !== undefined;
+  if (tieneResultado && e.paso === 'resultado') {
+    return 100;
+  }
+  const hitos = [
+    documentos.some((d) => d.tipo === 'exogena'),
+    documentos.some((d) => d.tipo !== 'exogena'),
+    e.entrevistaCompleta === true,
+    tieneResultado,
+  ];
+  return hitos.filter(Boolean).length * 20;
 }

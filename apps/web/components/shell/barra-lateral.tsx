@@ -2,6 +2,7 @@
 
 import {
   CalendarDays,
+  FileStack,
   FileText,
   Gem,
   LayoutDashboard,
@@ -27,6 +28,7 @@ const NAVEGACION: ItemNav[] = [
   { ruta: '/panel', etiqueta: 'Dashboard', Icono: LayoutDashboard },
   { ruta: '/declaraciones', etiqueta: 'Mis declaraciones', Icono: FileText },
   { ruta: '/clientes', etiqueta: 'Clientes', Icono: Users },
+  { ruta: '/documentos', etiqueta: 'Documentos', Icono: FileStack },
   { ruta: '/ia-fiscal', etiqueta: 'IA Fiscal', Icono: Sparkles, beta: true },
   { ruta: '/calendario', etiqueta: 'Calendario tributario', Icono: CalendarDays },
   { ruta: '/facturacion', etiqueta: 'Facturación', Icono: Receipt },

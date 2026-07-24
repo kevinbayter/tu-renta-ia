@@ -5,6 +5,7 @@ import { useDeclaracion } from '@/lib/store';
 import type { PasoWizard } from '@/lib/store';
 
 const PASOS: { clave: PasoWizard; etiqueta: string }[] = [
+  { clave: 'exogena', etiqueta: 'Exógena' },
   { clave: 'documentos', etiqueta: 'Documentos' },
   { clave: 'entrevista', etiqueta: 'Entrevista' },
   { clave: 'revision', etiqueta: 'Revisión' },

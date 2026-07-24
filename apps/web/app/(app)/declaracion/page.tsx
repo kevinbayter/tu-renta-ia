@@ -3,6 +3,7 @@
 import { BarraSesion } from '@/components/wizard/barra-sesion';
 import { PasoDocumentos } from '@/components/wizard/paso-documentos';
 import { PasoEntrevista } from '@/components/wizard/paso-entrevista';
+import { PasoExogena } from '@/components/wizard/paso-exogena';
 import { PasoResultado } from '@/components/wizard/paso-resultado';
 import { PasoRevision } from '@/components/wizard/paso-revision';
 import { Stepper } from '@/components/wizard/stepper';
@@ -15,6 +16,7 @@ export default function PaginaDeclaracion() {
       <BarraSesion />
       <Stepper />
       <div className="mt-6 flex-1">
+        {paso === 'exogena' && <PasoExogena />}
         {paso === 'documentos' && <PasoDocumentos />}
         {paso === 'entrevista' && <PasoEntrevista />}
         {paso === 'revision' && <PasoRevision />}

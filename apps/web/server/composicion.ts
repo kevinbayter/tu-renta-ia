@@ -1,4 +1,4 @@
-import { crearLlmDesdeEnv, EmailConsolaAdapter, ExtractorCertificados, RepositorioPrisma } from '@turenta/adaptadores';
+import { crearEmailDesdeEnv, crearLlmDesdeEnv, ExtractorCertificados, RepositorioPrisma } from '@turenta/adaptadores';
 
 import type { EmailPort, LlmPort, RepositorioPort } from '@turenta/core';
 
@@ -32,6 +32,6 @@ export function obtenerRepositorio(): RepositorioPort {
 }
 
 export function obtenerEmail(): EmailPort {
-  emailSingleton ??= new EmailConsolaAdapter();
+  emailSingleton ??= crearEmailDesdeEnv(process.env);
   return emailSingleton;
 }

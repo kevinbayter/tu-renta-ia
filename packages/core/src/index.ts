@@ -12,7 +12,15 @@ export {
   type PerfilUsuario,
   type TitularDeclaracion,
   type DeclaracionResumen,
+  type PersonaAdministrada,
+  type EventoActividad,
+  type NotificacionUsuario,
+  type NotificacionNueva,
 } from './puertos/repositorio-port';
+export {
+  notificacionesDeVencimiento,
+  type VencimientoNotificable,
+} from './notificaciones/vencimientos';
 export { type FilaExogena, type TopesExogena, type ExogenaParseada } from './exogena/tipos';
 export {
   saldoAFavorAnterior,

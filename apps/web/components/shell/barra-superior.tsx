@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { Campana } from './campana';
 import { Avatar } from '@/components/ui/avatar';
 
 import type { SesionCliente } from '@/lib/sesion-cliente';
@@ -25,6 +26,7 @@ export function BarraSuperior({
       </button>
       <BotonBusqueda alAbrir={alAbrirBusqueda} />
       <span className="flex-1" />
+      {sesion.fase === 'activa' && <Campana />}
       <ZonaUsuario sesion={sesion} />
     </header>
   );

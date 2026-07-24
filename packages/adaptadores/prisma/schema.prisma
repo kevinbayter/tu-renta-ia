@@ -8,14 +8,61 @@ datasource db {
 }
 
 model Usuario {
-  id             String        @id @default(uuid())
-  email          String        @unique
-  nombres        String        @default("")
-  apellidos      String        @default("")
-  identificacion String        @default("")
-  creadoEn       DateTime      @default(now())
+  id             String         @id @default(uuid())
+  email          String         @unique
+  nombres        String         @default("")
+  apellidos      String         @default("")
+  identificacion String         @default("")
+  creadoEn       DateTime       @default(now())
   declaraciones  Declaracion[]
   codigosOtp     CodigoOtp[]
+  personas       Persona[]
+  actividades    Actividad[]
+  notificaciones Notificacion[]
+}
+
+/// Persona administrada (tercero cuyas declaraciones elabora el usuario)
+model Persona {
+  id             String   @id @default(uuid())
+  usuarioId      String
+  usuario        Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  nombres        String
+  apellidos      String
+  identificacion String
+  email          String   @default("")
+  telefono       String   @default("")
+  creadaEn       DateTime @default(now())
+
+  @@unique([usuarioId, identificacion])
+}
+
+/// Registro de eventos reales del usuario (para "Actividad reciente")
+model Actividad {
+  id            String   @id @default(uuid())
+  usuarioId     String
+  usuario       Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  tipo          String
+  descripcion   String
+  declaracionId String   @default("")
+  creadaEn      DateTime @default(now())
+
+  @@index([usuarioId, creadaEn])
+}
+
+/// Notificación in-app; claveIdempotencia evita duplicados al re-evaluar reglas
+model Notificacion {
+  id                String    @id @default(uuid())
+  usuarioId         String
+  usuario           Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  tipo              String
+  titulo            String
+  cuerpo            String
+  claveIdempotencia String    @unique
+  emailEnviado      Boolean   @default(false)
+  leidaEn           DateTime?
+  creadaEn          DateTime  @default(now())
+
+  @@index([usuarioId, creadaEn])
 }
 
 model CodigoOtp {

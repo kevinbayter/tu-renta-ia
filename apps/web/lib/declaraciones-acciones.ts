@@ -43,3 +43,14 @@ export function iniciarDeclaracionPropia(perfil: PerfilUsuario, declaracionId: s
 export function idDeclaracionPropia(lista: DeclaracionResumen[], anioGravable: number): string | null {
   return lista.find((d) => d.titular.esPropia && d.anioGravable === anioGravable)?.id ?? null;
 }
+
+/** Prepara el store para una declaración nueva de un tercero (persona administrada). */
+export function iniciarDeclaracionDeTercero(
+  titular: { nombres: string; apellidos: string; identificacion: string },
+  declaracionId: string | null,
+): void {
+  const estado = useDeclaracion.getState();
+  estado.reiniciar();
+  estado.actualizarRespuestas(RESPUESTAS_INICIALES);
+  estado.establecerTitular(titular, false, declaracionId);
+}

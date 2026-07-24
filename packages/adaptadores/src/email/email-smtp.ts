@@ -38,6 +38,10 @@ export class EmailSmtpAdapter implements EmailPort {
       html: cuerpoHtml(codigo),
     });
   }
+
+  async enviarAviso(email: string, asunto: string, mensaje: string): Promise<void> {
+    await this.transporter.sendMail({ from: this.config.from, to: email, subject: asunto, text: mensaje });
+  }
 }
 
 function cuerpoTexto(codigo: string): string {

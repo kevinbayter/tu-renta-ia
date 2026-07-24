@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { useDeclaracion } from '@/lib/store';
+import { iniciarDeclaracionDeTercero } from '@/lib/declaraciones-acciones';
 
 /** Modal para iniciar la declaración de otra persona (tercero). */
 export function NuevaDeTercero({ alCerrar }: { alCerrar: () => void }) {
@@ -12,9 +12,7 @@ export function NuevaDeTercero({ alCerrar }: { alCerrar: () => void }) {
   const listo = datos.nombres.trim() && datos.apellidos.trim() && datos.identificacion.length >= 5;
 
   const iniciar = () => {
-    const store = useDeclaracion.getState();
-    store.reiniciar();
-    store.establecerTitular(datos, false, null);
+    iniciarDeclaracionDeTercero(datos, null);
     router.push('/declaracion');
   };
 

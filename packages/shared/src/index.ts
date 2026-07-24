@@ -12,3 +12,9 @@ export type {
   CertificadoPrepagadaExtraido,
   CertificadoExtraido,
 } from './extraccion/certificados';
+export {
+  CAMPOS_ENTREVISTA,
+  turnoEntrevistaSchema,
+  jsonSchemaTurnoEntrevista,
+} from './entrevista/turno';
+export type { TurnoEntrevista, CampoEntrevista } from './entrevista/turno';

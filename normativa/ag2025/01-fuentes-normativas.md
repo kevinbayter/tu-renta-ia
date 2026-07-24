@@ -1,0 +1,37 @@
+# AG2025 — Fuentes normativas aplicables
+
+Marco: el año gravable 2025 (declarado en 2026) se liquida con el Estatuto Tributario tal como quedó tras la **Ley 2277 de 2022** (misma normativa sustantiva de AG2023/AG2024).
+
+## Normas vigentes que aplican
+
+| Norma                                                                                                                                   | Qué define                                                                                                                                       | Estado                                                                                                                                                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ley 2277 de 2022** (reforma tributaria)                                                                                               | Límite 40%/1.340 UVT, 25% exento hasta 790 UVT, dependientes 72 UVT (art. 336), 1% factura electrónica (240 UVT), tarifas dividendos, GO 15%/20% | Vigente                                                                                                                                                                                 |
+| **Estatuto Tributario** arts. 10, 55-56, 119, 126-1/126-4, 188, 206, 241, 254-1, 267-277, 330-341, 387, 577, 592-594, 596, 631, 807-809 | Residencia, INCRNGO, deducciones, exentas, tarifas, patrimonio, cédulas, redondeo, obligados, firma contador, exógena, anticipo                  | Vigente                                                                                                                                                                                 |
+| **Resolución DIAN 000193 de 04-dic-2024**                                                                                               | UVT 2025 = **$49.799**                                                                                                                           | Vigente                                                                                                                                                                                 |
+| **Resolución DIAN 000238 de 15-dic-2025**                                                                                               | UVT 2026 = **$52.374** (sanciones/trámites liquidados en 2026)                                                                                   | Vigente                                                                                                                                                                                 |
+| **Resolución DIAN 000044 de 14-mar-2024** (+ Res. 000120 de 31-jul-2024)                                                                | Formulario 210 "AG2023 y siguientes" + instructivo (renglones 40/52/68/85 del límite)                                                            | Vigente                                                                                                                                                                                 |
+| **Decreto 2229 de 2023** (DUT 1625/2016 art. 1.6.1.13.2.15)                                                                             | Calendario: vencimientos 12-ago a 26-oct-2026 por dos últimos dígitos                                                                            | Vigente                                                                                                                                                                                 |
+| **Decreto componente inflacionario AG2025**                                                                                             | **55,43%** rendimientos no gravados / 28,35% gastos no deducibles                                                                                | ⚠️ En proyecto de decreto a abr-2026 (comentarios hasta 09-may-2026). El 55,43% coincide con certificados bancarios (Nu). **Verificar número del decreto definitivo antes de ago-2026** |
+| **Ley 2010 de 2019**                                                                                                                    | Renta presuntiva 0% desde AG2021                                                                                                                 | Vigente                                                                                                                                                                                 |
+
+## Normas que NO aplican al AG2025 (verificado 2026-07-23)
+
+| Norma                                                                                                        | Por qué no aplica                                 |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| "Ley de Financiamiento 2025" (radicada sep-2025: 1%→5% factura electrónica, eliminación 72 UVT dependientes) | **Hundida/archivada por el Congreso en dic-2025** |
+| Decreto 1390 de dic-2025 (emergencia económica)                                                              | **Inexequible** — Sentencia C-075 de 2026         |
+| Decreto legislativo 1474 de 29-dic-2025                                                                      | **Inexequible** — Corte Constitucional abr-2026   |
+
+## Reglas de interpretación adoptadas por el motor (calibradas contra caso real referencia)
+
+1. **Redondeo (art. 577 E.T.)**: valores del formulario al múltiplo de mil más cercano; el motor aplica redondeo por casilla al final, cálculo interno en pesos enteros sin redondear.
+2. **Límite 40%/1.340 UVT**: base = ingresos totales cédula general − INCRNGO totales (Res. 000120/2024); asignación del cupo secuencial: primero rentas de trabajo, remanente a capital, luego no laborales (comportamiento observado en referencia: límite de capital = 0 cuando trabajo agota el cupo).
+3. **Deducción dependientes 10% (art. 387)**: tope 32 UVT × **meses con relación laboral** (referencia prorratea por meses trabajados).
+4. **Dependiente adicional 72 UVT (art. 336-3)**: valor fijo anual por dependiente (sin prorrateo mensual), hasta 4, fuera del límite del 40%.
+5. **Cesantías (art. 206-4)**: pagadas + consignadas al fondo son ingreso del año; % exento según ingreso mensual promedio últimos 6 meses (tabla 350→650 UVT). Se toma el promedio certificado por cada empleador (casilla 59 del 220) por separado.
+6. **Componente inflacionario**: aplica a rendimientos financieros bancarios y de FICs; **no** aplica a rendimientos de cesantías.
+7. **Medicina prepagada**: tope 16 UVT/mes; se toman los pagos del año certificados cuya vigencia corresponda al año gravable.
+8. **Anticipo (arts. 807-809)**: 25/50/75% según número de declaración; procedimiento 2 (promedio 2 años) disponible desde la 2.ª; se elige el menor; nunca negativo.
+
+Fuentes detalladas con URLs: [`research/01-normativa-renta-ag2025.md`](../../research/01-normativa-renta-ag2025.md).

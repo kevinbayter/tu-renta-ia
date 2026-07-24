@@ -17,3 +17,6 @@ coverage/
 
 # Documentos personales del caso dorado (contienen PII real)
 docs/
+
+# Artefactos de pruebas de navegador
+.playwright-mcp/

@@ -1,47 +1,64 @@
-import { IconoCheck, IconoCircular, TituloSeccion } from './iconos';
+import { CloudUpload, FileCheck2, FolderOpen, MessagesSquare } from 'lucide-react';
+
+import { IconoCircular, TituloSeccion } from './iconos';
 
 const PASOS = [
   {
-    icono: 'documento',
-    titulo: 'Sube tus documentos',
-    detalle:
-      'Tu exógena de la DIAN y tus certificados (220, bancarios, medicina prepagada). La IA los lee y te muestra cada valor extraído para que lo confirmes.',
+    Icono: CloudUpload,
+    titulo: 'Sube tu exógena',
+    detalle: 'Con el Excel de la DIAN te decimos exactamente qué documentos necesitas y precargamos tus datos.',
   },
   {
-    icono: 'diana',
-    titulo: 'Confirma y completa',
-    detalle:
-      'Lo que ya está en tus documentos no se vuelve a preguntar: solo confirmas. Una conversación corta completa lo que solo tú sabes, como tus dependientes.',
+    Icono: FolderOpen,
+    titulo: 'Sube tus certificados',
+    detalle: 'La IA lee cada uno dos veces y tú confirmas los valores extraídos.',
   },
   {
-    icono: 'documento',
-    titulo: 'Recibe tu borrador del 210',
-    detalle:
-      'Resultado explicado paso a paso, PDF del borrador, y guía personalizada con tu fecha límite para presentarlo en la DIAN.',
+    Icono: MessagesSquare,
+    titulo: 'Confirma en la entrevista',
+    detalle: 'Solo lo que falta: dependientes, deducciones y tu patrimonio, en lenguaje normal.',
   },
-] as const;
+  {
+    Icono: FileCheck2,
+    titulo: 'Descarga tu borrador 210',
+    detalle: 'En el formato oficial de la DIAN, con guía paso a paso para presentarlo tú mismo en el portal.',
+  },
+];
 
 export function ComoFunciona() {
   return (
     <section id="como" className="mx-auto w-full max-w-6xl px-5 py-16">
-      <TituloSeccion>Así de simple</TituloSeccion>
-      <div className="mt-12 grid gap-8 sm:grid-cols-3">
+      <div className="text-center">
+        <span className="inline-block rounded-full bg-primario-suave px-3 py-1 text-xs font-semibold text-primario">
+          Cómo funciona
+        </span>
+        <h2 className="mt-3 text-3xl font-bold tracking-tight">
+          Declarar nunca fue tan <span className="text-primario">fácil</span>
+        </h2>
+      </div>
+      <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
         {PASOS.map((paso, i) => (
-          <div key={paso.titulo} className="relative text-center">
-            <div className="flex justify-center">
-              <span className="relative">
-                <IconoCircular tipo={paso.icono} />
-                <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-primario text-xs font-bold text-white">
-                  {i + 1}
-                </span>
-              </span>
-            </div>
-            <h3 className="mt-4 font-semibold">{paso.titulo}</h3>
-            <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-texto-suave">{paso.detalle}</p>
-          </div>
+          <PasoLandingItem key={paso.titulo} paso={paso} numero={i + 1} />
         ))}
       </div>
     </section>
+  );
+}
+
+function PasoLandingItem({ paso, numero }: { paso: (typeof PASOS)[number]; numero: number }) {
+  return (
+    <div className="relative text-center">
+      <div className="flex justify-center">
+        <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-primario-suave text-primario">
+          <paso.Icono size={26} aria-hidden />
+          <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-primario text-xs font-bold text-white">
+            {numero}
+          </span>
+        </span>
+      </div>
+      <h3 className="mt-4 font-semibold">{paso.titulo}</h3>
+      <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-texto-suave">{paso.detalle}</p>
+    </div>
   );
 }
 
@@ -72,6 +89,7 @@ const DIFERENCIALES = [
   },
 ] as const;
 
+/** En el lugar donde otros ponen reseñas inventadas, nosotros ponemos hechos. */
 export function PorQueConfiar() {
   return (
     <section id="confianza" className="border-y border-borde bg-card">
@@ -88,74 +106,5 @@ export function PorQueConfiar() {
         </div>
       </div>
     </section>
-  );
-}
-
-const RECIBES = [
-  'Borrador del formulario 210 en PDF, listo para transcribir',
-  'Tu fecha límite exacta según los dígitos de tu cédula',
-  'Guía paso a paso para presentar en el portal de la DIAN',
-  'Desglose completo: qué deducciones se aplicaron y por qué',
-];
-
-const GUIA_DIAN = [
-  'Inicia sesión en el portal de la DIAN con tu usuario.',
-  'Ve a: Presentación de Información → Declaración de Renta.',
-  'Selecciona el formulario 210.',
-  'Transcribe los valores de tu borrador.',
-  'Revisa y envía tu declaración.',
-];
-
-export function LoQueRecibes() {
-  return (
-    <section id="recibes" className="mx-auto w-full max-w-6xl px-5 py-16">
-      <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
-        <div>
-          <TituloSeccionIzquierda />
-          <ul className="mt-8 space-y-3">
-            {RECIBES.map((item) => (
-              <li key={item} className="flex items-start gap-2 text-sm">
-                <IconoCheck />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <GuiaPresentacion />
-      </div>
-    </section>
-  );
-}
-
-function TituloSeccionIzquierda() {
-  return (
-    <div>
-      <h2 className="text-3xl font-bold tracking-tight">Lo que recibes</h2>
-      <span className="mt-3 block h-1 w-12 rounded-full bg-primario" />
-    </div>
-  );
-}
-
-function GuiaPresentacion() {
-  return (
-    <div className="rounded-2xl border border-borde bg-card p-6">
-      <p className="font-semibold">Guía para presentar en la DIAN</p>
-      <ol className="mt-4 space-y-2.5">
-        {GUIA_DIAN.map((paso, i) => (
-          <li key={paso} className="flex gap-3 text-sm text-texto-suave">
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primario-suave text-xs font-bold text-primario">
-              {i + 1}
-            </span>
-            {paso}
-          </li>
-        ))}
-      </ol>
-      <p className="mt-5 flex items-center gap-2 rounded-xl bg-primario-suave px-4 py-3 text-sm">
-        <span className="text-primario">📅</span>
-        <span>
-          Tu fecha límite se calcula automáticamente <strong className="text-primario">según los dígitos de tu cédula</strong>
-        </span>
-      </p>
-    </div>
   );
 }

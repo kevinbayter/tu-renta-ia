@@ -1,30 +1,7 @@
+import { CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
 import { LogoMarca } from './iconos';
-
-export function BandaEjemplo() {
-  return (
-    <section className="mx-auto w-full max-w-6xl px-5 pb-4">
-      <div className="grid gap-6 rounded-3xl bg-marino p-8 text-white sm:grid-cols-2 sm:items-center">
-        <div className="flex items-center gap-4">
-          <span className="hidden h-14 w-14 items-center justify-center rounded-full border border-marino-borde text-2xl sm:flex" aria-hidden>
-            💰
-          </span>
-          <div>
-            <p className="text-sm text-marino-texto">Motor de cálculo verificado</p>
-            <p className="text-3xl font-bold text-acento">Peso a peso</p>
-            <p className="text-sm text-marino-texto">
-              validado contra declaraciones reales presentadas ante la DIAN, casilla por casilla
-            </p>
-          </div>
-        </div>
-        <p className="text-lg leading-snug sm:border-l sm:border-marino-borde sm:pl-6">
-          Más de la mitad de los declarantes en Colombia tiene saldo a favor y no lo sabe.
-        </p>
-      </div>
-    </section>
-  );
-}
 
 export const PREGUNTAS = [
   {
@@ -45,7 +22,7 @@ export const PREGUNTAS = [
   {
     pregunta: '¿Y si mi caso es complejo?',
     respuesta:
-      'Hoy cubrimos empleados e ingresos de inversiones (la mayoría de los declarantes). Si tu caso excede el alcance — pensiones, dividendos, activos en el exterior — te lo decimos de frente en vez de improvisar.',
+      'Hoy cubrimos empleados, pensionados, arriendos e ingresos de inversiones (la mayoría de los declarantes). Si tu caso excede el alcance — dividendos, activos en el exterior — te lo decimos de frente en vez de improvisar.',
   },
 ];
 
@@ -69,51 +46,102 @@ export function PreguntasFrecuentes() {
   );
 }
 
-export function CierreCta() {
+const GARANTIAS = ['Gratis durante la beta', 'Sin tarjeta de crédito', 'Elimina tu cuenta y tus datos cuando quieras'];
+
+export function CtaFinal() {
   return (
     <section className="mx-auto w-full max-w-6xl px-5 pb-16">
-      <div className="flex flex-col items-center justify-between gap-6 rounded-3xl border border-primario/20 bg-primario-suave p-8 sm:flex-row">
-        <div className="flex items-center gap-4">
-          <span className="hidden h-12 w-12 items-center justify-center rounded-full bg-primario/10 text-2xl sm:flex" aria-hidden>
-            🛡️
-          </span>
-          <div>
-            <h2 className="text-xl font-bold">Empieza hoy, sin compromiso</h2>
-            <p className="mt-1 max-w-md text-sm text-texto-suave">
-              Sube tu exógena y mira tu resultado. Tu avance se guarda en la nube si creas tu cuenta con solo tu correo.
-            </p>
+      <div className="grid items-center gap-8 rounded-3xl border border-primario/20 bg-primario-suave/60 p-8 sm:p-10 lg:grid-cols-[1fr_auto]">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">¿Listo para declarar sin enredos?</h2>
+          <p className="mt-2 max-w-md text-sm leading-relaxed text-texto-suave">
+            Sube tu exógena y mira tu resultado explicado paso a paso. Tu avance se guarda con solo tu correo.
+          </p>
+          <div className="mt-5 flex flex-wrap items-center gap-4">
+            <Link
+              href="/declaracion"
+              className="rounded-2xl bg-primario px-6 py-3.5 font-semibold text-white transition hover:bg-primario-oscuro"
+            >
+              Comenzar gratis ahora →
+            </Link>
           </div>
+          <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
+            {GARANTIAS.map((garantia) => (
+              <li key={garantia} className="flex items-center gap-1.5 text-xs text-texto-suave">
+                <CheckCircle2 size={13} className="shrink-0 text-primario" aria-hidden />
+                {garantia}
+              </li>
+            ))}
+          </ul>
         </div>
-        <Link
-          href="/declaracion"
-          className="inline-flex h-13 shrink-0 items-center justify-center gap-2 rounded-2xl bg-primario px-7 py-3 font-semibold text-white transition hover:bg-primario-oscuro"
-        >
-          Calcular mi declaración <span aria-hidden>→</span>
-        </Link>
+        <span className="hidden text-8xl lg:block" aria-hidden>
+          🤖
+        </span>
       </div>
     </section>
   );
 }
 
+const COLUMNAS_PIE: { titulo: string; enlaces: { texto: string; href: string }[] }[] = [
+  {
+    titulo: 'Producto',
+    enlaces: [
+      { texto: 'Características', href: '/#caracteristicas' },
+      { texto: 'Cómo funciona', href: '/#como' },
+      { texto: 'Precios', href: '/#precios' },
+      { texto: 'IA Fiscal', href: '/ia-fiscal' },
+    ],
+  },
+  {
+    titulo: 'Recursos',
+    enlaces: [
+      { texto: 'Centro de ayuda', href: '/ayuda' },
+      { texto: 'Calendario tributario', href: '/calendario' },
+      { texto: 'Preguntas frecuentes', href: '/#faq' },
+    ],
+  },
+  {
+    titulo: 'Legal',
+    enlaces: [
+      { texto: 'Términos y condiciones', href: '/terminos' },
+      { texto: 'Política de privacidad', href: '/privacidad' },
+      { texto: 'Iniciar sesión', href: '/ingresar' },
+    ],
+  },
+];
+
 export function PiePagina() {
   return (
-    <footer className="bg-marino text-marino-texto">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-5 py-10 sm:flex-row sm:items-center sm:justify-between">
+    <footer className="border-t border-borde bg-card">
+      <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-12 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
         <div>
-          <LogoMarca claro />
-          <p className="mt-2 text-xs">Herramienta de autopreparación asistida · No sustituye asesoría profesional</p>
+          <LogoMarca />
+          <p className="mt-3 max-w-xs text-sm leading-relaxed text-texto-suave">
+            La plataforma de IA que te acompaña a preparar tu declaración de renta en Colombia.
+          </p>
         </div>
-        <nav className="flex flex-wrap gap-4 text-xs">
-          <Link href="/terminos" className="transition hover:text-white">
-            Términos y Condiciones
-          </Link>
-          <Link href="/privacidad" className="transition hover:text-white">
-            Privacidad
-          </Link>
-          <Link href="/ingresar" className="transition hover:text-white">
-            Ingresar
-          </Link>
-        </nav>
+        {COLUMNAS_PIE.map((columna) => (
+          <nav key={columna.titulo} aria-label={columna.titulo}>
+            <p className="text-sm font-semibold">{columna.titulo}</p>
+            <ul className="mt-3 space-y-2">
+              {columna.enlaces.map((enlace) => (
+                <li key={enlace.href}>
+                  <Link href={enlace.href} className="text-sm text-texto-suave transition hover:text-foreground">
+                    {enlace.texto}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))}
+      </div>
+      <div className="border-t border-borde">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-5 text-xs text-texto-suave">
+          <p>© 2026 TuRenta AI · Herramienta de autopreparación asistida — no sustituye asesoría profesional.</p>
+          <p>
+            Hecho con <span aria-hidden>💚</span> en Colombia
+          </p>
+        </div>
       </div>
     </footer>
   );

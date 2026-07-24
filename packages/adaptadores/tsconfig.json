@@ -5,5 +5,5 @@
     "lib": ["ES2022", "DOM"],
     "types": []
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts", "vitest.config.ts", "vitest.e2e.config.ts"]
 }

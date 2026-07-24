@@ -9,6 +9,10 @@ import type {
   CertificadoBancarioExtraido,
 } from '@turenta/shared';
 
+import {
+  rendimientosBancariosSinCertificado,
+  saldosBancariosSinCertificado,
+} from '../exogena/bancos-sin-certificado';
 import { comprasFacturaElectronicaConBeneficio, saldoAFavorAnterior } from '../exogena/interpretar';
 
 import type { RespuestasEntrevista } from './respuestas';
@@ -32,10 +36,10 @@ export function construirPerfilFiscal(insumos: InsumosPerfil): PerfilFiscal {
   return {
     anioGravable: insumos.anioGravable,
     certificadosLaborales: insumos.certificados220.map(aCertificadoLaboral),
-    rentasCapital: armarRentasCapital(insumos.certificadosBancarios, respuestas),
+    rentasCapital: armarRentasCapital(insumos.exogena, insumos.certificadosBancarios, respuestas),
     deducciones: armarDeducciones(respuestas),
     comprasFacturaElectronica: comprasFacturaElectronicaConBeneficio(insumos.exogena),
-    patrimonio: armarPatrimonio(insumos.certificadosBancarios, respuestas),
+    patrimonio: armarPatrimonio(insumos.exogena, insumos.certificadosBancarios, respuestas),
     historial: armarHistorial(insumos.exogena, respuestas),
   };
 }
@@ -54,13 +58,15 @@ function aCertificadoLaboral(cert: Certificado220Extraido): CertificadoLaboral {
 }
 
 function armarRentasCapital(
+  exogena: ExogenaParseada,
   bancarios: CertificadoBancarioExtraido[],
   r: RespuestasEntrevista,
 ): RentasCapitalInput {
   const rendimientosBancarios = bancarios.reduce((acc, b) => acc + b.rendimientos, 0);
   const retenciones = bancarios.reduce((acc, b) => acc + b.retencionFuente, 0);
+  const sinCertificado = rendimientosBancariosSinCertificado(exogena, bancarios.map((b) => b.entidad));
   return {
-    rendimientosConComponente: rendimientosBancarios + r.rendimientosAdicionalesConComponente,
+    rendimientosConComponente: rendimientosBancarios + sinCertificado + r.rendimientosAdicionalesConComponente,
     rendimientosSinComponente: r.rendimientosSinComponente,
     gmfPagado: r.gmfTotalPagado,
     retencionFuente: retenciones,
@@ -79,14 +85,16 @@ function armarDeducciones(r: RespuestasEntrevista): PerfilFiscal['deducciones'] 
 }
 
 function armarPatrimonio(
+  exogena: ExogenaParseada,
   bancarios: CertificadoBancarioExtraido[],
   r: RespuestasEntrevista,
 ): PerfilFiscal['patrimonio'] {
   const saldosBancarios: ActivoPatrimonial[] = bancarios
     .filter((b) => b.saldoCuentas > 0)
     .map((b) => ({ descripcion: `Saldo ${b.entidad}`, valor: b.saldoCuentas }));
+  const sinCertificado = saldosBancariosSinCertificado(exogena, bancarios.map((b) => b.entidad));
   return {
-    activos: [...saldosBancarios, ...r.activosManuales],
+    activos: [...saldosBancarios, ...sinCertificado, ...r.activosManuales],
     deudas: r.deudas,
   };
 }

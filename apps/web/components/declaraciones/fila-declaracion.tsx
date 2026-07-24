@@ -4,6 +4,7 @@ import { fechaVencimiento, obtenerConstantes } from '@turenta/motor-fiscal';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { DialogoConfirmar } from '@/components/ui/dialogo-confirmar';
 import { useDeclaracion } from '@/lib/store';
 import { formatearPesos } from '@/lib/tipos';
 
@@ -12,6 +13,7 @@ import type { DeclaracionResumen } from '@turenta/core';
 export function FilaDeclaracion({ declaracion }: { declaracion: DeclaracionResumen }) {
   const router = useRouter();
   const [ocupado, setOcupado] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
 
   const continuar = async () => {
     setOcupado(true);
@@ -23,9 +25,6 @@ export function FilaDeclaracion({ declaracion }: { declaracion: DeclaracionResum
   };
 
   const eliminar = async () => {
-    if (!window.confirm(`¿Eliminar la declaración ${String(declaracion.anioGravable)} de ${declaracion.titular.nombres}?`)) {
-      return;
-    }
     await fetch(`/api/declaraciones?id=${declaracion.id}`, { method: 'DELETE' }).catch(() => null);
     window.location.reload();
   };
@@ -56,12 +55,21 @@ export function FilaDeclaracion({ declaracion }: { declaracion: DeclaracionResum
         </button>
         <button
           type="button"
-          onClick={() => void eliminar()}
+          onClick={() => setConfirmando(true)}
           aria-label="Eliminar declaración"
           className="ml-2 rounded-xl px-2 py-1.5 text-xs text-texto-suave hover:text-error"
         >
           🗑
         </button>
+        {confirmando && (
+          <DialogoConfirmar
+            titulo="¿Eliminar esta declaración?"
+            descripcion={`Se borrará la declaración ${String(declaracion.anioGravable)} de ${declaracion.titular.nombres} ${declaracion.titular.apellidos} con todo su avance. Esta acción no se puede deshacer.`}
+            textoConfirmar="Sí, eliminar"
+            alConfirmar={() => void eliminar()}
+            alCancelar={() => setConfirmando(false)}
+          />
+        )}
       </td>
     </tr>
   );

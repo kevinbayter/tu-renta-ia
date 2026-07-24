@@ -5,8 +5,10 @@ import { useRef, useState } from 'react';
 
 import { ChecklistEsperados } from './checklist-esperados';
 import { TarjetaDocumento } from './tarjeta-documento';
+import { ValoresManuales } from './valores-manuales';
 import { useDeclaracion } from '@/lib/store';
 
+import type { CampoManual } from './valores-manuales';
 import type { DocumentoEsperado } from '@turenta/core';
 import type { DocumentoProcesado } from '@/lib/tipos';
 
@@ -21,6 +23,8 @@ interface Slot {
   accept: string;
   tipos: TipoDocumento[];
   opcional?: boolean;
+  /** Campos de una sola cifra que se pueden digitar si no hay certificado. */
+  camposManuales?: CampoManual[];
 }
 
 const SLOTS: Slot[] = [
@@ -52,6 +56,7 @@ const SLOTS: Slot[] = [
     accept: '.pdf',
     tipos: ['medicina_prepagada'],
     opcional: true,
+    camposManuales: [{ campo: 'pagosMedicinaPrepagadaConfirmados', etiqueta: 'Total pagado en 2025 ($)' }],
   },
   {
     clave: 'otros',
@@ -60,6 +65,10 @@ const SLOTS: Slot[] = [
     accept: '.pdf,.xlsx,.xls',
     tipos: ['otro'],
     opcional: true,
+    camposManuales: [
+      { campo: 'interesesVivienda', etiqueta: 'Intereses de crédito de vivienda 2025 ($)' },
+      { campo: 'interesesIcetex', etiqueta: 'Intereses ICETEX 2025 ($)' },
+    ],
   },
 ];
 
@@ -100,8 +109,10 @@ function SlotDocumento({
   documentos: DocumentoProcesado[];
   esperados: DocumentoEsperado[];
 }) {
+  const respuestas = useDeclaracion((s) => s.respuestas);
   const propios = documentos.filter((d) => slot.tipos.includes(d.tipo));
-  const completo = propios.length > 0;
+  const manualDiligenciado = (slot.camposManuales ?? []).some(({ campo }) => respuestas[campo] > 0);
+  const completo = propios.length > 0 || manualDiligenciado;
   const esperadosDelSlot = esperados.filter((e) => slot.tipos.includes(e.tipo));
   return (
     <div className={`rounded-2xl border p-4 ${completo ? 'border-primario/40 bg-primario-suave/40' : 'border-borde bg-card'}`}>
@@ -113,6 +124,7 @@ function SlotDocumento({
           </p>
           <p className="mt-0.5 text-xs text-texto-suave">{slot.descripcion}</p>
           <ChecklistEsperados esperados={esperadosDelSlot} documentos={propios} />
+          {slot.camposManuales && <ValoresManuales campos={slot.camposManuales} />}
         </div>
         <BotonSubir slot={slot} />
       </div>

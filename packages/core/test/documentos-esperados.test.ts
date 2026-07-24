@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import {
+  rendimientosBancariosSinCertificado,
+  saldosBancariosSinCertificado,
+} from '../src/exogena/bancos-sin-certificado';
 import { documentosEsperados } from '../src/exogena/documentos-esperados';
 import { mesesTrabajadosSegunCertificados } from '../src/perfil/meses-trabajados';
 
@@ -28,10 +32,10 @@ const EXOGENA: ExogenaParseada = {
 describe('documentosEsperados', () => {
   const esperados = documentosEsperados(EXOGENA);
 
-  it('deriva 220 del empleador y certificados de las entidades financieras', () => {
+  it('deriva 220 del empleador y certificados opcionales de las entidades financieras', () => {
     expect(esperados.map((e) => [e.nit, e.tipo, e.opcional])).toEqual([
       ['900111222', 'certificado_220', false],
-      ['900555666', 'certificado_bancario', false],
+      ['900555666', 'certificado_bancario', true],
       ['900121212', 'certificado_bancario', true],
       ['900191919', 'certificado_bancario', true],
     ]);
@@ -43,6 +47,24 @@ describe('documentosEsperados', () => {
     expect(nits).not.toContain('1234567890');
     expect(nits).not.toContain('900202020');
     expect(nits).not.toContain('900222222');
+  });
+});
+
+describe('bancos sin certificado (fallback desde exógena)', () => {
+  const filas = [
+    fila('900555666', 'BANCO EJEMPLO COMPAÑIA DE FINANCIAMIENTO S.A.', 'Saldo cuentas bancarias (Titular Principal)'),
+    fila('900555666', 'BANCO EJEMPLO COMPAÑIA DE FINANCIAMIENTO S.A.', 'Intereses y rendimientos financieros pagados (Concepto: 5063)'),
+    fila('900555666', 'BANCO EJEMPLO COMPAÑIA DE FINANCIAMIENTO S.A.', 'Retención Intereses y rendimientos financieros pagados (Concepto: 5063)'),
+    fila('900777888', 'PAGOS DIGITALES SA  COMPAÑIA DE FINANCIAMIENTO', 'Saldo cuentas bancarias (Titular Principal)'),
+  ];
+  const exogena = { ...EXOGENA, filas };
+
+  it('toma de la exógena solo las entidades sin certificado (sin contar retenciones)', () => {
+    expect(saldosBancariosSinCertificado(exogena, ['Banco Ejemplo Compañía de Financiamiento SA'])).toEqual([
+      { descripcion: 'PAGOS DIGITALES SA COMPAÑIA (saldo según exógena)', valor: 1000 },
+    ]);
+    expect(rendimientosBancariosSinCertificado(exogena, ['Banco Ejemplo Compañía de Financiamiento SA'])).toBe(0);
+    expect(rendimientosBancariosSinCertificado(exogena, [])).toBe(1000);
   });
 });
 

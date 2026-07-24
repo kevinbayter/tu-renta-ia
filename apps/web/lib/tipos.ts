@@ -29,6 +29,7 @@ export type { RespuestasEntrevista, ResultadoDeclaracion };
 
 export const RESPUESTAS_INICIALES: RespuestasEntrevista = {
   mesesConRelacionLaboral: 12,
+  mesesConPension: 12,
   tieneDependiente387: false,
   dependientesAdicionales336: 0,
   pagosMedicinaPrepagadaConfirmados: 0,

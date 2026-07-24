@@ -52,6 +52,7 @@ function insumosDe(entrada: EntradaSimulador, ingresos: number): InsumosPerfil {
         periodoInicio: '',
         periodoFin: '',
         pagosSalarios: ingresos,
+        pagosPension: 0,
         pagosPrestaciones: 0,
         otrosPagos: 0,
         cesantiasPagadas: 0,

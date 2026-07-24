@@ -22,6 +22,8 @@ export const certificado220Schema = z.strictObject({
   pagosSalarios: z.number().int(),
   pagosPrestaciones: z.number().int(),
   otrosPagos: z.number().int(),
+  /** Casilla 48 del 220: pensiones de jubilación, vejez o invalidez (0 si no aplica). */
+  pagosPension: z.number().int(),
   cesantiasPagadas: z.number().int(),
   cesantiasConsignadas: z.number().int(),
   totalIngresosBrutos: z.number().int(),

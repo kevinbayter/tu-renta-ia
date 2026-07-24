@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  pensionesSinCertificado,
   precargarDesdeExogena,
   rendimientosBancariosSinCertificado,
   saldosBancariosSinCertificado,
@@ -176,8 +177,25 @@ function asignarCampo(parcial: Partial<RespuestasEntrevista>, campo: string, val
 function resumirDocumentos(): string {
   const documentos = useDeclaracion.getState().documentos;
   const resumenes = documentos.map((d) => resumirDocumento(d)).filter(Boolean);
-  const bancosSinCertificado = resumirBancosSinCertificado(documentos);
-  return [...resumenes, ...(bancosSinCertificado ? [bancosSinCertificado] : [])].join('\n');
+  const extras = [resumirBancosSinCertificado(documentos), resumirPensiones(documentos)];
+  return [...resumenes, ...extras.filter(Boolean)].join('\n');
+}
+
+/** Pensiones detectadas en la exógena: ya van a la cédula de pensiones; la IA solo confirma meses. */
+function resumirPensiones(documentos: DocumentoProcesado[]): string | null {
+  const exogena = documentos.find((d) => d.tipo === 'exogena');
+  if (exogena?.tipo !== 'exogena') {
+    return null;
+  }
+  const conPension = documentos
+    .filter((d): d is Extract<DocumentoProcesado, { tipo: 'certificado_220' }> => d.tipo === 'certificado_220')
+    .filter((d) => (d.datos.pagosPension ?? 0) > 0)
+    .map((d) => d.datos.razonSocial);
+  const pensiones = pensionesSinCertificado(exogena.exogena, conPension);
+  if (pensiones.ingresosBrutos === 0) {
+    return null;
+  }
+  return `PENSIONES REPORTADAS EN EXÓGENA (${pensiones.entidades.join(', ')}): ${formatearPesos(pensiones.ingresosBrutos)} — YA se declaran en la cédula de pensiones con su exención de ley; NO las captures como salario ni activo. Solo confirma cuántos meses recibió mesada (mesesConPension).`;
 }
 
 /** Sin certificado bancario, los valores salen de la exógena: el motor ya los cuenta. */

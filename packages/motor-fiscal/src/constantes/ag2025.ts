@@ -40,6 +40,10 @@ export const AG2025: ConstantesAnio = {
 
   interesesVivienda: { topeAnualUvt: 1_200 },
   interesesIcetex: { topeAnualUvt: 100 },
+
+  // Num. 5 art. 206 E.T. (mod. Ley 2277/2022): mesada exenta hasta 1.000 UVT/mes
+  // (normativa/ag2025/04-pensiones.md)
+  pensiones: { exencionMensualUvt: 1_000 },
   gmf: { porcentajeDeducible: 0.5 },
   afcFvp: { porcentaje: 0.3, topeAnualUvt: 3_800 },
 

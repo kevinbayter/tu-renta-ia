@@ -18,6 +18,8 @@ export interface TopesExogena {
 
 export interface ExogenaParseada {
   anioGravable: number;
+  /** Cédula del consultante que descargó el reporte (encabezado del Excel DIAN). */
+  identificacionConsultante?: string;
   topes: TopesExogena;
   filas: FilaExogena[];
 }

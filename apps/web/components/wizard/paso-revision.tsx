@@ -50,6 +50,7 @@ export function PasoRevision() {
       <p className="mt-3 rounded-xl bg-primario-suave px-3 py-2 text-sm">
         📄 {documentos.length} documento(s) procesado(s) · usa el paso Documentos para cambiarlos
       </p>
+      <AvisosDeCompletitud />
       <DatosDeclarante />
       <FormularioRespuestas />
       <DependienteToggle />
@@ -71,6 +72,36 @@ export function PasoRevision() {
         El cálculo lo hace un motor determinista auditado — la IA no toca los números.
       </p>
     </section>
+  );
+}
+
+/** Guardas de calidad: exógena de otra persona o cálculo sin certificados de ingresos. */
+function AvisosDeCompletitud() {
+  const documentos = useDeclaracion((s) => s.documentos);
+  const declarante = useDeclaracion((s) => s.declarante);
+  const exogena = documentos.find((d) => d.tipo === 'exogena');
+  const avisos: string[] = [];
+  const cedulaExogena = exogena?.tipo === 'exogena' ? (exogena.exogena.identificacionConsultante ?? '') : '';
+  const cedulaTitular = declarante.identificacion.replace(/\D/g, '');
+  if (cedulaExogena && cedulaTitular && cedulaExogena !== cedulaTitular) {
+    avisos.push(`La exógena subida es de la cédula ${cedulaExogena}, no del titular (${cedulaTitular}). El resultado será incorrecto.`);
+  }
+  const tiene220 = documentos.some((d) => d.tipo === 'certificado_220');
+  const reportaIngresos = exogena?.tipo === 'exogena' && exogena.exogena.topes.ingresos > 0;
+  if (reportaIngresos && !tiene220) {
+    avisos.push('La exógena reporta ingresos, pero no has subido ningún certificado 220 de tus empleadores: los ingresos y retenciones de trabajo quedarán en $0 y el cálculo estará incompleto.');
+  }
+  if (avisos.length === 0) {
+    return null;
+  }
+  return (
+    <div className="mt-3 space-y-2">
+      {avisos.map((aviso) => (
+        <p key={aviso} role="alert" className="rounded-xl bg-alerta-suave px-3 py-2 text-sm text-error">
+          ⚠️ {aviso}
+        </p>
+      ))}
+    </div>
   );
 }
 

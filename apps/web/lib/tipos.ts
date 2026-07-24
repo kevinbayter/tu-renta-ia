@@ -38,6 +38,8 @@ export const RESPUESTAS_INICIALES: RespuestasEntrevista = {
   gmfTotalPagado: 0,
   rendimientosAdicionalesConComponente: 0,
   rendimientosSinComponente: 0,
+  ingresosNoLaborales: 0,
+  costosNoLaborales: 0,
   activosManuales: [],
   deudas: 0,
   declaracionesPrevias: 0,

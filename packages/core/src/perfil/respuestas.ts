@@ -19,6 +19,10 @@ export interface RespuestasEntrevista {
   rendimientosAdicionalesConComponente: number;
   /** Rendimientos sin componente inflacionario (p. ej. rendimientos de cesantías). */
   rendimientosSinComponente: number;
+  /** Ingresos no laborales confirmados (arriendos vía mandato, etc.), ya deduplicados. */
+  ingresosNoLaborales?: number;
+  /** Costos y gastos procedentes de esos ingresos (predial, administración, con soporte). */
+  costosNoLaborales?: number;
   /** Activos que no vienen de certificados: bienes personales, CxC, saldos confirmados. */
   activosManuales: { descripcion: string; valor: number }[];
   deudas: number;

@@ -1,3 +1,5 @@
+import { ingresosNoLaboralesReportados } from './no-laborales';
+
 import type { ExogenaParseada, FilaExogena } from './tipos';
 
 /**
@@ -11,6 +13,7 @@ export interface PrecargaExogena {
   respuestas: {
     rendimientosSinComponente: number;
     rendimientosAdicionalesConComponente: number;
+    ingresosNoLaborales: number;
   };
   /** Saldos reportados a 31-dic que la entrevista debe ofrecer como activos. */
   sugerenciasActivos: { descripcion: string; valor: number }[];
@@ -21,11 +24,13 @@ export interface PrecargaExogena {
 export function precargarDesdeExogena(exogena: ExogenaParseada): PrecargaExogena {
   const rendimientosCesantias = sumar(exogena.filas.filter(esRendimientoCesantias));
   const rendimientosFondos = sumar(exogena.filas.filter(esRendimientoFondoInversion));
+  const noLaborales = ingresosNoLaboralesReportados(exogena);
   const sugerenciasActivos = extraerSaldosNoBancarios(exogena.filas);
   return {
     respuestas: {
       rendimientosSinComponente: rendimientosCesantias,
       rendimientosAdicionalesConComponente: rendimientosFondos,
+      ingresosNoLaborales: noLaborales.total,
     },
     sugerenciasActivos,
     resumen: construirResumen(exogena, rendimientosCesantias, rendimientosFondos, sugerenciasActivos),
@@ -76,12 +81,29 @@ function construirResumen(
     `- Rendimientos de cesantías: ${pesos(rendimientosCesantias)}`,
     `- Rendimientos de fondos de inversión (carteras colectivas): ${pesos(rendimientosFondos)}`,
     `- Compras con factura electrónica y saldo a favor del año anterior: se aplican automáticamente.`,
+    ...lineasNoLaborales(exogena),
   ];
   const saldos = activos.map((a) => `  · ${a.descripcion}: ${pesos(a.valor)}`);
   if (saldos.length > 0) {
     lineas.push('SALDOS A 31-DIC REPORTADOS EN EXÓGENA (ofrécelos como activos a confirmar, uno por uno):', ...saldos);
   }
   return lineas.join('\n');
+}
+
+function lineasNoLaborales(exogena: ExogenaParseada): string[] {
+  const noLaborales = ingresosNoLaboralesReportados(exogena);
+  if (noLaborales.total === 0) {
+    return [];
+  }
+  const lineas = [
+    `- Ingresos NO laborales (arriendos/mandato): ${pesos(noLaborales.total)} — confirma este valor y pregunta por costos con soporte (predial del inmueble arrendado, administración) para costosNoLaborales.`,
+  ];
+  noLaborales.duplicados.forEach((d) =>
+    lineas.push(
+      `  OJO: ${pesos(d.valor)} aparece reportado por ${d.informantes.join(' y ')} — típico duplicado de mandato: YA lo contamos UNA sola vez; solo confirma que es el mismo ingreso.`,
+    ),
+  );
+  return lineas;
 }
 
 function sumar(filas: FilaExogena[]): number {

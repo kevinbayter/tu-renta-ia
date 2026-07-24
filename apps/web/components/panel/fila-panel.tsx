@@ -60,7 +60,7 @@ function Identidad({ declaracion }: { declaracion: DeclaracionResumen }) {
   const nombre = `${declaracion.titular.nombres} ${declaracion.titular.apellidos}`.trim();
   return (
     <div className="flex min-w-52 items-center gap-3">
-      <Avatar nombre={nombre} tamano="lg" />
+      <Avatar nombre={nombre} tamano="lg" fotoUrl={declaracion.titular.esPropia ? '/api/avatar' : undefined} />
       <div>
         <p className="font-semibold">
           {nombre}{' '}

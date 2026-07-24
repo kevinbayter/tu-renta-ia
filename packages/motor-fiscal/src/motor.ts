@@ -38,7 +38,8 @@ export function liquidarDeclaracion(perfil: PerfilFiscal): ResultadoDeclaracion 
 function calcularRetenciones(perfil: PerfilFiscal): number {
   const laborales = perfil.certificadosLaborales.reduce((acc, x) => acc + x.retencionFuente, 0);
   const pensionales = perfil.rentasPensiones?.retencionFuente ?? 0;
-  return redondearMil(laborales + perfil.rentasCapital.retencionFuente + pensionales);
+  const noLaborales = perfil.rentasNoLaborales?.retencionFuente ?? 0;
+  return redondearMil(laborales + perfil.rentasCapital.retencionFuente + pensionales + noLaborales);
 }
 
 function sumarActivos(perfil: PerfilFiscal): number {

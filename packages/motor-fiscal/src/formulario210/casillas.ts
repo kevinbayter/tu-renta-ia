@@ -21,6 +21,7 @@ export function mapearCasillas(d: DatosCasillas): Record<string, number> {
     ...casillasPatrimonio(d),
     ...casillasTrabajo(d.cedula),
     ...casillasCapital(d.cedula),
+    ...casillasNoLaborales(d.cedula),
     ...casillasConsolidacion(d.cedula),
     ...casillasPensiones(d.pensiones),
     ...casillasLiquidacion(d.liquidacion),
@@ -73,6 +74,19 @@ function casillasCapital(cedula: ResultadoCedulaGeneral): Record<string, number>
     '69': k.asignadoLimitado,
     '70': k.rentaLiquidaOrdinaria,
     '73': k.rentaLiquidaOrdinaria,
+  };
+}
+
+function casillasNoLaborales(cedula: ResultadoCedulaGeneral): Record<string, number> {
+  const nl = cedula.noLaborales;
+  return {
+    '74': nl.ingresosBrutos,
+    '76': 0,
+    '77': nl.costosYGastos,
+    '78': nl.rentaLiquida,
+    '86': nl.asignadoLimitado,
+    '87': nl.rentaLiquidaOrdinaria,
+    '90': nl.rentaLiquidaOrdinaria,
   };
 }
 

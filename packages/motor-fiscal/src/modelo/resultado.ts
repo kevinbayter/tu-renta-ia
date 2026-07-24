@@ -34,9 +34,18 @@ export interface ResultadoRentasPensiones {
   rentaLiquidaGravable: number;
 }
 
+export interface ResultadoRentasNoLaborales {
+  ingresosBrutos: number;
+  costosYGastos: number;
+  rentaLiquida: number;
+  asignadoLimitado: number;
+  rentaLiquidaOrdinaria: number;
+}
+
 export interface ResultadoCedulaGeneral {
   trabajo: ResultadoRentasTrabajo;
   capital: ResultadoRentasCapital;
+  noLaborales: ResultadoRentasNoLaborales;
   rentaLiquidaCedula: number;
   limiteGlobal: number;
   deduccionFacturaElectronica: number;

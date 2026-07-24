@@ -11,9 +11,9 @@ export function BandaEjemplo() {
             💰
           </span>
           <div>
-            <p className="text-sm text-marino-texto">Ejemplo real de resultado</p>
+            <p className="text-sm text-marino-texto">Caso real validado con la DIAN</p>
             <p className="text-3xl font-bold text-acento">$1.401.000</p>
-            <p className="text-sm text-marino-texto">de saldo a favor detectado</p>
+            <p className="text-sm text-marino-texto">de saldo a favor, calculado peso a peso por nuestro motor</p>
           </div>
         </div>
         <p className="text-lg leading-snug sm:border-l sm:border-marino-borde sm:pl-6">

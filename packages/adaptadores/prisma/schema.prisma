@@ -8,11 +8,14 @@ datasource db {
 }
 
 model Usuario {
-  id            String        @id @default(uuid())
-  email         String        @unique
-  creadoEn      DateTime      @default(now())
-  declaraciones Declaracion[]
-  codigosOtp    CodigoOtp[]
+  id             String        @id @default(uuid())
+  email          String        @unique
+  nombres        String        @default("")
+  apellidos      String        @default("")
+  identificacion String        @default("")
+  creadoEn       DateTime      @default(now())
+  declaraciones  Declaracion[]
+  codigosOtp     CodigoOtp[]
 }
 
 model CodigoOtp {
@@ -28,14 +31,20 @@ model CodigoOtp {
 }
 
 model Declaracion {
-  id            String   @id @default(uuid())
-  usuarioId     String
-  usuario       Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  anioGravable  Int
+  id                    String   @id @default(uuid())
+  usuarioId             String
+  usuario               Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  anioGravable          Int
+  /// Titular de la declaración (el propio usuario o un tercero)
+  titularNombres        String   @default("")
+  titularApellidos      String   @default("")
+  titularIdentificacion String   @default("")
+  esPropia              Boolean  @default(true)
   /// Estado completo del wizard (documentos extraídos, respuestas, declarante, resultado)
-  estado        Json
-  creadaEn      DateTime @default(now())
-  actualizadaEn DateTime @updatedAt
+  estado                Json
+  creadaEn              DateTime @default(now())
+  actualizadaEn         DateTime @updatedAt
 
-  @@unique([usuarioId, anioGravable])
+  @@unique([usuarioId, titularIdentificacion, anioGravable])
+  @@index([usuarioId, actualizadaEn])
 }

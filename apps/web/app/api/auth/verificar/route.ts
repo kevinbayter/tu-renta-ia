@@ -25,5 +25,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: 'Código inválido o vencido' }, { status: 401 });
   }
   await crearSesion({ usuarioId: usuario.id, email: usuario.email });
-  return NextResponse.json({ ok: true, email: usuario.email });
+  const perfil = await obtenerRepositorio().obtenerPerfil(usuario.id);
+  const perfilCompleto = Boolean(perfil?.nombres && perfil.apellidos && perfil.identificacion);
+  return NextResponse.json({ ok: true, email: usuario.email, perfilCompleto });
 }

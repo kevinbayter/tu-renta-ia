@@ -15,9 +15,14 @@ interface EstadoDeclaracion {
   entrevistaCompleta: boolean;
   resultado: ResultadoDeclaracion | null;
   declarante: Declarante;
+  /** true = a nombre propio; false = de un tercero; null = flujo anónimo sin titular definido. */
+  esPropia: boolean | null;
+  declaracionId: string | null;
 
   irAPaso: (paso: PasoWizard) => void;
   actualizarDeclarante: (parcial: Partial<Declarante>) => void;
+  establecerTitular: (declarante: Declarante, esPropia: boolean, declaracionId: string | null) => void;
+  establecerDeclaracionId: (id: string) => void;
   agregarDocumento: (doc: DocumentoProcesado) => void;
   eliminarDocumento: (id: string) => void;
   actualizarRespuestas: (parcial: Partial<RespuestasEntrevista>) => void;
@@ -38,6 +43,8 @@ const ESTADO_INICIAL = {
   entrevistaCompleta: false,
   resultado: null,
   declarante: { nombres: '', apellidos: '', identificacion: '' } as Declarante,
+  esPropia: null as boolean | null,
+  declaracionId: null as string | null,
 };
 
 type SetEstado = (
@@ -48,6 +55,8 @@ function accionesGenerales(set: SetEstado): Partial<EstadoDeclaracion> {
   return {
     irAPaso: (paso) => set({ paso }),
     actualizarDeclarante: (parcial) => set((s) => ({ declarante: { ...s.declarante, ...parcial } })),
+    establecerTitular: (declarante, esPropia, declaracionId) => set({ declarante, esPropia, declaracionId }),
+    establecerDeclaracionId: (id) => set({ declaracionId: id }),
     agregarDocumento: (doc) => set((s) => ({ documentos: [...s.documentos, doc] })),
     eliminarDocumento: (id) => set((s) => ({ documentos: s.documentos.filter((d) => d.id !== id) })),
     agregarMensaje: (mensaje) => set((s) => ({ mensajes: [...s.mensajes, mensaje] })),

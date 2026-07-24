@@ -155,8 +155,13 @@ async function procesarArchivo(archivo: File, slot: Slot): Promise<string | null
   if ('error' in resultado) {
     return `${archivo.name}: ${resultado.error}`;
   }
+  const reemplazaExogena =
+    resultado.tipo === 'exogena' && useDeclaracion.getState().documentos.some((d) => d.tipo === 'exogena');
   useDeclaracion.getState().agregarDocumento(resultado);
   aplicarPrecarga(resultado);
+  if (reemplazaExogena) {
+    return 'Reemplazamos la exógena anterior por esta: cada declaración usa una sola exógena.';
+  }
   if (!slot.tipos.includes(resultado.tipo)) {
     return `Lo clasificamos como "${nombreTipo(resultado.tipo)}" y lo ubicamos en su sección.`;
   }

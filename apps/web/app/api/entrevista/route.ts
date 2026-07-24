@@ -67,6 +67,7 @@ CAMPOS DELICADOS (errores que NO puedes cometer):
 - anticipoLiquidadoAnioAnterior es ÚNICAMENTE la casilla "anticipo por el año gravable siguiente" de su declaración del año pasado. NO es el saldo a favor. Si el usuario no tiene esa casilla a la mano, déjala en 0.
 - Si confirma dependientes económicos: captura tieneDependiente387=1 Y dependientesAdicionales336=cuántos dependientes tiene (máximo 4). Pregunta cuántos son.
 - declaracionesPrevias necesita el número exacto: si dice "sí he declarado antes" sin decir cuántas, pregúntale cuántas.
+- PENSIONES: si el resumen de documentos indica pensiones (Pensiones Ejemplo u otro fondo), ya se declaran automáticamente en la cédula de pensiones — NO las captures como salario ni como activo. Solo confirma cuántos meses recibió mesada en el año (mesesConPension, normalmente 12).
 - Al preguntar por bienes al 31 de diciembre, menciona ejemplos que la gente olvida: bienes personales (muebles, enseres, electrodomésticos), vehículos, y cuentas por cobrar (dinero que le deban).
 
 DOCUMENTOS YA PROCESADOS Y DATOS PRECARGADOS:

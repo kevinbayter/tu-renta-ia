@@ -10,6 +10,7 @@ import type { ExogenaParseada, FilaExogena } from './tipos';
 const PALABRAS_GENERICAS = new Set([
   'SA', 'S', 'A', 'DE', 'LA', 'EL', 'Y', 'LTDA', 'SAS', 'COMPANIA', 'FINANCIAMIENTO',
   'BANCO', 'FIDUCIARIA', 'COLOMBIA', 'COMISIONISTA', 'BOLSA', 'FONDO', 'CAPITAL',
+  'SALDO', 'CUENTA', 'CUENTAS', 'AHORROS', 'CORRIENTE', 'SEGUN', 'EXOGENA',
 ]);
 
 /** Tokens significativos del nombre de una entidad (sin tildes, siglas ni genéricos). */
@@ -31,6 +32,8 @@ export function coincideEntidad(a: string, b: string): boolean {
 export interface SaldoBancarioExogena {
   descripcion: string;
   valor: number;
+  /** Razón social completa del informante (para deduplicar sin perder tokens). */
+  entidad: string;
 }
 
 export function saldosBancariosSinCertificado(
@@ -40,7 +43,11 @@ export function saldosBancariosSinCertificado(
   return exogena.filas
     .filter((f) => f.detalle.toLowerCase().includes('saldo cuentas bancarias'))
     .filter((f) => f.valor > 0 && !estaCertificada(f.nombreInformante, entidadesConCertificado))
-    .map((f) => ({ descripcion: `${nombreCorto(f.nombreInformante)} (saldo según exógena)`, valor: f.valor }));
+    .map((f) => ({
+      descripcion: `${nombreCorto(f.nombreInformante)} (saldo según exógena)`,
+      valor: f.valor,
+      entidad: f.nombreInformante,
+    }));
 }
 
 export function rendimientosBancariosSinCertificado(

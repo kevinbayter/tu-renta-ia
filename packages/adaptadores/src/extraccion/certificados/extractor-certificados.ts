@@ -57,8 +57,9 @@ separados; empareja cada valor con su casilla por el ORDEN del formulario (casil
 El encabezado trae el "Período de la certificación: DE ... A ..." — extrae ambas fechas como
 periodoInicio y periodoFin en formato YYYY-MM-DD ("" si no aparecen); indican los meses trabajados.
 Campos → casilla: pagos por salarios (36); pagos por prestaciones sociales (42); otros pagos (46);
-auxilio de cesantía e intereses EFECTIVAMENTE PAGADOS al empleado (47); auxilio de cesantía
-CONSIGNADO al fondo de cesantías (49); total de ingresos brutos (52 = suma de 36 a 51);
+auxilio de cesantía e intereses EFECTIVAMENTE PAGADOS al empleado (47); pensiones de jubilación,
+vejez o invalidez (48, común en certificados de Pensiones Ejemplo/fondos — 0 si no aplica); auxilio de
+cesantía CONSIGNADO al fondo de cesantías (49); total de ingresos brutos (52 = suma de 36 a 51);
 aportes obligatorios salud (53); aportes obligatorios pensión y solidaridad (54);
 ingreso laboral promedio últimos seis meses (59); retención en la fuente (60).
 Verifica que la suma de los pagos coincida con el total de ingresos brutos.`;

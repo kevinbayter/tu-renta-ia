@@ -51,6 +51,9 @@ function esperadoDelInformante(filas: FilaExogena[]): DocumentoEsperado | null {
   }
   const detalles = filas.map((f) => f.detalle.toLowerCase());
   const base = { nit: primera.nitInformante, nombre: primera.nombreInformante };
+  if (detalles.some((d) => esDetallePension(d))) {
+    return { ...base, tipo: 'certificado_220', opcional: true, motivo: 'si no subes su certificado, tomamos la pensión reportada en la exógena' };
+  }
   if (detalles.some((d) => DETALLE_LABORAL.test(d))) {
     return { ...base, tipo: 'certificado_220', opcional: false, motivo: 'te reportó pagos laborales en la exógena' };
   }
@@ -64,6 +67,16 @@ function esperadoDelInformante(filas: FilaExogena[]): DocumentoEsperado | null {
     return { ...base, tipo: 'certificado_bancario', opcional: true, motivo: 'reportó movimientos de cuentas — su certificado ayuda a completar el GMF (4×1000)' };
   }
   return null;
+}
+
+/** Mesadas pensionales (excluye "aporte A fondos de pensiones" del empleador y retenciones). */
+function esDetallePension(detalle: string): boolean {
+  return (
+    detalle.includes('pension') &&
+    detalle.includes('2276') &&
+    !detalle.includes('aporte') &&
+    !detalle.includes('retenci')
+  );
 }
 
 /** Obligatorios primero; dentro de cada grupo, 220 antes que bancarios. */

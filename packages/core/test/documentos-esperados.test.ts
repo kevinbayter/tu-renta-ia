@@ -61,7 +61,11 @@ describe('bancos sin certificado (fallback desde exógena)', () => {
 
   it('toma de la exógena solo las entidades sin certificado (sin contar retenciones)', () => {
     expect(saldosBancariosSinCertificado(exogena, ['Banco Ejemplo Compañía de Financiamiento SA'])).toEqual([
-      { descripcion: 'PAGOS DIGITALES SA COMPAÑIA (saldo según exógena)', valor: 1000 },
+      {
+        descripcion: 'PAGOS DIGITALES SA COMPAÑIA (saldo según exógena)',
+        valor: 1000,
+        entidad: 'PAGOS DIGITALES SA  COMPAÑIA DE FINANCIAMIENTO',
+      },
     ]);
     expect(rendimientosBancariosSinCertificado(exogena, ['Banco Ejemplo Compañía de Financiamiento SA'])).toBe(0);
     expect(rendimientosBancariosSinCertificado(exogena, [])).toBe(1000);

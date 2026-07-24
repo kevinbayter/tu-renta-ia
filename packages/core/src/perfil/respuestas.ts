@@ -5,6 +5,8 @@
  */
 export interface RespuestasEntrevista {
   mesesConRelacionLaboral: number;
+  /** Meses con mesada pensional en el año (exención 206-5 = 1.000 UVT/mes); 12 si no se indica. */
+  mesesConPension?: number;
   tieneDependiente387: boolean;
   dependientesAdicionales336: number;
   /** Valor de medicina prepagada confirmado por el usuario para el año gravable. */

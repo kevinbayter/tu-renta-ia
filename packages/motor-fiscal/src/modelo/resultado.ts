@@ -26,6 +26,14 @@ export interface ResultadoRentasCapital {
   rentaLiquidaOrdinaria: number;
 }
 
+export interface ResultadoRentasPensiones {
+  ingresosBrutos: number;
+  incrngo: number;
+  rentaLiquida: number;
+  rentaExenta: number;
+  rentaLiquidaGravable: number;
+}
+
 export interface ResultadoCedulaGeneral {
   trabajo: ResultadoRentasTrabajo;
   capital: ResultadoRentasCapital;
@@ -55,6 +63,7 @@ export interface ResultadoDeclaracion {
   deudas: number;
   patrimonioLiquido: number;
   cedulaGeneral: ResultadoCedulaGeneral;
+  cedulaPensiones: ResultadoRentasPensiones;
   liquidacion: ResultadoLiquidacion;
   /** Casillas del formulario 210 (clave = número de casilla). */
   casillas: Record<string, number>;

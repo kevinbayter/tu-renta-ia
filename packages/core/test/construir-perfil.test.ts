@@ -55,6 +55,7 @@ const INSUMOS: InsumosPerfil = {
       periodoInicio: '',
       periodoFin: '',
       pagosSalarios: 52_926_000,
+      pagosPension: 0,
       pagosPrestaciones: 9_275_000,
       otrosPagos: 21_849_000,
       cesantiasPagadas: 5_535_000,
@@ -73,6 +74,7 @@ const INSUMOS: InsumosPerfil = {
       periodoInicio: '',
       periodoFin: '',
       pagosSalarios: 15_770_000,
+      pagosPension: 0,
       pagosPrestaciones: 1_314_000,
       otrosPagos: 409_000,
       cesantiasPagadas: 0,
@@ -141,5 +143,79 @@ describe('construirPerfilFiscal — caso dorado desde extracciones', () => {
     expect(resultado.liquidacion.totalSaldoAFavor).toBe(1_401_000);
     expect(resultado.cedulaGeneral.rentaLiquidaGravable).toBe(60_689_000);
     expect(resultado.patrimonioBruto).toBe(69_875_000);
+  });
+
+  it('sin pensiones: la cédula de pensiones queda en ceros', () => {
+    expect(perfil.rentasPensiones?.ingresosBrutos).toBe(0);
+    expect(resultado.cedulaPensiones.rentaLiquidaGravable).toBe(0);
+  });
+});
+
+describe('construirPerfilFiscal — pensionado sin certificados (fallback exógena)', () => {
+  const exogenaPensionada: ExogenaParseada = {
+    anioGravable: 2025,
+    identificacionConsultante: '23456789',
+    topes: { ingresos: 0, patrimonio: 0, consumoTarjetas: 0, movimientos: 0, compras: 0 },
+    filas: [
+      {
+        nitInformante: '900232323',
+        nombreInformante: 'ADMINISTRADORA DE PENSIONES EJEMPLO',
+        detalle: 'Pension jubilación, vejez, invalidez (Concepto: 2276)',
+        valor: 43_918_000,
+        usoSugerido: '',
+        infoAdicional: '',
+      },
+      {
+        nitInformante: '900232323',
+        nombreInformante: 'ADMINISTRADORA DE PENSIONES EJEMPLO',
+        detalle: 'Aportes obligatorios a salud a cargo Trabajador (Concepto: 2276)',
+        valor: 5_270_000,
+        usoSugerido: '',
+        infoAdicional: '',
+      },
+      {
+        nitInformante: '900171717',
+        nombreInformante: 'BANCO NACIONAL EJEMPLO S.A.',
+        detalle: 'Saldo cuentas bancarias (Titular Principal)',
+        valor: 19_842_608,
+        usoSugerido: 'R29 Patrimonio Bruto',
+        infoAdicional: '',
+      },
+    ],
+  };
+
+  it('toma la pensión y sus aportes a salud de la exógena y la exención 206-5 deja RLG en 0', () => {
+    const perfil = construirPerfilFiscal({
+      anioGravable: 2025,
+      exogena: exogenaPensionada,
+      certificados220: [],
+      certificadosBancarios: [],
+      respuestas: { ...INSUMOS.respuestas, activosManuales: [], gmfTotalPagado: 0, rendimientosAdicionalesConComponente: 0, rendimientosSinComponente: 0 },
+    });
+    expect(perfil.rentasPensiones?.ingresosBrutos).toBe(43_918_000);
+    expect(perfil.rentasPensiones?.aportesSaludYFsp).toBe(5_270_000);
+    const resultado = liquidarDeclaracion(perfil);
+    expect(resultado.casillas['99']).toBe(43_918_000);
+    expect(resultado.casillas['101']).toBe(38_648_000);
+    expect(resultado.casillas['102']).toBe(38_648_000);
+    expect(resultado.casillas['103']).toBe(0);
+  });
+
+  it('no cuenta dos veces un banco que ya está como activo manual', () => {
+    const perfil = construirPerfilFiscal({
+      anioGravable: 2025,
+      exogena: exogenaPensionada,
+      certificados220: [],
+      certificadosBancarios: [],
+      respuestas: {
+        ...INSUMOS.respuestas,
+        activosManuales: [{ descripcion: 'Cuenta de ahorros Banco Nacional', valor: 19_842_608 }],
+        gmfTotalPagado: 0,
+        rendimientosAdicionalesConComponente: 0,
+        rendimientosSinComponente: 0,
+      },
+    });
+    expect(perfil.patrimonio.activos).toHaveLength(1);
+    expect(perfil.patrimonio.activos[0]?.descripcion).toBe('Cuenta de ahorros Banco Nacional');
   });
 });

@@ -1,5 +1,6 @@
 import { obtenerConstantes } from './constantes/registro';
 import { depurarCedulaGeneral } from './depuracion/cedula-general';
+import { depurarPensiones } from './depuracion/pensiones';
 import { mapearCasillas } from './formulario210/casillas';
 import { liquidar } from './liquidacion/liquidar';
 import { redondearMil } from './redondeo';
@@ -14,8 +15,11 @@ import type { PerfilFiscal } from './modelo/tipos';
 export function liquidarDeclaracion(perfil: PerfilFiscal): ResultadoDeclaracion {
   const c = obtenerConstantes(perfil.anioGravable);
   const cedulaGeneral = depurarCedulaGeneral(perfil, c);
+  const cedulaPensiones = depurarPensiones(perfil.rentasPensiones, c);
   const retenciones = calcularRetenciones(perfil);
-  const liquidacion = liquidar(cedulaGeneral.rentaLiquidaGravable, retenciones, perfil.historial, c);
+  // Art. 331 E.T. (Ley 2277/2022): la tarifa del 241 se aplica a la SUMA de cédulas.
+  const rentaLiquidaGravableTotal = cedulaGeneral.rentaLiquidaGravable + cedulaPensiones.rentaLiquidaGravable;
+  const liquidacion = liquidar(rentaLiquidaGravableTotal, retenciones, perfil.historial, c);
   const patrimonioBruto = redondearMil(sumarActivos(perfil));
   const deudas = redondearMil(perfil.patrimonio.deudas);
   const patrimonioLiquido = Math.max(0, patrimonioBruto - deudas);
@@ -25,14 +29,16 @@ export function liquidarDeclaracion(perfil: PerfilFiscal): ResultadoDeclaracion 
     deudas,
     patrimonioLiquido,
     cedulaGeneral,
+    cedulaPensiones,
     liquidacion,
-    casillas: construirCasillas(perfil, cedulaGeneral, liquidacion, patrimonioBruto, deudas),
+    casillas: construirCasillas(perfil, cedulaGeneral, cedulaPensiones, liquidacion, patrimonioBruto, deudas),
   };
 }
 
 function calcularRetenciones(perfil: PerfilFiscal): number {
   const laborales = perfil.certificadosLaborales.reduce((acc, x) => acc + x.retencionFuente, 0);
-  return redondearMil(laborales + perfil.rentasCapital.retencionFuente);
+  const pensionales = perfil.rentasPensiones?.retencionFuente ?? 0;
+  return redondearMil(laborales + perfil.rentasCapital.retencionFuente + pensionales);
 }
 
 function sumarActivos(perfil: PerfilFiscal): number {
@@ -42,6 +48,7 @@ function sumarActivos(perfil: PerfilFiscal): number {
 function construirCasillas(
   perfil: PerfilFiscal,
   cedula: ResultadoDeclaracion['cedulaGeneral'],
+  pensiones: ResultadoDeclaracion['cedulaPensiones'],
   liquidacion: ResultadoDeclaracion['liquidacion'],
   patrimonioBruto: number,
   deudas: number,
@@ -52,6 +59,7 @@ function construirCasillas(
     deudas,
     patrimonioLiquido: Math.max(0, patrimonioBruto - deudas),
     cedula,
+    pensiones,
     liquidacion,
     cantidadDependientes: perfil.deducciones.dependientesAdicionales336,
   });

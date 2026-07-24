@@ -1,4 +1,8 @@
-import type { ResultadoCedulaGeneral, ResultadoLiquidacion } from '../modelo/resultado';
+import type {
+  ResultadoCedulaGeneral,
+  ResultadoLiquidacion,
+  ResultadoRentasPensiones,
+} from '../modelo/resultado';
 
 interface DatosCasillas {
   facturaElectronica: number;
@@ -6,6 +10,7 @@ interface DatosCasillas {
   deudas: number;
   patrimonioLiquido: number;
   cedula: ResultadoCedulaGeneral;
+  pensiones: ResultadoRentasPensiones;
   liquidacion: ResultadoLiquidacion;
   cantidadDependientes: number;
 }
@@ -17,8 +22,19 @@ export function mapearCasillas(d: DatosCasillas): Record<string, number> {
     ...casillasTrabajo(d.cedula),
     ...casillasCapital(d.cedula),
     ...casillasConsolidacion(d.cedula),
+    ...casillasPensiones(d.pensiones),
     ...casillasLiquidacion(d.liquidacion),
     ...casillasDependientes(d),
+  };
+}
+
+function casillasPensiones(p: ResultadoRentasPensiones): Record<string, number> {
+  return {
+    '99': p.ingresosBrutos,
+    '100': p.incrngo,
+    '101': p.rentaLiquida,
+    '102': p.rentaExenta,
+    '103': p.rentaLiquidaGravable,
   };
 }
 

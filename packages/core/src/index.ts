@@ -40,6 +40,7 @@ export {
   rendimientosBancariosSinCertificado,
   type SaldoBancarioExogena,
 } from './exogena/bancos-sin-certificado';
+export { pensionesSinCertificado, type PensionesExogena } from './exogena/pensiones-sin-certificado';
 export { mesesTrabajadosSegunCertificados } from './perfil/meses-trabajados';
 export { type RespuestasEntrevista } from './perfil/respuestas';
 export {

@@ -20,6 +20,7 @@ const CAMPOS_EDITABLES: { campo: keyof RespuestasEntrevista; etiqueta: string }[
   { campo: 'rendimientosAdicionalesConComponente', etiqueta: 'Otros rendimientos financieros ($)' },
   { campo: 'rendimientosSinComponente', etiqueta: 'Rendimientos de cesantías ($)' },
   { campo: 'deudas', etiqueta: 'Deudas al 31 de diciembre ($)' },
+  { campo: 'mesesConPension', etiqueta: 'Meses con pensión en 2025 (si aplica)' },
   { campo: 'declaracionesPrevias', etiqueta: 'Declaraciones presentadas antes' },
   { campo: 'impuestoNetoAnioAnterior', etiqueta: 'Impuesto neto del año anterior ($)' },
   { campo: 'anticipoLiquidadoAnioAnterior', etiqueta: 'Anticipo liquidado en tu declaración anterior ($)' },

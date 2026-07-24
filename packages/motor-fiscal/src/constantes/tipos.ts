@@ -48,6 +48,9 @@ export interface ConstantesAnio {
 
   interesesVivienda: { topeAnualUvt: number };
   interesesIcetex: { topeAnualUvt: number };
+
+  /** Num. 5 art. 206 E.T. (mod. Ley 2277/2022): mesada exenta hasta este tope mensual. */
+  pensiones: { exencionMensualUvt: number };
   gmf: { porcentajeDeducible: number };
   afcFvp: { porcentaje: number; topeAnualUvt: number };
 

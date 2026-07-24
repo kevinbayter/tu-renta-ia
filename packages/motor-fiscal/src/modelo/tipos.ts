@@ -36,6 +36,16 @@ export interface DeduccionesInput {
   interesesIcetex: number;
 }
 
+export interface RentasPensionesInput {
+  /** Pensiones de jubilación, invalidez, vejez, sobrevivientes y riesgos laborales (art. 337). */
+  ingresosBrutos: number;
+  /** INCRNGO: aportes obligatorios a salud y al fondo de solidaridad del pensionado. */
+  aportesSaludYFsp: number;
+  retencionFuente: number;
+  /** Meses con mesada en el año (la exención del 206-5 es de 1.000 UVT por mes). */
+  mesesConPension: number;
+}
+
 export interface ActivoPatrimonial {
   descripcion: string;
   valor: number;
@@ -58,6 +68,8 @@ export interface PerfilFiscal {
   anioGravable: number;
   certificadosLaborales: CertificadoLaboral[];
   rentasCapital: RentasCapitalInput;
+  /** Cédula de pensiones (art. 337); ausente = sin ingresos pensionales. */
+  rentasPensiones?: RentasPensionesInput;
   deducciones: DeduccionesInput;
   /** Monto de compras con factura electrónica susceptible del beneficio del 1%. */
   comprasFacturaElectronica: number;

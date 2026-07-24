@@ -8,16 +8,16 @@
 
 ## 1. Decisiones de producto (confirmadas con Ana, 2026-07-24)
 
-| Tema               | Decisión                                                                                                                                                                                  |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pasos del wizard   | Se mantienen los **4 pasos actuales** (Documentos → Entrevista → Revisión → Resultado). El progreso muestra "Paso X de 4" y % real derivado del estado.                                   |
-| Facturación / Plan | Plan único **"Beta gratuita"** con páginas reales (plan actual, beneficios, historial de facturación vacío). Wompi llega en Fase 6 sin rehacer nada.                                      |
-| Clientes           | **Personas administradas**: fichas simples (nombres, apellidos, cédula, email/teléfono opcionales) vinculadas a sus declaraciones.                                                        |
-| IA Fiscal          | Chat **personalizado** (contexto de las declaraciones del usuario) + **"Simular mi declaración"** con el motor determinista (la IA nunca calcula impuestos). Disclaimers legales siempre. |
-| Documentos         | **Solo datos extraídos** (no se almacenan los archivos originales — más privacidad, cero almacenamiento de PII binaria).                                                                  |
-| Notificaciones     | **In-app (campana)** + **email vía Brevo solo para críticas**: vencimiento a 30/15/5 días.                                                                                                |
-| Tema               | El nuevo diseño funciona en **claro y oscuro** con los tokens existentes; el mockup define el look del claro.                                                                             |
-| Avatar             | **Iniciales por defecto** + foto opcional subible en Configuración (pequeña, guardada en BD).                                                                                             |
+| Tema               | Decisión                                                                                                                                                                                                                      |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pasos del wizard   | **5 pasos** (Exógena → Documentos → Entrevista → Revisión → Resultado): primero la exógena sola y el paso de documentos pide exactamente lo que ella anuncia. El progreso muestra "Paso X de 5" y % real derivado del estado. |
+| Facturación / Plan | Plan único **"Beta gratuita"** con páginas reales (plan actual, beneficios, historial de facturación vacío). Wompi llega en Fase 6 sin rehacer nada.                                                                          |
+| Clientes           | **Personas administradas**: fichas simples (nombres, apellidos, cédula, email/teléfono opcionales) vinculadas a sus declaraciones.                                                                                            |
+| IA Fiscal          | Chat **personalizado** (contexto de las declaraciones del usuario) + **"Simular mi declaración"** con el motor determinista (la IA nunca calcula impuestos). Disclaimers legales siempre.                                     |
+| Documentos         | **Solo datos extraídos** (no se almacenan los archivos originales — más privacidad, cero almacenamiento de PII binaria).                                                                                                      |
+| Notificaciones     | **In-app (campana)** + **email vía Brevo solo para críticas**: vencimiento a 30/15/5 días.                                                                                                                                    |
+| Tema               | El nuevo diseño funciona en **claro y oscuro** con los tokens existentes; el mockup define el look del claro.                                                                                                                 |
+| Avatar             | **Iniciales por defecto** + foto opcional subible en Configuración (pequeña, guardada en BD).                                                                                                                                 |
 
 ## 2. Principios innegociables
 

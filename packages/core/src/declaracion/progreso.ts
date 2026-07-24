@@ -1,39 +1,43 @@
 /**
- * Progreso honesto de una declaración sobre los 4 pasos reales del wizard
- * (Documentos → Entrevista → Revisión → Resultado), derivado del estado
- * guardado — nunca un porcentaje decorativo.
+ * Progreso honesto de una declaración sobre los 5 pasos reales del wizard
+ * (Exógena → Documentos → Entrevista → Revisión → Resultado), derivado del
+ * estado guardado — nunca un porcentaje decorativo.
  */
 
 export interface ProgresoDeclaracion {
-  /** Paso actual (1..4) según dónde quedó el usuario. */
+  /** Paso actual (1..5) según dónde quedó el usuario. */
   paso: number;
   totalPasos: number;
-  /** 0..100: hitos completados (documentos, entrevista, cálculo, llegada al final). */
+  /** 0..100: hitos completados (exógena, certificados, entrevista, cálculo, final). */
   porcentaje: number;
 }
 
 interface EstadoWizard {
   paso?: string;
-  documentos?: unknown[];
+  documentos?: { tipo?: string }[];
   entrevistaCompleta?: boolean;
   resultado?: unknown;
 }
 
-const ORDEN_PASOS = ['documentos', 'entrevista', 'revision', 'resultado'];
+const ORDEN_PASOS = ['exogena', 'documentos', 'entrevista', 'revision', 'resultado'];
 
 export function progresoDeclaracion(estado: unknown): ProgresoDeclaracion {
   const e = (typeof estado === 'object' && estado !== null ? estado : {}) as EstadoWizard;
+  const documentos = e.documentos ?? [];
+  const hayExogena = documentos.some((d) => d.tipo === 'exogena');
+  const hayCertificados = documentos.some((d) => d.tipo !== 'exogena');
   const tieneResultado = e.resultado !== null && e.resultado !== undefined;
   const hitos = [
-    (e.documentos?.length ?? 0) > 0,
+    hayExogena,
+    hayCertificados,
     e.entrevistaCompleta === true,
     tieneResultado,
     tieneResultado && e.paso === 'resultado',
   ];
-  const indice = ORDEN_PASOS.indexOf(e.paso ?? 'documentos');
+  const indice = ORDEN_PASOS.indexOf(e.paso ?? 'exogena');
   return {
     paso: (indice >= 0 ? indice : 0) + 1,
     totalPasos: ORDEN_PASOS.length,
-    porcentaje: hitos.filter(Boolean).length * 25,
+    porcentaje: hitos.filter(Boolean).length * 20,
   };
 }

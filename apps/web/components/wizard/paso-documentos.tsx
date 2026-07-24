@@ -1,9 +1,10 @@
 'use client';
 
-import { documentosEsperados, mesesTrabajadosSegunCertificados, precargarDesdeExogena } from '@turenta/core';
+import { documentosEsperados } from '@turenta/core';
 import { useRef, useState } from 'react';
 
 import { ChecklistEsperados } from './checklist-esperados';
+import { aplicarPrecarga, NOMBRES_TIPO, subirArchivo } from './pipeline-documentos';
 import { TarjetaDocumento } from './tarjeta-documento';
 import { ValoresManuales } from './valores-manuales';
 import { useDeclaracion } from '@/lib/store';
@@ -11,8 +12,6 @@ import { useDeclaracion } from '@/lib/store';
 import type { CampoManual } from './valores-manuales';
 import type { DocumentoEsperado } from '@turenta/core';
 import type { DocumentoProcesado } from '@/lib/tipos';
-
-const ANIO_GRAVABLE = 2025;
 
 type TipoDocumento = DocumentoProcesado['tipo'];
 
@@ -28,13 +27,6 @@ interface Slot {
 }
 
 const SLOTS: Slot[] = [
-  {
-    clave: 'exogena',
-    titulo: 'Exógena DIAN',
-    descripcion: 'El Excel "información reportada por terceros" que descargas del portal de la DIAN.',
-    accept: '.xlsx,.xls',
-    tipos: ['exogena'],
-  },
   {
     clave: '220',
     titulo: 'Certificados 220 (ingresos y retenciones)',
@@ -76,27 +68,50 @@ export function PasoDocumentos() {
   const documentos = useDeclaracion((s) => s.documentos);
   const irAPaso = useDeclaracion((s) => s.irAPaso);
   const esperados = esperadosSegunExogena(documentos);
+  const hayExogena = documentos.some((d) => d.tipo === 'exogena');
   return (
     <section aria-label="Carga de documentos">
       <h2 className="text-2xl font-bold">Sube tus documentos</h2>
       <p className="mt-1 text-sm text-texto-suave">
-        La IA lee cada documento y tú confirmas los valores. Si subes algo en la sección equivocada, no
-        pasa nada: lo clasificamos y lo ubicamos donde corresponde.
+        {hayExogena
+          ? 'Según tu exógena, estos son los documentos de tu declaración. Si subes algo en la sección equivocada, lo clasificamos y lo ubicamos donde corresponde.'
+          : 'La IA lee cada documento y tú confirmas los valores.'}
       </p>
+      {!hayExogena && <AvisoSinExogena alIr={() => irAPaso('exogena')} />}
       <div className="mt-5 space-y-4">
         {SLOTS.map((slot) => (
           <SlotDocumento key={slot.clave} slot={slot} documentos={documentos} esperados={esperados} />
         ))}
       </div>
-      <button
-        type="button"
-        disabled={documentos.length === 0}
-        onClick={() => irAPaso('entrevista')}
-        className="mt-6 h-13 w-full rounded-2xl bg-primario py-3.5 font-semibold text-white transition hover:bg-primario-oscuro disabled:opacity-40"
-      >
-        Continuar a la entrevista
-      </button>
+      <div className="mt-6 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => irAPaso('exogena')}
+          className="h-13 shrink-0 rounded-2xl border border-borde px-5 font-semibold transition hover:border-primario/40"
+        >
+          ← Exógena
+        </button>
+        <button
+          type="button"
+          disabled={!hayExogena && documentos.length === 0}
+          onClick={() => irAPaso('entrevista')}
+          className="h-13 w-full rounded-2xl bg-primario py-3.5 font-semibold text-white transition hover:bg-primario-oscuro disabled:opacity-40"
+        >
+          Continuar a la entrevista
+        </button>
+      </div>
     </section>
+  );
+}
+
+function AvisoSinExogena({ alIr }: { alIr: () => void }) {
+  return (
+    <p role="alert" className="mt-3 rounded-xl bg-alerta-suave px-3 py-2.5 text-sm text-alerta">
+      Aún no has subido tu exógena — con ella te decimos exactamente qué documentos necesitas.{' '}
+      <button type="button" onClick={alIr} className="font-semibold underline">
+        Ir al paso Exógena
+      </button>
+    </p>
   );
 }
 
@@ -190,67 +205,12 @@ async function procesarArchivo(archivo: File, slot: Slot): Promise<string | null
     return 'Reemplazamos la exógena anterior por esta: cada declaración usa una sola exógena.';
   }
   if (!slot.tipos.includes(resultado.tipo)) {
-    return `Lo clasificamos como "${nombreTipo(resultado.tipo)}" y lo ubicamos en su sección.`;
+    return `Lo clasificamos como "${NOMBRES_TIPO[resultado.tipo]}" y lo ubicamos en su sección.`;
   }
   return null;
-}
-
-const NOMBRES_TIPO: Record<TipoDocumento, string> = {
-  exogena: 'Exógena DIAN',
-  certificado_220: 'Certificado 220',
-  certificado_bancario: 'Certificado bancario',
-  medicina_prepagada: 'Medicina prepagada',
-  otro: 'Otro documento',
-};
-
-function nombreTipo(tipo: TipoDocumento): string {
-  return NOMBRES_TIPO[tipo];
-}
-
-/** Lo reportado en los documentos no se pregunta: se precarga y la entrevista solo lo confirma. */
-function aplicarPrecarga(doc: DocumentoProcesado): void {
-  if (doc.tipo === 'exogena') {
-    const precarga = precargarDesdeExogena(doc.exogena);
-    useDeclaracion.getState().actualizarRespuestas(precarga.respuestas);
-    return;
-  }
-  precargarMesesDesde220(doc);
-}
-
-/** Los meses trabajados salen del "período de la certificación" de los 220 (unión entre empleadores). */
-function precargarMesesDesde220(doc: DocumentoProcesado): void {
-  if (doc.tipo !== 'certificado_220') {
-    return;
-  }
-  const certificados = useDeclaracion
-    .getState()
-    .documentos.filter((d): d is Extract<DocumentoProcesado, { tipo: 'certificado_220' }> => d.tipo === 'certificado_220');
-  const meses = mesesTrabajadosSegunCertificados(certificados.map((d) => d.datos), ANIO_GRAVABLE);
-  if (meses !== null) {
-    useDeclaracion.getState().actualizarRespuestas({ mesesConRelacionLaboral: meses });
-  }
 }
 
 function esperadosSegunExogena(documentos: DocumentoProcesado[]): DocumentoEsperado[] {
   const exogena = documentos.find((d) => d.tipo === 'exogena');
   return exogena?.tipo === 'exogena' ? documentosEsperados(exogena.exogena) : [];
-}
-
-async function subirArchivo(archivo: File): Promise<DocumentoProcesado | { error: string }> {
-  try {
-    return await enviarArchivo(archivo);
-  } catch {
-    return { error: 'Error de conexión. Intenta de nuevo.' };
-  }
-}
-
-async function enviarArchivo(archivo: File): Promise<DocumentoProcesado | { error: string }> {
-  const formData = new FormData();
-  formData.append('archivo', archivo);
-  const respuesta = await fetch('/api/documentos', { method: 'POST', body: formData });
-  const cuerpo = (await respuesta.json()) as Record<string, unknown>;
-  if (!respuesta.ok) {
-    return { error: String(cuerpo.error ?? 'No se pudo procesar') };
-  }
-  return { id: crypto.randomUUID(), nombreArchivo: archivo.name, ...cuerpo } as DocumentoProcesado;
 }

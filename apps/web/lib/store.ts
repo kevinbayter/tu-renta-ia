@@ -5,7 +5,7 @@ import { RESPUESTAS_INICIALES } from './tipos';
 
 import type { Declarante, DocumentoProcesado, MensajeChat, RespuestasEntrevista, ResultadoDeclaracion } from './tipos';
 
-export type PasoWizard = 'documentos' | 'entrevista' | 'revision' | 'resultado';
+export type PasoWizard = 'exogena' | 'documentos' | 'entrevista' | 'revision' | 'resultado';
 
 interface EstadoDeclaracion {
   paso: PasoWizard;
@@ -36,7 +36,7 @@ interface EstadoDeclaracion {
 }
 
 const ESTADO_INICIAL = {
-  paso: 'documentos' as PasoWizard,
+  paso: 'exogena' as PasoWizard,
   documentos: [] as DocumentoProcesado[],
   respuestas: RESPUESTAS_INICIALES,
   mensajes: [] as MensajeChat[],

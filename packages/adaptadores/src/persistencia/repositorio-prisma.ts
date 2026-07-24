@@ -1,5 +1,6 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 
+import { progresoDeclaracion } from '@turenta/core';
 import type {
   DeclaracionResumen,
   PerfilUsuario,
@@ -140,6 +141,7 @@ function aResumen(fila: FilaDeclaracion): DeclaracionResumen {
     actualizadaEn: fila.actualizadaEn.toISOString(),
     saldoAFavor: liquidacion?.totalSaldoAFavor ?? null,
     saldoAPagar: liquidacion?.saldoAPagar ?? null,
+    progreso: progresoDeclaracion(fila.estado),
   };
 }
 

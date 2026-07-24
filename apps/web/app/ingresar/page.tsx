@@ -44,7 +44,7 @@ function FormularioPerfil() {
       setError('Revisa los datos: nombres, apellidos y una cédula válida.');
       return;
     }
-    router.push('/declaraciones');
+    router.push('/panel');
   };
 
   return (
@@ -181,7 +181,7 @@ function FormularioCodigo({
       alFaltarPerfil();
       return;
     }
-    router.push('/declaraciones');
+    router.push('/panel');
   };
 
   return (

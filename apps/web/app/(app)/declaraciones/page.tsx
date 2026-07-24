@@ -6,8 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { FilaDeclaracion } from '@/components/declaraciones/fila-declaracion';
 import { NuevaDeTercero } from '@/components/declaraciones/nueva-de-tercero';
-import { useDeclaracion } from '@/lib/store';
-import { RESPUESTAS_INICIALES } from '@/lib/tipos';
+import { idDeclaracionPropia, iniciarDeclaracionPropia } from '@/lib/declaraciones-acciones';
 
 import type { DeclaracionResumen, PerfilUsuario } from '@turenta/core';
 
@@ -32,8 +31,7 @@ export default function PaginaDeclaraciones() {
     if (!perfil) {
       return;
     }
-    const existente = lista?.find((d) => d.titular.esPropia && d.anioGravable === ANIO);
-    iniciarDeclaracion(perfil, true, existente?.id ?? null);
+    iniciarDeclaracionPropia(perfil, idDeclaracionPropia(lista ?? [], ANIO));
     router.push('/declaracion');
   };
 
@@ -125,17 +123,6 @@ function TarjetaTitular({
         </div>
       )}
     </section>
-  );
-}
-
-function iniciarDeclaracion(perfil: PerfilUsuario, esPropia: boolean, declaracionId: string | null): void {
-  const estado = useDeclaracion.getState();
-  estado.reiniciar();
-  estado.actualizarRespuestas(RESPUESTAS_INICIALES);
-  estado.establecerTitular(
-    { nombres: perfil.nombres, apellidos: perfil.apellidos, identificacion: perfil.identificacion },
-    esPropia,
-    declaracionId,
   );
 }
 

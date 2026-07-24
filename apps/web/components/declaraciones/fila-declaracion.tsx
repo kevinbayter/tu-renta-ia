@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { DialogoConfirmar } from '@/components/ui/dialogo-confirmar';
-import { useDeclaracion } from '@/lib/store';
+import { cargarDeclaracionEnStore } from '@/lib/declaraciones-acciones';
 import { formatearPesos } from '@/lib/tipos';
 
 import type { DeclaracionResumen } from '@turenta/core';
@@ -17,7 +17,7 @@ export function FilaDeclaracion({ declaracion }: { declaracion: DeclaracionResum
 
   const continuar = async () => {
     setOcupado(true);
-    const ok = await cargarEnStore(declaracion);
+    const ok = await cargarDeclaracionEnStore(declaracion);
     setOcupado(false);
     if (ok) {
       router.push('/declaracion');
@@ -101,23 +101,3 @@ function formatearFecha(iso: string): string {
   return `${Number(dia)} de ${meses[Number(mes) - 1] ?? ''} de ${anio ?? ''}`;
 }
 
-async function cargarEnStore(declaracion: DeclaracionResumen): Promise<boolean> {
-  const respuesta = await fetch(`/api/declaraciones/${declaracion.id}`).catch(() => null);
-  if (!respuesta?.ok) {
-    return false;
-  }
-  const { estado } = (await respuesta.json()) as { estado: Record<string, unknown> };
-  const store = useDeclaracion.getState();
-  store.reiniciar();
-  store.hidratar(estado);
-  store.establecerTitular(
-    {
-      nombres: declaracion.titular.nombres,
-      apellidos: declaracion.titular.apellidos,
-      identificacion: declaracion.titular.identificacion,
-    },
-    declaracion.titular.esPropia,
-    declaracion.id,
-  );
-  return true;
-}

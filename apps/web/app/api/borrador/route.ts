@@ -1,4 +1,7 @@
-import { generarPdfBorrador210 } from '@turenta/adaptadores';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import { generarBorradorCompleto } from '@turenta/adaptadores';
 import { fechaVencimiento, obtenerConstantes } from '@turenta/motor-fiscal';
 import { NextResponse } from 'next/server';
 
@@ -9,13 +12,30 @@ interface CuerpoBorrador {
   resultado: ResultadoDeclaracion;
 }
 
-/** Genera y descarga el PDF del borrador 210 con la fecha límite del declarante. */
+const RUTAS_PLANTILLA = [
+  join(process.cwd(), '../../packages/adaptadores/plantillas/formulario-210-ag2025.pdf'),
+  join(process.cwd(), 'plantillas/formulario-210-ag2025.pdf'),
+];
+
+function cargarPlantilla(): Uint8Array {
+  const ruta = RUTAS_PLANTILLA.find((r) => existsSync(r));
+  if (!ruta) {
+    throw new Error('Plantilla del formulario 210 no encontrada');
+  }
+  return new Uint8Array(readFileSync(ruta));
+}
+
+/** Genera y descarga el borrador: formulario 210 oficial diligenciado + resumen. */
 export async function POST(request: Request): Promise<Response> {
   const cuerpo = (await request.json()) as CuerpoBorrador;
   try {
     const constantes = obtenerConstantes(cuerpo.resultado.anioGravable);
     const vencimiento = fechaVencimiento(cuerpo.declarante.identificacion, constantes);
-    const pdf = await generarPdfBorrador210({ ...cuerpo.declarante, fechaVencimiento: vencimiento }, cuerpo.resultado);
+    const pdf = await generarBorradorCompleto(
+      cargarPlantilla(),
+      { ...cuerpo.declarante, fechaVencimiento: vencimiento },
+      cuerpo.resultado,
+    );
     return new Response(new Uint8Array(pdf), {
       headers: {
         'Content-Type': 'application/pdf',

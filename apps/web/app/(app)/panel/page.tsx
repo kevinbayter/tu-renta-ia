@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { FilaPanel } from '@/components/panel/fila-panel';
 import { PanelDerecho } from '@/components/panel/panel-derecho';
+import { RecomendacionesBanda } from '@/components/panel/recomendaciones-banda';
 import { TarjetasMetricas } from '@/components/panel/tarjetas-metricas';
 import { idDeclaracionPropia, iniciarDeclaracionPropia } from '@/lib/declaraciones-acciones';
 import { useSesionCliente } from '@/lib/sesion-cliente';
@@ -48,6 +49,7 @@ export default function PaginaPanel() {
         <div className="min-w-0 space-y-6">
           <TarjetasMetricas lista={lista} />
           <SeccionDeclaraciones lista={lista} alCambiar={recargar} alNueva={nuevaPropia} />
+          {lista[0] && <RecomendacionesBanda declaracion={lista[0]} />}
         </div>
         <PanelDerecho lista={lista} />
       </div>

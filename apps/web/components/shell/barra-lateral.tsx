@@ -8,6 +8,7 @@ import {
   LifeBuoy,
   Receipt,
   Settings,
+  Sparkles,
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -15,15 +16,23 @@ import { usePathname } from 'next/navigation';
 
 import { LogoMarca } from '@/components/landing/iconos';
 
-const NAVEGACION = [
+interface ItemNav {
+  ruta: string;
+  etiqueta: string;
+  Icono: typeof LayoutDashboard;
+  beta?: boolean;
+}
+
+const NAVEGACION: ItemNav[] = [
   { ruta: '/panel', etiqueta: 'Dashboard', Icono: LayoutDashboard },
   { ruta: '/declaraciones', etiqueta: 'Mis declaraciones', Icono: FileText },
   { ruta: '/clientes', etiqueta: 'Clientes', Icono: Users },
+  { ruta: '/ia-fiscal', etiqueta: 'IA Fiscal', Icono: Sparkles, beta: true },
   { ruta: '/calendario', etiqueta: 'Calendario tributario', Icono: CalendarDays },
   { ruta: '/facturacion', etiqueta: 'Facturación', Icono: Receipt },
   { ruta: '/plan', etiqueta: 'Plan y suscripción', Icono: Gem },
   { ruta: '/configuracion', etiqueta: 'Configuración', Icono: Settings },
-] as const;
+];
 
 export function BarraLateral({ alNavegar }: { alNavegar?: () => void }) {
   const pathname = usePathname();
@@ -47,15 +56,7 @@ export function BarraLateral({ alNavegar }: { alNavegar?: () => void }) {
   );
 }
 
-function ItemNavegacion({
-  item,
-  activo,
-  alNavegar,
-}: {
-  item: (typeof NAVEGACION)[number];
-  activo: boolean;
-  alNavegar?: () => void;
-}) {
+function ItemNavegacion({ item, activo, alNavegar }: { item: ItemNav; activo: boolean; alNavegar?: () => void }) {
   return (
     <Link
       href={item.ruta}
@@ -67,6 +68,9 @@ function ItemNavegacion({
     >
       <item.Icono size={18} strokeWidth={activo ? 2.2 : 1.8} aria-hidden />
       {item.etiqueta}
+      {item.beta && (
+        <span className="ml-auto rounded-md bg-primario-suave px-1.5 py-0.5 text-[10px] font-bold text-primario">Beta</span>
+      )}
     </Link>
   );
 }

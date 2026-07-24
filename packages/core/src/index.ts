@@ -45,3 +45,8 @@ export { type RespuestasEntrevista } from './perfil/respuestas';
 export { construirPerfilFiscal, type InsumosPerfil } from './perfil/construir-perfil';
 export { progresoDeclaracion, type ProgresoDeclaracion } from './declaracion/progreso';
 export { clasificarResultado, type EstadoResultado } from './declaracion/clasificacion';
+export {
+  evaluarDeclaracion,
+  type EvaluacionDeclaracion,
+  type Recomendacion,
+} from './declaracion/recomendaciones';

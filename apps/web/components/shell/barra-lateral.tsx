@@ -8,6 +8,7 @@ import {
   LifeBuoy,
   Receipt,
   Settings,
+  Users,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -17,6 +18,7 @@ import { LogoMarca } from '@/components/landing/iconos';
 const NAVEGACION = [
   { ruta: '/panel', etiqueta: 'Dashboard', Icono: LayoutDashboard },
   { ruta: '/declaraciones', etiqueta: 'Mis declaraciones', Icono: FileText },
+  { ruta: '/clientes', etiqueta: 'Clientes', Icono: Users },
   { ruta: '/calendario', etiqueta: 'Calendario tributario', Icono: CalendarDays },
   { ruta: '/facturacion', etiqueta: 'Facturación', Icono: Receipt },
   { ruta: '/plan', etiqueta: 'Plan y suscripción', Icono: Gem },

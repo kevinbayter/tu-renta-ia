@@ -3,7 +3,11 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { progresoDeclaracion } from '@turenta/core';
 import type {
   DeclaracionResumen,
+  EventoActividad,
+  NotificacionNueva,
+  NotificacionUsuario,
   PerfilUsuario,
+  PersonaAdministrada,
   RepositorioPort,
   TitularDeclaracion,
   UsuarioRegistrado,
@@ -103,6 +107,85 @@ export class RepositorioPrisma implements RepositorioPort {
 
   async eliminarUsuario(usuarioId: string): Promise<void> {
     await this.prisma.usuario.delete({ where: { id: usuarioId } });
+  }
+
+  async listarPersonas(usuarioId: string): Promise<PersonaAdministrada[]> {
+    return this.prisma.persona.findMany({
+      where: { usuarioId },
+      orderBy: [{ nombres: 'asc' }],
+      select: { id: true, nombres: true, apellidos: true, identificacion: true, email: true, telefono: true },
+    });
+  }
+
+  async guardarPersona(usuarioId: string, persona: Omit<PersonaAdministrada, 'id'>): Promise<{ id: string }> {
+    const identificacion = persona.identificacion.replace(/\D/g, '');
+    const datos = { ...persona, identificacion };
+    return this.prisma.persona.upsert({
+      where: { usuarioId_identificacion: { usuarioId, identificacion } },
+      create: { usuarioId, ...datos },
+      update: datos,
+      select: { id: true },
+    });
+  }
+
+  async eliminarPersona(usuarioId: string, personaId: string): Promise<void> {
+    await this.prisma.persona.deleteMany({ where: { id: personaId, usuarioId } });
+  }
+
+  async registrarActividad(
+    usuarioId: string,
+    evento: { tipo: string; descripcion: string; declaracionId?: string },
+  ): Promise<void> {
+    await this.prisma.actividad.create({
+      data: { usuarioId, tipo: evento.tipo, descripcion: evento.descripcion, declaracionId: evento.declaracionId ?? '' },
+    });
+  }
+
+  async listarActividad(usuarioId: string, limite: number): Promise<EventoActividad[]> {
+    const filas = await this.prisma.actividad.findMany({
+      where: { usuarioId },
+      orderBy: { creadaEn: 'desc' },
+      take: limite,
+    });
+    return filas.map((f) => ({ ...f, creadaEn: f.creadaEn.toISOString() }));
+  }
+
+  async listarNotificaciones(usuarioId: string): Promise<NotificacionUsuario[]> {
+    const filas = await this.prisma.notificacion.findMany({
+      where: { usuarioId },
+      orderBy: { creadaEn: 'desc' },
+      take: 30,
+    });
+    return filas.map((f) => ({
+      id: f.id,
+      tipo: f.tipo,
+      titulo: f.titulo,
+      cuerpo: f.cuerpo,
+      leida: f.leidaEn !== null,
+      creadaEn: f.creadaEn.toISOString(),
+    }));
+  }
+
+  async crearNotificacionSiNueva(usuarioId: string, notificacion: NotificacionNueva): Promise<boolean> {
+    const creada = await this.prisma.notificacion
+      .create({
+        data: {
+          usuarioId,
+          tipo: notificacion.tipo,
+          titulo: notificacion.titulo,
+          cuerpo: notificacion.cuerpo,
+          claveIdempotencia: notificacion.claveIdempotencia,
+        },
+      })
+      .catch(() => null);
+    return creada !== null;
+  }
+
+  async marcarNotificacionesLeidas(usuarioId: string): Promise<void> {
+    await this.prisma.notificacion.updateMany({
+      where: { usuarioId, leidaEn: null },
+      data: { leidaEn: new Date() },
+    });
   }
 }
 

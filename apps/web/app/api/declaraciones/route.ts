@@ -44,7 +44,37 @@ export async function POST(request: Request): Promise<NextResponse> {
     cuerpo.titular as TitularDeclaracion,
     cuerpo.estado as object,
   );
+  await registrarGuardado(sesion.usuarioId, cuerpo.titular as TitularDeclaracion, cuerpo.anioGravable as number, id);
   return NextResponse.json({ ok: true, id });
+}
+
+/** Actividad + persona administrada (si es de un tercero); nunca rompe el guardado. */
+async function registrarGuardado(
+  usuarioId: string,
+  titular: TitularDeclaracion,
+  anioGravable: number,
+  declaracionId: string,
+): Promise<void> {
+  const repositorio = obtenerRepositorio();
+  await repositorio
+    .registrarActividad(usuarioId, {
+      tipo: 'declaracion_guardada',
+      descripcion: `Declaración ${String(anioGravable)} guardada — ${titular.nombres} ${titular.apellidos}`,
+      declaracionId,
+    })
+    .catch(() => null);
+  if (titular.esPropia) {
+    return;
+  }
+  await repositorio
+    .guardarPersona(usuarioId, {
+      nombres: titular.nombres,
+      apellidos: titular.apellidos,
+      identificacion: titular.identificacion,
+      email: '',
+      telefono: '',
+    })
+    .catch(() => null);
 }
 
 function validar(cuerpo: CuerpoGuardar): string | null {
@@ -69,5 +99,8 @@ export async function DELETE(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: 'Falta el id' }, { status: 400 });
   }
   await obtenerRepositorio().eliminarDeclaracion(sesion.usuarioId, id);
+  await obtenerRepositorio()
+    .registrarActividad(sesion.usuarioId, { tipo: 'declaracion_eliminada', descripcion: 'Declaración eliminada' })
+    .catch(() => null);
   return NextResponse.json({ ok: true });
 }

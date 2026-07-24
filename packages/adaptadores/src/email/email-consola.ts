@@ -10,4 +10,10 @@ export class EmailConsolaAdapter implements EmailPort {
     console.error(`[TuRenta DEV] Código de ingreso para ${email}: ${codigo}`);
     return Promise.resolve();
   }
+
+  enviarAviso(email: string, asunto: string, mensaje: string): Promise<void> {
+    // eslint-disable-next-line no-console -- adaptador de desarrollo
+    console.error(`[TuRenta DEV] Aviso para ${email}: ${asunto} — ${mensaje}`);
+    return Promise.resolve();
+  }
 }

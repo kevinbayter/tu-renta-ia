@@ -49,13 +49,65 @@ export interface RepositorioPort {
     estado: object,
   ): Promise<{ id: string }>;
   cargarDeclaracion(usuarioId: string, declaracionId: string): Promise<object | null>;
+
+  listarPersonas(usuarioId: string): Promise<PersonaAdministrada[]>;
+  /** Upsert por (usuario, identificación). Devuelve el id. */
+  guardarPersona(usuarioId: string, persona: Omit<PersonaAdministrada, 'id'>): Promise<{ id: string }>;
+  eliminarPersona(usuarioId: string, personaId: string): Promise<void>;
+
+  registrarActividad(
+    usuarioId: string,
+    evento: { tipo: string; descripcion: string; declaracionId?: string },
+  ): Promise<void>;
+  listarActividad(usuarioId: string, limite: number): Promise<EventoActividad[]>;
+
+  listarNotificaciones(usuarioId: string): Promise<NotificacionUsuario[]>;
+  /** Crea la notificación solo si su clave de idempotencia no existe. Devuelve true si la creó. */
+  crearNotificacionSiNueva(usuarioId: string, notificacion: NotificacionNueva): Promise<boolean>;
+  marcarNotificacionesLeidas(usuarioId: string): Promise<void>;
   eliminarDeclaracion(usuarioId: string, declaracionId: string): Promise<void>;
 
   /** Habeas data: elimina el usuario y TODOS sus datos (cascada). */
   eliminarUsuario(usuarioId: string): Promise<void>;
 }
 
-/** Puerto de envío de correos (OTP de ingreso). */
+/** Puerto de envío de correos (OTP de ingreso y avisos). */
 export interface EmailPort {
   enviarCodigo(email: string, codigo: string): Promise<void>;
+  enviarAviso(email: string, asunto: string, mensaje: string): Promise<void>;
+}
+
+export interface PersonaAdministrada {
+  id: string;
+  nombres: string;
+  apellidos: string;
+  identificacion: string;
+  email: string;
+  telefono: string;
+}
+
+export interface EventoActividad {
+  id: string;
+  tipo: string;
+  descripcion: string;
+  declaracionId: string;
+  creadaEn: string;
+}
+
+export interface NotificacionUsuario {
+  id: string;
+  tipo: string;
+  titulo: string;
+  cuerpo: string;
+  leida: boolean;
+  creadaEn: string;
+}
+
+/** Notificación a crear; la clave de idempotencia evita duplicados al re-evaluar. */
+export interface NotificacionNueva {
+  tipo: string;
+  titulo: string;
+  cuerpo: string;
+  claveIdempotencia: string;
+  esCritica: boolean;
 }

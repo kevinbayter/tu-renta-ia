@@ -1,7 +1,8 @@
 import { extraerTextoPdf, parsearExogena } from '@turenta/adaptadores';
 import { NextResponse } from 'next/server';
 
-import { obtenerExtractor } from '@/server/composicion';
+import { obtenerExtractor, obtenerRepositorio } from '@/server/composicion';
+import { leerSesion } from '@/server/sesion';
 
 import type { ExtractorCertificados } from '@turenta/adaptadores';
 import type { DocumentoFuente } from '@turenta/core';
@@ -18,11 +19,28 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     const contenido = new Uint8Array(await archivo.arrayBuffer());
     const cuerpo = await procesarArchivo(archivo.name, contenido);
+    await registrarProcesado(archivo.name, cuerpo);
     return NextResponse.json(cuerpo);
   } catch (error) {
     const mensaje = error instanceof Error ? error.message : 'Error procesando el documento';
     return NextResponse.json({ error: mensaje }, { status: 422 });
   }
+}
+
+/** Deja huella en la actividad del usuario (si hay sesión); nunca rompe el flujo. */
+async function registrarProcesado(nombreArchivo: string, cuerpo: unknown): Promise<void> {
+  const sesion = await leerSesion().catch(() => null);
+  if (!sesion) {
+    return;
+  }
+  const tipo = (cuerpo as { tipo?: string }).tipo ?? 'otro';
+  const evento =
+    tipo === 'exogena'
+      ? { tipo: 'exogena_importada', descripcion: `Información exógena importada — ${nombreArchivo}` }
+      : { tipo: 'documento_procesado', descripcion: `Documento procesado (${tipo}) — ${nombreArchivo}` };
+  await obtenerRepositorio()
+    .registrarActividad(sesion.usuarioId, evento)
+    .catch(() => null);
 }
 
 async function procesarArchivo(nombre: string, contenido: Uint8Array): Promise<unknown> {

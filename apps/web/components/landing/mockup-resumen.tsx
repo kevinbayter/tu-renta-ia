@@ -2,13 +2,14 @@ import { LogoMarca } from './iconos';
 
 const MENU = ['Resumen', 'Documentos', 'Información', 'Resultado', 'Borrador 210', 'Guía DIAN'];
 const PASOS = ['Documentos', 'Información', 'Resultado'];
-// Cifras REALES del caso validado contra una declaración presentada (no mockeadas):
-// 114.409.000 − 53.720.000 = 60.689.000 gravable → impuesto 1.217.000; 2.618.000 − 1.217.000 = 1.401.000 a favor.
+// EJEMPLO ILUSTRATIVO (no datos de una persona real) con matemática verdadera de la
+// tabla art. 241 AG2025: 95.400.000 − 38.160.000 = 57.240.000 gravable (1.149 UVT)
+// → impuesto (1.149,4 − 1.090) × 19% = 562.000; retenciones 1.800.000 → 1.238.000 a favor.
 const DESGLOSE: [string, string, boolean?][] = [
-  ['Ingresos totales', '$114.409.000'],
-  ['No gravado, exento y deducciones', '-$53.720.000'],
-  ['Impuesto de renta', '$1.217.000'],
-  ['Retenciones y saldo a favor previo', '-$2.618.000'],
+  ['Ingresos totales', '$95.400.000'],
+  ['No gravado, exento y deducciones', '-$38.160.000'],
+  ['Impuesto de renta', '$562.000'],
+  ['Retenciones que ya pagaste', '-$1.800.000'],
 ];
 
 /** Mockup del producto que se muestra en el hero (dashboard "Resumen de tu declaración"). */
@@ -25,7 +26,7 @@ export function MockupResumen() {
           <TarjetaResultado />
           <TarjetaDesglose />
           <p className="flex items-center gap-1.5 text-[11px] text-texto-suave">
-            <span className="text-primario">✓</span> Cálculo validado con normas del Estatuto Tributario vigente y UVT 2025.
+            <span className="text-primario">✓</span> Ejemplo ilustrativo · Cálculo con la tabla del art. 241 E.T. y UVT 2025.
           </p>
         </div>
       </div>
@@ -54,7 +55,7 @@ function TarjetaResultado() {
   return (
     <div className="rounded-xl border border-borde p-4">
       <p className="text-xs text-texto-suave">Resultado estimado</p>
-      <p className="mt-1 text-3xl font-bold text-primario">$1.401.000</p>
+      <p className="mt-1 text-3xl font-bold text-primario">$1.238.000</p>
       <p className="text-xs text-texto-suave">Saldo a favor</p>
       <div className="mt-4 flex items-center justify-between">
         {PASOS.map((paso) => (
@@ -81,7 +82,7 @@ function TarjetaDesglose() {
         ))}
         <div className="flex justify-between border-t border-borde pt-2 text-xs font-semibold">
           <dt>Saldo a favor</dt>
-          <dd className="font-mono text-primario">$1.401.000</dd>
+          <dd className="font-mono text-primario">$1.238.000</dd>
         </div>
       </dl>
     </div>

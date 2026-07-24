@@ -16,6 +16,9 @@ export const certificado220Schema = z.strictObject({
   nitRetenedor: z.string(),
   razonSocial: z.string(),
   anioGravable: z.number().int(),
+  /** Período de la certificación (fechas De → A del encabezado), YYYY-MM-DD o "". */
+  periodoInicio: z.string(),
+  periodoFin: z.string(),
   pagosSalarios: z.number().int(),
   pagosPrestaciones: z.number().int(),
   otrosPagos: z.number().int(),

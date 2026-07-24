@@ -179,7 +179,8 @@ function resumirDocumentos(): string {
 
 function resumirDocumento(d: DocumentoProcesado): string | null {
   if (d.tipo === 'certificado_220') {
-    return `Certificado 220 de NIT ${d.datos.nitRetenedor}: ingresos brutos ${formatearPesos(d.datos.totalIngresosBrutos)}, aportes salud+pensión ${formatearPesos(d.datos.aportesSalud + d.datos.aportesPension)}, retención ${formatearPesos(d.datos.retencionFuente)}.`;
+    const periodo = d.datos.periodoInicio && d.datos.periodoFin ? ` período ${d.datos.periodoInicio} a ${d.datos.periodoFin},` : '';
+    return `Certificado 220 de NIT ${d.datos.nitRetenedor}:${periodo} ingresos brutos ${formatearPesos(d.datos.totalIngresosBrutos)}, aportes salud+pensión ${formatearPesos(d.datos.aportesSalud + d.datos.aportesPension)}, retención ${formatearPesos(d.datos.retencionFuente)}.`;
   }
   if (d.tipo === 'certificado_bancario') {
     return `Certificado bancario ${d.datos.entidad}: saldo 31-dic ${formatearPesos(d.datos.saldoCuentas)} (ya contado como activo), rendimientos ${formatearPesos(d.datos.rendimientos)}, GMF ${formatearPesos(d.datos.gmf)} (parcial: confirma el GMF TOTAL del año con el usuario), retención ${formatearPesos(d.datos.retencionFuente)}.`;

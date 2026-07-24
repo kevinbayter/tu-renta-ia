@@ -15,6 +15,8 @@ import type {
 
 import { PrismaClient } from './generado/client';
 
+import type { Prisma } from './generado/client';
+
 /** Adaptador de persistencia sobre Postgres (Prisma 7 + driver pg). */
 export class RepositorioPrisma implements RepositorioPort {
   private readonly prisma: PrismaClient;
@@ -62,6 +64,36 @@ export class RepositorioPrisma implements RepositorioPort {
 
   async actualizarPerfil(usuarioId: string, perfil: PerfilUsuario): Promise<void> {
     await this.prisma.usuario.update({ where: { id: usuarioId }, data: perfil });
+  }
+
+  async obtenerPreferencias(usuarioId: string): Promise<unknown> {
+    const fila = await this.prisma.usuario.findUnique({
+      where: { id: usuarioId },
+      select: { preferencias: true },
+    });
+    return fila?.preferencias ?? {};
+  }
+
+  async guardarPreferencias(usuarioId: string, preferencias: Record<string, unknown>): Promise<void> {
+    await this.prisma.usuario.update({
+      where: { id: usuarioId },
+      data: { preferencias: preferencias as Prisma.InputJsonValue },
+    });
+  }
+
+  async obtenerFotoAvatar(usuarioId: string): Promise<Uint8Array | null> {
+    const fila = await this.prisma.usuario.findUnique({
+      where: { id: usuarioId },
+      select: { fotoAvatar: true },
+    });
+    return fila?.fotoAvatar ?? null;
+  }
+
+  async guardarFotoAvatar(usuarioId: string, foto: Uint8Array | null): Promise<void> {
+    await this.prisma.usuario.update({
+      where: { id: usuarioId },
+      data: { fotoAvatar: foto ? new Uint8Array(foto) : null },
+    });
   }
 
   async listarDeclaraciones(usuarioId: string): Promise<DeclaracionResumen[]> {

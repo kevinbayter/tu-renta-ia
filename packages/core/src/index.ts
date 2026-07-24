@@ -42,6 +42,11 @@ export {
 } from './exogena/bancos-sin-certificado';
 export { mesesTrabajadosSegunCertificados } from './perfil/meses-trabajados';
 export { type RespuestasEntrevista } from './perfil/respuestas';
+export {
+  normalizarPreferencias,
+  PREFERENCIAS_POR_DEFECTO,
+  type PreferenciasUsuario,
+} from './perfil/preferencias';
 export { construirPerfilFiscal, type InsumosPerfil } from './perfil/construir-perfil';
 export { progresoDeclaracion, type ProgresoDeclaracion } from './declaracion/progreso';
 export { clasificarResultado, type EstadoResultado } from './declaracion/clasificacion';

@@ -8,12 +8,18 @@ import { vencimientosDe } from '@/lib/vencimientos';
 
 import type { DeclaracionResumen, EventoActividad } from '@turenta/core';
 
-export function PanelDerecho({ lista }: { lista: DeclaracionResumen[] }) {
+interface WidgetsVisibles {
+  asistente: boolean;
+  vencimientos: boolean;
+  actividad: boolean;
+}
+
+export function PanelDerecho({ lista, widgets }: { lista: DeclaracionResumen[]; widgets: WidgetsVisibles }) {
   return (
     <aside className="space-y-4" aria-label="Resumen lateral">
-      <AsistenteWidget />
-      <ProximosVencimientos lista={lista} />
-      <ActividadReciente />
+      {widgets.asistente && <AsistenteWidget />}
+      {widgets.vencimientos && <ProximosVencimientos lista={lista} />}
+      {widgets.actividad && <ActividadReciente />}
     </aside>
   );
 }

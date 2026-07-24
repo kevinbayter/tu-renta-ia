@@ -5,14 +5,17 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+import { PREFERENCIAS_POR_DEFECTO } from '@turenta/core';
+
 import { FilaPanel } from '@/components/panel/fila-panel';
 import { PanelDerecho } from '@/components/panel/panel-derecho';
+import { PersonalizarVista } from '@/components/panel/personalizar-vista';
 import { RecomendacionesBanda } from '@/components/panel/recomendaciones-banda';
 import { TarjetasMetricas } from '@/components/panel/tarjetas-metricas';
 import { idDeclaracionPropia, iniciarDeclaracionPropia } from '@/lib/declaraciones-acciones';
 import { useSesionCliente } from '@/lib/sesion-cliente';
 
-import type { DeclaracionResumen } from '@turenta/core';
+import type { DeclaracionResumen, PreferenciasUsuario } from '@turenta/core';
 
 const ANIO = 2025;
 
@@ -20,9 +23,11 @@ export default function PaginaPanel() {
   const sesion = useSesionCliente();
   const router = useRouter();
   const [lista, setLista] = useState<DeclaracionResumen[] | null>(null);
+  const [preferencias, setPreferencias] = useState<PreferenciasUsuario>(PREFERENCIAS_POR_DEFECTO);
 
   const recargar = useCallback(() => {
     void cargarLista().then(setLista);
+    void cargarPreferencias().then(setPreferencias);
   }, []);
   useEffect(recargar, [recargar]);
 
@@ -44,14 +49,17 @@ export default function PaginaPanel() {
 
   return (
     <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
-      <Encabezado nombre={sesion.perfil?.nombres ?? ''} />
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <Encabezado nombre={sesion.perfil?.nombres ?? ''} />
+        <PersonalizarVista preferencias={preferencias} alCambiar={setPreferencias} />
+      </div>
       <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_320px]">
         <div className="min-w-0 space-y-6">
           <TarjetasMetricas lista={lista} />
           <SeccionDeclaraciones lista={lista} alCambiar={recargar} alNueva={nuevaPropia} />
-          {lista[0] && <RecomendacionesBanda declaracion={lista[0]} />}
+          {preferencias.widgets.recomendaciones && lista[0] && <RecomendacionesBanda declaracion={lista[0]} />}
         </div>
-        <PanelDerecho lista={lista} />
+        <PanelDerecho lista={lista} widgets={preferencias.widgets} />
       </div>
       <BotonFlotante alNueva={nuevaPropia} />
     </main>
@@ -141,4 +149,13 @@ async function cargarLista(): Promise<DeclaracionResumen[]> {
   }
   const cuerpo = (await respuesta.json()) as { declaraciones: DeclaracionResumen[] };
   return cuerpo.declaraciones;
+}
+
+async function cargarPreferencias(): Promise<PreferenciasUsuario> {
+  const respuesta = await fetch('/api/preferencias').catch(() => null);
+  if (!respuesta?.ok) {
+    return PREFERENCIAS_POR_DEFECTO;
+  }
+  const cuerpo = (await respuesta.json()) as { preferencias: PreferenciasUsuario };
+  return cuerpo.preferencias;
 }

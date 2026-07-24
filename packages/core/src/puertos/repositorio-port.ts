@@ -39,6 +39,10 @@ export interface RepositorioPort {
 
   obtenerPerfil(usuarioId: string): Promise<PerfilUsuario | null>;
   actualizarPerfil(usuarioId: string, perfil: PerfilUsuario): Promise<void>;
+  obtenerPreferencias(usuarioId: string): Promise<unknown>;
+  guardarPreferencias(usuarioId: string, preferencias: Record<string, unknown>): Promise<void>;
+  obtenerFotoAvatar(usuarioId: string): Promise<Uint8Array | null>;
+  guardarFotoAvatar(usuarioId: string, foto: Uint8Array | null): Promise<void>;
 
   listarDeclaraciones(usuarioId: string): Promise<DeclaracionResumen[]>;
   /** Upsert por (usuario, identificación del titular, año). Devuelve el id. */

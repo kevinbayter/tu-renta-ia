@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { useDeclaracion } from '@/lib/store';
+// (titular y guardado por declaración: ver /declaraciones para el historial)
 
 type EstadoSesion = { tipo: 'cargando' } | { tipo: 'anonimo' } | { tipo: 'activa'; email: string };
 
@@ -32,12 +33,28 @@ export function BarraSesion() {
   return (
     <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-borde bg-card px-3 py-2 text-xs">
       <span className="text-texto-suave">☁ {sesion.email}</span>
+      <TitularActual />
       <span className="flex-1" />
+      <Link href="/declaraciones" className="rounded-lg bg-primario-suave px-2.5 py-1 font-semibold text-primario">
+        Mis declaraciones
+      </Link>
       <BotonAccion etiqueta="Guardar" accion={() => guardarEnNube(setAviso)} />
-      <BotonAccion etiqueta="Cargar" accion={() => cargarDeNube(setAviso)} />
       <BotonAccion etiqueta="Salir" accion={() => salir(setSesion)} />
       {aviso && <span className="w-full text-exito">{aviso}</span>}
     </div>
+  );
+}
+
+function TitularActual() {
+  const declarante = useDeclaracion((s) => s.declarante);
+  const esPropia = useDeclaracion((s) => s.esPropia);
+  if (esPropia === null || !declarante.nombres) {
+    return null;
+  }
+  return (
+    <span className="rounded-lg bg-background px-2 py-0.5 text-texto-suave">
+      {esPropia ? 'Mi declaración' : `Para: ${declarante.nombres} ${declarante.apellidos}`}
+    </span>
   );
 }
 
@@ -72,6 +89,11 @@ async function pedirSesion(): Promise<EstadoSesion> {
 
 async function guardarEnNube(setAviso: (v: string | null) => void): Promise<void> {
   const s = useDeclaracion.getState();
+  if (!s.declarante.nombres || !s.declarante.identificacion) {
+    setAviso('Completa el titular (nombres y cédula) en el paso Revisión antes de guardar');
+    setTimeout(() => setAviso(null), 4000);
+    return;
+  }
   const estado = {
     paso: s.paso,
     documentos: s.documentos,
@@ -81,30 +103,28 @@ async function guardarEnNube(setAviso: (v: string | null) => void): Promise<void
     resultado: s.resultado,
     declarante: s.declarante,
   };
-  const respuesta = await fetch('/api/declaracion', {
-    method: 'PUT',
+  const respuesta = await fetch('/api/declaraciones', {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ estado }),
+    body: JSON.stringify({
+      anioGravable: 2025,
+      titular: { ...s.declarante, esPropia: s.esPropia ?? true },
+      estado,
+    }),
   }).catch(() => null);
+  await registrarIdGuardado(respuesta);
   setAviso(respuesta?.ok ? '✓ Avance guardado en la nube' : 'No se pudo guardar');
   setTimeout(() => setAviso(null), 3000);
 }
 
-async function cargarDeNube(setAviso: (v: string | null) => void): Promise<void> {
-  const respuesta = await fetch('/api/declaracion').catch(() => null);
+async function registrarIdGuardado(respuesta: Response | null): Promise<void> {
   if (!respuesta?.ok) {
-    setAviso('No se pudo cargar');
     return;
   }
-  const cuerpo = (await respuesta.json()) as { estado: Record<string, unknown> | null };
-  if (!cuerpo.estado) {
-    setAviso('No tienes avance guardado todavía');
-    setTimeout(() => setAviso(null), 3000);
-    return;
+  const cuerpo = (await respuesta.json()) as { id?: string };
+  if (cuerpo.id) {
+    useDeclaracion.getState().establecerDeclaracionId(cuerpo.id);
   }
-  useDeclaracion.getState().hidratar(cuerpo.estado);
-  setAviso('✓ Avance cargado');
-  setTimeout(() => setAviso(null), 3000);
 }
 
 async function salir(setSesion: (v: EstadoSesion) => void): Promise<void> {

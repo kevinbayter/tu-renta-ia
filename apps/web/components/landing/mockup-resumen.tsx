@@ -2,11 +2,13 @@ import { LogoMarca } from './iconos';
 
 const MENU = ['Resumen', 'Documentos', 'Información', 'Resultado', 'Borrador 210', 'Guía DIAN'];
 const PASOS = ['Documentos', 'Información', 'Resultado'];
+// Cifras REALES del caso validado contra una declaración presentada (no mockeadas):
+// 114.409.000 − 53.720.000 = 60.689.000 gravable → impuesto 1.217.000; 2.618.000 − 1.217.000 = 1.401.000 a favor.
 const DESGLOSE: [string, string, boolean?][] = [
-  ['Ingresos totales', '$48.162.000'],
-  ['Deducciones aplicadas', '−$17.842.000'],
-  ['Rentas exentas', '−$6.120.000'],
-  ['Retenciones y pagos', '−$25.401.000'],
+  ['Ingresos totales', '$114.409.000'],
+  ['No gravado, exento y deducciones', '-$53.720.000'],
+  ['Impuesto de renta', '$1.217.000'],
+  ['Retenciones y saldo a favor previo', '-$2.618.000'],
 ];
 
 /** Mockup del producto que se muestra en el hero (dashboard "Resumen de tu declaración"). */

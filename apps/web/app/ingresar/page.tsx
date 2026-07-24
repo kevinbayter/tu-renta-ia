@@ -4,20 +4,93 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function PaginaIngresar() {
-  const [fase, setFase] = useState<'email' | 'codigo'>('email');
+  const [fase, setFase] = useState<'email' | 'codigo' | 'perfil'>('email');
   const [email, setEmail] = useState('');
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-5 py-12">
-      <h1 className="text-3xl font-bold">Ingresa a tu cuenta</h1>
+      <h1 className="text-3xl font-bold">{fase === 'perfil' ? 'Completa tu perfil' : 'Ingresa a tu cuenta'}</h1>
       <p className="mt-2 text-sm text-texto-suave">
-        Sin contraseñas: te enviamos un código de 6 dígitos a tu correo para guardar tu avance en la nube.
+        {fase === 'perfil'
+          ? 'Con tus datos preparamos tus declaraciones a nombre propio sin volver a pedírtelos.'
+          : 'Sin contraseñas: te enviamos un código de 6 dígitos a tu correo para guardar tu avance en la nube.'}
       </p>
-      {fase === 'email' ? (
+      {fase === 'email' && (
         <FormularioEmail email={email} setEmail={setEmail} alEnviar={() => setFase('codigo')} />
-      ) : (
-        <FormularioCodigo email={email} alVolver={() => setFase('email')} />
       )}
+      {fase === 'codigo' && (
+        <FormularioCodigo email={email} alVolver={() => setFase('email')} alFaltarPerfil={() => setFase('perfil')} />
+      )}
+      {fase === 'perfil' && <FormularioPerfil />}
     </main>
+  );
+}
+
+function FormularioPerfil() {
+  const router = useRouter();
+  const [datos, setDatos] = useState({ nombres: '', apellidos: '', identificacion: '' });
+  const [error, setError] = useState<string | null>(null);
+  const [cargando, setCargando] = useState(false);
+
+  const guardar = async () => {
+    setCargando(true);
+    setError(null);
+    const respuesta = await fetch('/api/perfil', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datos),
+    }).catch(() => null);
+    setCargando(false);
+    if (!respuesta?.ok) {
+      setError('Revisa los datos: nombres, apellidos y una cédula válida.');
+      return;
+    }
+    router.push('/declaraciones');
+  };
+
+  return (
+    <div className="mt-6 space-y-3">
+      <CampoPerfil etiqueta="Nombre(s)" valor={datos.nombres} alCambiar={(v) => setDatos({ ...datos, nombres: v })} />
+      <CampoPerfil etiqueta="Apellidos" valor={datos.apellidos} alCambiar={(v) => setDatos({ ...datos, apellidos: v })} />
+      <CampoPerfil
+        etiqueta="Cédula (sin puntos)"
+        valor={datos.identificacion}
+        alCambiar={(v) => setDatos({ ...datos, identificacion: v.replace(/\D/g, '') })}
+        numerico
+      />
+      {error && <p role="alert" className="text-sm text-error">{error}</p>}
+      <button
+        type="button"
+        onClick={() => void guardar()}
+        disabled={cargando}
+        className="h-12 w-full rounded-2xl bg-primario font-semibold text-white transition hover:bg-primario-oscuro disabled:opacity-40"
+      >
+        {cargando ? 'Guardando…' : 'Guardar y continuar'}
+      </button>
+    </div>
+  );
+}
+
+function CampoPerfil({
+  etiqueta,
+  valor,
+  alCambiar,
+  numerico,
+}: {
+  etiqueta: string;
+  valor: string;
+  alCambiar: (v: string) => void;
+  numerico?: boolean;
+}) {
+  return (
+    <label className="block">
+      <span className="text-xs font-medium text-texto-suave">{etiqueta}</span>
+      <input
+        value={valor}
+        onChange={(e) => alCambiar(e.target.value)}
+        inputMode={numerico ? 'numeric' : 'text'}
+        className="mt-1 h-12 w-full rounded-2xl border border-borde bg-card px-4 outline-none focus:border-primario"
+      />
+    </label>
   );
 }
 
@@ -76,7 +149,15 @@ function FormularioEmail({
   );
 }
 
-function FormularioCodigo({ email, alVolver }: { email: string; alVolver: () => void }) {
+function FormularioCodigo({
+  email,
+  alVolver,
+  alFaltarPerfil,
+}: {
+  email: string;
+  alVolver: () => void;
+  alFaltarPerfil: () => void;
+}) {
   const router = useRouter();
   const [codigo, setCodigo] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +176,12 @@ function FormularioCodigo({ email, alVolver }: { email: string; alVolver: () => 
       setError('Código inválido o vencido. Pide uno nuevo si pasaron más de 10 minutos.');
       return;
     }
-    router.push('/declaracion');
+    const cuerpo = (await respuesta.json()) as { perfilCompleto?: boolean };
+    if (!cuerpo.perfilCompleto) {
+      alFaltarPerfil();
+      return;
+    }
+    router.push('/declaraciones');
   };
 
   return (

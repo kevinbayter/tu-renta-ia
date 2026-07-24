@@ -9,6 +9,9 @@ export {
   type RepositorioPort,
   type EmailPort,
   type UsuarioRegistrado,
+  type PerfilUsuario,
+  type TitularDeclaracion,
+  type DeclaracionResumen,
 } from './puertos/repositorio-port';
 export { type FilaExogena, type TopesExogena, type ExogenaParseada } from './exogena/tipos';
 export {

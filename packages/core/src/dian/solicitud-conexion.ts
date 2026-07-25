@@ -25,6 +25,7 @@ export interface CuerpoConexion {
   titular?: unknown;
   anioGravable?: unknown;
   modoIngreso?: unknown;
+  recordarAcceso?: unknown;
 }
 
 export interface SolicitudConexionDian {
@@ -32,6 +33,8 @@ export interface SolicitudConexionDian {
   titular: string;
   anioGravable: number;
   modoIngreso: ModoIngresoDian;
+  /** Explicit consent to store the access; never inferred. */
+  recordarAcceso: boolean;
 }
 
 export type ResultadoValidacion =
@@ -45,6 +48,7 @@ interface Normalizado {
   titular: string;
   anioGravable: number | null;
   modoIngreso: ModoIngresoDian;
+  recordarAcceso: boolean;
 }
 
 /** Safe conversion: an object is discarded, never turned into "[object Object]". */
@@ -76,6 +80,7 @@ function normalizar(cuerpo: CuerpoConexion, anioActual: number): Normalizado {
     titular: cuerpo.titular === undefined ? numeroDocumento : soloDigitos(cuerpo.titular),
     anioGravable: anioValido(cuerpo.anioGravable, anioActual),
     modoIngreso: cuerpo.modoIngreso === 'tercero' ? 'tercero' : 'propio',
+    recordarAcceso: cuerpo.recordarAcceso === true,
   };
 }
 
@@ -132,6 +137,7 @@ function aSolicitud(datos: Normalizado, anioActual: number): SolicitudConexionDi
     titular: datos.titular,
     anioGravable: datos.anioGravable ?? anioActual - 1,
     modoIngreso: datos.modoIngreso,
+    recordarAcceso: datos.recordarAcceso,
   };
 }
 

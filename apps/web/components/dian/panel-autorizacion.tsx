@@ -16,17 +16,21 @@ import type { AlcanceAutorizacion } from '@turenta/core';
  */
 export function PanelAutorizacion({
   titular,
-  alcance,
+  alcances,
+  recordar,
+  alCambiarRecordar,
   alAceptar,
   alCancelar,
 }: {
   titular: string;
-  alcance: AlcanceAutorizacion;
+  alcances: AlcanceAutorizacion[];
+  recordar: boolean;
+  alCambiarRecordar: (valor: boolean) => void;
   alAceptar: () => void;
   alCancelar: () => void;
 }) {
   const [acepta, setAcepta] = useState(false);
-  const texto = textoAutorizacion(titular || 'la registrada', [alcance]);
+  const texto = textoAutorizacion(titular || 'la registrada', alcances);
 
   return (
     <div className="pt-5">
@@ -37,7 +41,24 @@ export function PanelAutorizacion({
         <Lista titulo="Lo que NO haremos" items={texto.noHaremos} negativa />
       </div>
 
+      {/* Marcarlo cambia el texto de arriba en vivo: se acepta exactamente lo
+          que se va a hacer, incluido guardar el acceso. */}
       <label className="mt-4 flex cursor-pointer items-start gap-2.5 rounded-2xl border border-borde p-3.5 transition hover:border-primario/40">
+        <input
+          type="checkbox"
+          checked={recordar}
+          onChange={(e) => {
+            alCambiarRecordar(e.target.checked);
+            setAcepta(false);
+          }}
+          className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-[var(--primario)]"
+        />
+        <span className="text-xs leading-relaxed">
+          <strong>Recordar mi acceso</strong> para no escribir la contraseña en cada operación.
+        </span>
+      </label>
+
+      <label className="mt-3 flex cursor-pointer items-start gap-2.5 rounded-2xl border border-borde p-3.5 transition hover:border-primario/40">
         <input
           type="checkbox"
           checked={acepta}

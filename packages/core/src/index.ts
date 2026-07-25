@@ -70,6 +70,7 @@ export {
   type ResultadoDescarga,
   type MotivoFalloDian,
   type ModoIngresoDian,
+  type SobreCifrado,
   type TipoDocumentoDian,
 } from './puertos/conexion-dian-port';
 export {

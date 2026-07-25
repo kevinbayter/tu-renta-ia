@@ -33,6 +33,10 @@ const MENSAJES: Record<MotivoFalloDian, Mensaje> = {
     texto: 'No encontramos una declaración presentada de ese año en tu cuenta de la DIAN.',
     estado: 404,
   },
+  acceso_caducado: {
+    texto: 'Tu acceso guardado ya no funciona. Vuelve a escribir tu contraseña de la DIAN.',
+    estado: 401,
+  },
   servicio_no_disponible: {
     texto: 'La conexión automática no está disponible ahora mismo.',
     estado: 503,

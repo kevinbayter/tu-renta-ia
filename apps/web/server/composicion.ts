@@ -2,6 +2,7 @@ import {
   crearConexionDianDesdeEnv,
   crearEmailDesdeEnv,
   crearLlmDesdeEnv,
+  BovedaCredencialesPrisma,
   EvidenciaAutorizacionPrisma,
   ExtractorCertificados,
   LimitadorDian,
@@ -9,6 +10,7 @@ import {
 } from '@turenta/adaptadores';
 
 import type {
+  BovedaCredencialesPort,
   ConexionDianPort,
   EmailPort,
   EvidenciaAutorizacionPort,
@@ -71,6 +73,18 @@ export function obtenerEvidenciaDian(): EvidenciaAutorizacionPort {
   }
   evidenciaDian ??= EvidenciaAutorizacionPrisma.desdeUrl(url);
   return evidenciaDian;
+}
+
+let bovedaDian: BovedaCredencialesPort | undefined;
+
+/** Guarda solo sobres cifrados: la clave para abrirlos vive en el worker. */
+export function obtenerBovedaDian(): BovedaCredencialesPort {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error('DATABASE_URL no configurada');
+  }
+  bovedaDian ??= BovedaCredencialesPrisma.desdeUrl(url);
+  return bovedaDian;
 }
 
 export function obtenerLimitadorDian(): LimitadorDian {

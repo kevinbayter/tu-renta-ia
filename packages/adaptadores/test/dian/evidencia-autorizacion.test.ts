@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { crearAutorizacion, serializarAutorizacion, textoAutorizacion } from '@turenta/core';
+import { VERSION_TEXTO_AUTORIZACION, crearAutorizacion, serializarAutorizacion, textoAutorizacion } from '@turenta/core';
 
 import {
   ANIOS_RETENCION_EVIDENCIA,
@@ -51,7 +51,7 @@ function prismaFalso() {
             id: 'evidencia-1',
             titularIdentificacion: TITULAR,
             alcances: ['leer_exogena'],
-            versionTexto: 'v1',
+            versionTexto: VERSION_TEXTO_AUTORIZACION,
             textoHash: 'abc',
             otorgadaEn: AHORA,
             expiraEn: AHORA,
@@ -96,7 +96,7 @@ describe('persistencia de la evidencia', () => {
     await evidencia.registrarAutorizacion(autorizacionDe(), { ip: '1.2.3.4', userAgent: 'navegador' });
     const guardado = escrituras[0] as Record<string, string>;
     expect(guardado['textoHash']).toBe(hashAutorizacion(TITULAR, ['leer_exogena']));
-    expect(guardado['versionTexto']).toBe('v1');
+    expect(guardado['versionTexto']).toBe(VERSION_TEXTO_AUTORIZACION);
     expect(JSON.stringify(guardado)).not.toContain('Autorizo a TuRenta AI');
   });
 

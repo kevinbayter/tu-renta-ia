@@ -36,10 +36,13 @@ export const useSubidas = create<EstadoSubidas>((set) => ({
   terminar: () => set((s) => ({ enCurso: Math.max(0, s.enCurso - 1) })),
 }));
 
-export async function subirArchivo(archivo: File): Promise<DocumentoProcesado | { error: string }> {
+export async function subirArchivo(
+  archivo: File,
+  tipoConocido?: string,
+): Promise<DocumentoProcesado | { error: string }> {
   useSubidas.getState().iniciar();
   try {
-    return await enviarArchivo(archivo);
+    return await enviarArchivo(archivo, tipoConocido);
   } catch {
     return { error: 'Error de conexión. Intenta de nuevo.' };
   } finally {
@@ -99,8 +102,9 @@ function precargarMesesDesde220(doc: DocumentoProcesado): void {
  */
 export async function registrarDocumento(
   archivo: File,
+  tipoConocido?: string,
 ): Promise<DocumentoProcesado | { error: string }> {
-  const resultado = await subirArchivo(archivo);
+  const resultado = await subirArchivo(archivo, tipoConocido);
   if ('error' in resultado) {
     return resultado;
   }
@@ -117,14 +121,21 @@ export async function registrarDocumento(
 export function registrarDocumentoDian(
   nombreArchivo: string,
   contenidoBase64: string,
+  tipoConocido?: string,
 ): Promise<DocumentoProcesado | { error: string }> {
   const binario = Uint8Array.from(atob(contenidoBase64), (c) => c.charCodeAt(0));
-  return registrarDocumento(new File([binario], nombreArchivo));
+  return registrarDocumento(new File([binario], nombreArchivo), tipoConocido);
 }
 
-async function enviarArchivo(archivo: File): Promise<DocumentoProcesado | { error: string }> {
+async function enviarArchivo(
+  archivo: File,
+  tipoConocido?: string,
+): Promise<DocumentoProcesado | { error: string }> {
   const formData = new FormData();
   formData.append('archivo', archivo);
+  if (tipoConocido) {
+    formData.append('tipoConocido', tipoConocido);
+  }
   const respuesta = await fetch('/api/documentos', { method: 'POST', body: formData });
   const cuerpo = (await respuesta.json()) as Record<string, unknown>;
   if (!respuesta.ok) {

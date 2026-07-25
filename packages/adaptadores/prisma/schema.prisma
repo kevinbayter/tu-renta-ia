@@ -23,6 +23,29 @@ model Usuario {
   actividades    Actividad[]
   notificaciones Notificacion[]
   autorizacionesDian AutorizacionDian[]
+  credencialesDian   CredencialDian[]
+}
+
+/// Acceso a la DIAN guardado a petición expresa del usuario.
+/// SOLO contiene el sobre cifrado (AES-256-GCM): la clave vive en el worker
+/// aislado, que no tiene acceso a esta base. Robar la base no basta.
+model CredencialDian {
+  id                    String    @id @default(uuid())
+  usuarioId             String
+  usuario               Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  titularIdentificacion String
+  tipoDocumento         String
+  numeroDocumento       String
+  /// Sobre cifrado. Sin la clave del worker es ruido.
+  cifradoVersion        Int
+  cifradoNonce          String
+  cifradoTag            String
+  cifradoContenido      String
+  creadoEn              DateTime  @default(now())
+  ultimoUsoEn           DateTime?
+
+  @@unique([usuarioId, titularIdentificacion])
+  @@index([ultimoUsoEn])
 }
 
 /// Evidencia de que el titular autorizó una conexión con la DIAN (PLAN-DIAN §1.3).

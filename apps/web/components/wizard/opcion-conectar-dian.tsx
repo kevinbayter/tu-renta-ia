@@ -58,7 +58,11 @@ export function OpcionConectarDian({
   }
 
   const completar = async (resultado: ResultadoConexion) => {
-    const registrado = await registrarDocumentoDian(resultado.nombreArchivo, resultado.contenidoBase64);
+    const registrado = await registrarDocumentoDian(
+      resultado.nombreArchivo,
+      resultado.contenidoBase64,
+      operacion === 'declaracion' ? 'declaracion_anterior' : undefined,
+    );
     setAbierto(false);
     setAviso('error' in registrado ? registrado.error : null);
     alTerminar?.('error' in registrado ? registrado.error : null);

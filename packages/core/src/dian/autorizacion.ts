@@ -10,7 +10,12 @@
  * prove nothing.
  */
 
-export type AlcanceAutorizacion = 'leer_exogena' | 'leer_declaraciones' | 'presentar_declaracion';
+export type AlcanceAutorizacion =
+  | 'leer_exogena'
+  | 'leer_declaraciones'
+  | 'presentar_declaracion'
+  /** Keep the access stored so the user does not sign in on every operation. */
+  | 'recordar_acceso';
 
 export interface AutorizacionDian {
   /** National ID of the taxpayer whose account is queried. */
@@ -28,8 +33,12 @@ export interface AutorizacionDian {
 /** Just enough to complete the operation, never an open-ended grant. */
 export const MINUTOS_VIGENCIA_AUTORIZACION = 15;
 
-/** Changing the wording requires bumping this, so old evidence stays verifiable. */
-export const VERSION_TEXTO_AUTORIZACION = 'v1';
+/**
+ * Changing the wording requires bumping this, so old evidence stays verifiable.
+ * v2: storing the credential became possible, so the promise that it is never
+ * stored had to go. Evidence signed under v1 remains valid for v1's wording.
+ */
+export const VERSION_TEXTO_AUTORIZACION = 'v2';
 
 export interface TextoAutorizacion {
   version: string;
@@ -69,19 +78,30 @@ const ACCIONES: Record<AlcanceAutorizacion, string> = {
   leer_exogena: 'Descargar tu información exógena reportada por terceros',
   leer_declaraciones: 'Descargar tus declaraciones de renta ya presentadas',
   presentar_declaracion: 'Diligenciar, firmar y presentar tu declaración de renta',
+  recordar_acceso:
+    'Guardar tu acceso cifrado para no pedirte la contraseña en cada operación',
 };
 
 const NO_HAREMOS = [
-  'Guardar tu contraseña — ni cifrada, ni en registros, en ningún lado',
-  'Volver a entrar a tu cuenta sin que tú lo pidas',
+  'Entrar a tu cuenta sin que tú lo pidas desde la plataforma',
+  'Mostrar tu contraseña, ni siquiera a ti: solo se descifra para entrar al portal',
   'Hacer nada distinto de lo enumerado arriba',
 ];
 
-const DECLARACIONES = [
+const DECLARACIONES_BASE = [
   `Esta autorización vence en ${String(MINUTOS_VIGENCIA_AUTORIZACION)} minutos y es revocable en cualquier momento.`,
-  'Mis credenciales se usan solo durante esta operación y NO serán almacenadas.',
   'Soy el titular de la cuenta y de la información consultada.',
   'Puedo hacer este mismo trámite manualmente en el portal de la DIAN si lo prefiero.',
+];
+
+/** Only shown when the user actually asks to be remembered. */
+const DECLARACION_SIN_GUARDAR =
+  'Mis credenciales se usan solo durante esta operación y NO serán almacenadas.';
+
+const DECLARACIONES_RECORDAR = [
+  'Autorizo guardar mi contraseña CIFRADA para no tener que escribirla en cada operación.',
+  'Entiendo que la clave de cifrado vive en un servicio aislado, separado de la base de datos.',
+  'Puedo borrar este acceso guardado cuando quiera, y se borra solo tras 90 días sin uso.',
 ];
 
 /** Legal text the user sees and accepts. Single source: the UI renders it as-is. */
@@ -99,8 +119,15 @@ export function textoAutorizacion(
       'Cerrar la sesión y borrar las credenciales de la memoria',
     ],
     noHaremos: NO_HAREMOS,
-    declaraciones: DECLARACIONES,
+    declaraciones: declaracionesDe(alcances),
   };
+}
+
+function declaracionesDe(alcances: AlcanceAutorizacion[]): string[] {
+  if (alcances.includes('recordar_acceso')) {
+    return [...DECLARACIONES_BASE, ...DECLARACIONES_RECORDAR];
+  }
+  return [...DECLARACIONES_BASE, DECLARACION_SIN_GUARDAR];
 }
 
 /** Canonical form: this is what gets hashed. Deterministic and stable. */

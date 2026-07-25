@@ -19,6 +19,7 @@ export const NOMBRES_TIPO: Record<DocumentoProcesado['tipo'], string> = {
   certificado_220: 'Certificado 220',
   certificado_bancario: 'Certificado bancario',
   medicina_prepagada: 'Medicina prepagada',
+  declaracion_anterior: 'Declaración del año anterior',
   otro: 'Otro documento',
 };
 
@@ -53,7 +54,29 @@ export function aplicarPrecarga(doc: DocumentoProcesado): void {
     useDeclaracion.getState().actualizarRespuestas(precarga.respuestas);
     return;
   }
+  if (doc.tipo === 'declaracion_anterior') {
+    precargarDesdeDeclaracionAnterior(doc.datos);
+    return;
+  }
   precargarMesesDesde220(doc);
+}
+
+/**
+ * La declaración del año pasado responde sola lo que el usuario no recuerda:
+ * patrimonio líquido (casilla 31), impuesto neto (126) y anticipo (133).
+ */
+function precargarDesdeDeclaracionAnterior(datos: {
+  patrimonioLiquido: number;
+  impuestoNetoRenta: number;
+  anticipoAnioSiguiente: number;
+}): void {
+  const estado = useDeclaracion.getState();
+  estado.actualizarRespuestas({
+    patrimonioLiquidoAnterior: datos.patrimonioLiquido,
+    impuestoNetoAnioAnterior: datos.impuestoNetoRenta,
+    anticipoLiquidadoAnioAnterior: datos.anticipoAnioSiguiente,
+    declaracionesPrevias: Math.max(1, estado.respuestas.declaracionesPrevias),
+  });
 }
 
 /** Los meses trabajados salen del "período de la certificación" de los 220 (unión entre empleadores). */

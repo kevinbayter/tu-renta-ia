@@ -228,6 +228,9 @@ function resumirDocumento(d: DocumentoProcesado): string | null {
     const amparos = d.datos.amparos.map((a) => `${formatearPesos(a.valor)} (${a.vigenciaInicio}→${a.vigenciaFin})`).join(', ');
     return `Certificado medicina prepagada ${d.datos.entidad}: ${amparos}. Propón el valor que corresponde al año gravable y pide confirmación.`;
   }
+  if (d.tipo === 'declaracion_anterior') {
+    return `DECLARACIÓN ANTERIOR YA LEÍDA (año ${String(d.datos.anioGravable)}): patrimonio líquido ${formatearPesos(d.datos.patrimonioLiquido)}, impuesto neto ${formatearPesos(d.datos.impuestoNetoRenta)}, anticipo ${formatearPesos(d.datos.anticipoAnioSiguiente)}. NO preguntes estos datos: ya están capturados.`;
+  }
   if (d.tipo === 'exogena') {
     return precargarDesdeExogena(d.exogena).resumen;
   }

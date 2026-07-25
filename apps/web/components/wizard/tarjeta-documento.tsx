@@ -14,6 +14,7 @@ const TITULOS: Record<string, string> = {
   certificado_220: 'Certificado 220 (empleador)',
   certificado_bancario: 'Certificado bancario',
   medicina_prepagada: 'Medicina prepagada',
+  declaracion_anterior: 'Declaración del año anterior',
   otro: 'Documento no reconocido',
 };
 
@@ -81,6 +82,21 @@ function ContenidoDocumento({ documento }: { documento: DocumentoProcesado }) {
             ['Saldo a 31 dic', formatearPesos(documento.datos.saldoCuentas)],
             ['Rendimientos', formatearPesos(documento.datos.rendimientos)],
             ['Retención', formatearPesos(documento.datos.retencionFuente)],
+          ]}
+        />
+      </>
+    );
+  }
+  if (documento.tipo === 'declaracion_anterior') {
+    return (
+      <>
+        <AvisoDiscrepancias coinciden={documento.pasadasCoinciden} discrepancias={documento.discrepancias} />
+        <DatosExtraidos
+          datos={[
+            ['Año gravable', String(documento.datos.anioGravable)],
+            ['Patrimonio líquido (31)', formatearPesos(documento.datos.patrimonioLiquido)],
+            ['Impuesto neto (126)', formatearPesos(documento.datos.impuestoNetoRenta)],
+            ['Anticipo (133)', formatearPesos(documento.datos.anticipoAnioSiguiente)],
           ]}
         />
       </>

@@ -4,6 +4,7 @@ import type {
   Certificado220Extraido,
   CertificadoBancarioExtraido,
   CertificadoPrepagadaExtraido,
+  DeclaracionAnteriorExtraida,
 } from '@turenta/shared';
 
 /** Documento procesado por el pipeline de extracción, pendiente de confirmación del usuario. */
@@ -12,6 +13,7 @@ export type DocumentoProcesado =
   | ({ id: string; nombreArchivo: string; tipo: 'certificado_220' } & ResultadoExtraccion<Certificado220Extraido>)
   | ({ id: string; nombreArchivo: string; tipo: 'certificado_bancario' } & ResultadoExtraccion<CertificadoBancarioExtraido>)
   | ({ id: string; nombreArchivo: string; tipo: 'medicina_prepagada' } & ResultadoExtraccion<CertificadoPrepagadaExtraido>)
+  | ({ id: string; nombreArchivo: string; tipo: 'declaracion_anterior' } & ResultadoExtraccion<DeclaracionAnteriorExtraida>)
   | { id: string; nombreArchivo: string; tipo: 'otro' };
 
 export interface MensajeChat {

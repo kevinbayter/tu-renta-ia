@@ -224,7 +224,7 @@ function reglaSinPatrimonioAnterior(e: EstadoWizard): Hallazgo | null {
   return {
     recomendacion: {
       nivel: 'sugerencia',
-      texto: 'Si declaraste el año pasado, registra tu patrimonio líquido anterior (casilla 31 de esa declaración): con él verificamos que tu incremento patrimonial esté justificado y evitamos un requerimiento de la DIAN.',
+      texto: 'Si declaraste el año pasado, sube ese PDF o registra tu patrimonio líquido anterior (casilla 31): con él dejamos tu declaración enlazada con la anterior y verificamos que todo cuadre.',
     },
     penalizacion: 0,
   };

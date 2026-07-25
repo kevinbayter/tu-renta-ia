@@ -7,7 +7,14 @@ import { z } from 'zod';
  */
 
 export const clasificacionDocumentoSchema = z.strictObject({
-  tipo: z.enum(['certificado_220', 'certificado_bancario', 'medicina_prepagada', 'exogena', 'otro']),
+  tipo: z.enum([
+    'certificado_220',
+    'certificado_bancario',
+    'medicina_prepagada',
+    'exogena',
+    'declaracion_anterior',
+    'otro',
+  ]),
 });
 export type ClasificacionDocumento = z.infer<typeof clasificacionDocumentoSchema>;
 
@@ -59,10 +66,30 @@ export const certificadoPrepagadaSchema = z.strictObject({
 });
 export type CertificadoPrepagadaExtraido = z.infer<typeof certificadoPrepagadaSchema>;
 
+/**
+ * Declaración de renta (formulario 210) de un año gravable ANTERIOR. Evita
+ * preguntarle al usuario datos que él no recuerda: los lee de su propio PDF.
+ */
+export const declaracionAnteriorSchema = z.strictObject({
+  tipoDocumento: z.literal('declaracion_anterior'),
+  /** Año gravable de ESA declaración (no el que se está preparando). */
+  anioGravable: z.number().int(),
+  /** Casilla 31: patrimonio líquido (base de la comparación patrimonial, art. 236). */
+  patrimonioLiquido: z.number().int(),
+  /** Casilla 126: impuesto neto de renta. */
+  impuestoNetoRenta: z.number().int(),
+  /** Casilla 133: anticipo liquidado para el año siguiente. */
+  anticipoAnioSiguiente: z.number().int(),
+  /** Casilla 137: total saldo a favor. */
+  totalSaldoAFavor: z.number().int(),
+});
+export type DeclaracionAnteriorExtraida = z.infer<typeof declaracionAnteriorSchema>;
+
 export type CertificadoExtraido =
   | Certificado220Extraido
   | CertificadoBancarioExtraido
-  | CertificadoPrepagadaExtraido;
+  | CertificadoPrepagadaExtraido
+  | DeclaracionAnteriorExtraida;
 
 /** JSON Schemas (draft 2020-12) para response_format json_schema del LLM. */
 export const jsonSchemas = {
@@ -70,4 +97,5 @@ export const jsonSchemas = {
   certificado220: z.toJSONSchema(certificado220Schema),
   certificadoBancario: z.toJSONSchema(certificadoBancarioSchema),
   certificadoPrepagada: z.toJSONSchema(certificadoPrepagadaSchema),
+  declaracionAnterior: z.toJSONSchema(declaracionAnteriorSchema),
 } as const;

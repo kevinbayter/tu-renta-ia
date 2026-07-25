@@ -3,6 +3,7 @@ export {
   certificado220Schema,
   certificadoBancarioSchema,
   certificadoPrepagadaSchema,
+  declaracionAnteriorSchema,
   jsonSchemas,
 } from './extraccion/certificados';
 export type {
@@ -10,6 +11,7 @@ export type {
   Certificado220Extraido,
   CertificadoBancarioExtraido,
   CertificadoPrepagadaExtraido,
+  DeclaracionAnteriorExtraida,
   CertificadoExtraido,
 } from './extraccion/certificados';
 export {

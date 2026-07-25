@@ -58,10 +58,12 @@ function ZonaUsuario({ sesion }: { sesion: SesionCliente }) {
     );
   }
   const nombre = sesion.perfil?.nombres ? `${sesion.perfil.nombres} ${sesion.perfil.apellidos}` : sesion.email;
-  return <MenuUsuario nombre={nombre} />;
+  // El subtítulo muestra el correo (no un rol): el usuario es titular de su cuenta, no admin.
+  const subtitulo = sesion.perfil?.nombres ? sesion.email : '';
+  return <MenuUsuario nombre={nombre} subtitulo={subtitulo} />;
 }
 
-function MenuUsuario({ nombre }: { nombre: string }) {
+function MenuUsuario({ nombre, subtitulo }: { nombre: string; subtitulo: string }) {
   const [abierto, setAbierto] = useState(false);
   const router = useRouter();
   const salir = async () => {
@@ -75,7 +77,7 @@ function MenuUsuario({ nombre }: { nombre: string }) {
         <Avatar nombre={nombre} fotoUrl="/api/avatar" />
         <span className="hidden text-left sm:block">
           <span className="block text-sm font-semibold leading-tight">{nombre}</span>
-          <span className="block text-xs text-texto-suave">Administrador</span>
+          {subtitulo && <span className="block max-w-44 truncate text-xs text-texto-suave">{subtitulo}</span>}
         </span>
         <ChevronDown size={16} className="text-texto-suave" aria-hidden />
       </button>

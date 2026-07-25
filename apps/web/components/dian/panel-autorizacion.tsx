@@ -1,59 +1,40 @@
 'use client';
 
+import { textoAutorizacion } from '@turenta/core';
 import { CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 
-const LO_QUE_HAREMOS = [
-  'Ingresar a tu cuenta de la DIAN con los datos que nos des ahora',
-  'Descargar únicamente tu información exógena del año gravable 2025',
-  'Cerrar la sesión y borrar tus credenciales de nuestra memoria',
-];
+import type { AlcanceAutorizacion } from '@turenta/core';
 
-const LO_QUE_NO_HAREMOS = [
-  'Guardar tu contraseña — ni cifrada, ni en logs, en ningún lado',
-  'Firmar ni presentar nada en tu nombre',
-  'Volver a entrar sin que tú lo pidas',
-];
-
-/** Consentimiento informado previo: sin esto no se piden credenciales. */
+/**
+ * Consentimiento informado previo: sin esto no se piden credenciales.
+ *
+ * El texto NO se redacta aquí: se renderiza el que genera `textoAutorizacion`
+ * en el dominio, que es exactamente el que el servidor hashea como evidencia.
+ * Si esta pantalla tuviera su propia redacción, guardaríamos la huella de algo
+ * que el usuario nunca leyó.
+ */
 export function PanelAutorizacion({
   titular,
+  alcance,
   alAceptar,
   alCancelar,
 }: {
   titular: string;
+  alcance: AlcanceAutorizacion;
   alAceptar: () => void;
   alCancelar: () => void;
 }) {
   const [acepta, setAcepta] = useState(false);
+  const texto = textoAutorizacion(titular || 'la registrada', [alcance]);
+
   return (
     <div className="pt-5">
-      <p className="text-sm leading-relaxed">
-        Para traer tu información necesitamos entrar a tu cuenta de la DIAN{' '}
-        <strong>una sola vez, ahora mismo y contigo presente</strong>.
-      </p>
+      <p className="text-sm leading-relaxed">{texto.encabezado}</p>
 
       <div className="mt-4 rounded-2xl border border-borde bg-background p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-primario">Lo que haremos</p>
-        <ul className="mt-2 space-y-1.5">
-          {LO_QUE_HAREMOS.map((item) => (
-            <li key={item} className="flex items-start gap-2 text-xs leading-relaxed">
-              <CheckCircle2 size={13} className="mt-0.5 shrink-0 text-primario" aria-hidden />
-              {item}
-            </li>
-          ))}
-        </ul>
-        <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-texto-suave">Lo que NO haremos</p>
-        <ul className="mt-2 space-y-1.5">
-          {LO_QUE_NO_HAREMOS.map((item) => (
-            <li key={item} className="flex items-start gap-2 text-xs leading-relaxed text-texto-suave">
-              <span className="mt-0.5 shrink-0 font-bold text-error" aria-hidden>
-                ✕
-              </span>
-              {item}
-            </li>
-          ))}
-        </ul>
+        <Lista titulo="Lo que haremos" items={texto.haremos} />
+        <Lista titulo="Lo que NO haremos" items={texto.noHaremos} negativa />
       </div>
 
       <label className="mt-4 flex cursor-pointer items-start gap-2.5 rounded-2xl border border-borde p-3.5 transition hover:border-primario/40">
@@ -61,29 +42,68 @@ export function PanelAutorizacion({
           type="checkbox"
           checked={acepta}
           onChange={(e) => setAcepta(e.target.checked)}
-          className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--primario)]"
+          className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-[var(--primario)]"
         />
         <span className="text-xs leading-relaxed">
-          Autorizo a TuRenta AI a ingresar a mi cuenta de la DIAN (cédula <strong>{titular || 'la registrada'}</strong>)
-          únicamente para descargar mi información exógena. Entiendo que esta autorización es{' '}
-          <strong>puntual y revocable</strong>, que mis credenciales no se almacenan, y que puedo hacer este
-          trámite yo mismo en el portal de la DIAN si lo prefiero.
+          Autorizo lo anterior y declaro que:
+          <span className="mt-1.5 block space-y-1">
+            {texto.declaraciones.map((d) => (
+              <span key={d} className="block">
+                · {d}
+              </span>
+            ))}
+          </span>
         </span>
       </label>
 
       <div className="mt-4 flex gap-3">
-        <button type="button" onClick={alCancelar} className="h-11 flex-1 rounded-2xl border border-borde font-semibold">
-          Mejor la subo yo
+        <button
+          type="button"
+          onClick={alCancelar}
+          className="h-11 flex-1 cursor-pointer rounded-2xl border border-borde font-semibold"
+        >
+          Mejor lo subo yo
         </button>
         <button
           type="button"
           disabled={!acepta}
           onClick={alAceptar}
-          className="h-11 flex-1 rounded-2xl bg-primario font-semibold text-white transition hover:bg-primario-oscuro disabled:opacity-40"
+          className="h-11 flex-1 cursor-pointer rounded-2xl bg-primario font-semibold text-white transition hover:bg-primario-oscuro disabled:cursor-not-allowed disabled:opacity-40"
         >
           Autorizo, continuar
         </button>
       </div>
     </div>
   );
+}
+
+function Lista({ titulo, items, negativa }: { titulo: string; items: string[]; negativa?: boolean }) {
+  const tituloClase = negativa ? 'mt-3 text-texto-suave' : 'text-primario';
+  return (
+    <>
+      <p className={`text-xs font-semibold uppercase tracking-wide ${tituloClase}`}>{titulo}</p>
+      <ul className="mt-2 space-y-1.5">
+        {items.map((item) => (
+          <li
+            key={item}
+            className={`flex items-start gap-2 text-xs leading-relaxed ${negativa ? 'text-texto-suave' : ''}`}
+          >
+            <Marca negativa={negativa} />
+            {item}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+function Marca({ negativa }: { negativa?: boolean }) {
+  if (negativa) {
+    return (
+      <span className="mt-0.5 shrink-0 font-bold text-error" aria-hidden>
+        ✕
+      </span>
+    );
+  }
+  return <CheckCircle2 size={13} className="mt-0.5 shrink-0 text-primario" aria-hidden />;
 }

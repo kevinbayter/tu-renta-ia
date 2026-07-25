@@ -135,7 +135,7 @@ function SlotDocumento({
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-semibold">
-            {completo ? '✅' : slot.opcional ? '▫️' : '⬜'} {slot.titulo}
+            {marcaDeSlot(completo, slot.opcional)} {slot.titulo}
             {slot.opcional && <span className="ml-1 text-xs font-normal text-texto-suave">opcional</span>}
           </p>
           <p className="mt-0.5 text-xs text-texto-suave">{slot.descripcion}</p>
@@ -214,4 +214,11 @@ async function procesarArchivo(archivo: File, slot: Slot): Promise<string | null
 function esperadosSegunExogena(documentos: DocumentoProcesado[]): DocumentoEsperado[] {
   const exogena = documentos.find((d) => d.tipo === 'exogena');
   return exogena?.tipo === 'exogena' ? documentosEsperados(exogena.exogena) : [];
+}
+
+function marcaDeSlot(completo: boolean, opcional: boolean | undefined): string {
+  if (completo) {
+    return '✅';
+  }
+  return opcional ? '▫️' : '⬜';
 }

@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
 
+import { PrismaPg } from '@prisma/adapter-pg';
+
 import { serializarAutorizacion, textoAutorizacion } from '@turenta/core';
 import type {
   AlcanceAutorizacion,
@@ -10,10 +12,8 @@ import type {
   HuellaPeticion,
 } from '@turenta/core';
 
+
 import { PrismaClient } from './generado/client';
-
-
-import type { PrismaPg } from '@prisma/adapter-pg';
 
 /**
  * Authorization evidence in Postgres (PLAN-DIAN §1.3).
@@ -84,8 +84,8 @@ const CAMPOS: Record<keyof FilaEvidencia, true> = {
 export class EvidenciaAutorizacionPrisma implements EvidenciaAutorizacionPort {
   constructor(private readonly prisma: PrismaClient) {}
 
-  static desdeConexion(adapter: PrismaPg): EvidenciaAutorizacionPrisma {
-    return new EvidenciaAutorizacionPrisma(new PrismaClient({ adapter }));
+  static desdeUrl(connectionString: string): EvidenciaAutorizacionPrisma {
+    return new EvidenciaAutorizacionPrisma(new PrismaClient({ adapter: new PrismaPg({ connectionString }) }));
   }
 
   registrarAutorizacion(

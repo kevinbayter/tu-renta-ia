@@ -66,6 +66,27 @@ describe('arquitectura hexagonal', () => {
     expect(violaciones('packages/adaptadores/src', prohibidos)).toEqual([]);
   });
 
+  it('playwright solo vive en el adaptador del MUISCA', () => {
+    // Si se cuela en otro sitio, apps/web vuelve a arrastrar Chromium y el
+    // aislamiento del worker (PLAN-DIAN §2) deja de existir.
+    const archivos = [
+      ...listarArchivosTs(join(RAIZ, 'packages')),
+      ...listarArchivosTs(join(RAIZ, 'apps/web/app')),
+      ...listarArchivosTs(join(RAIZ, 'apps/web/components')),
+      ...listarArchivosTs(join(RAIZ, 'apps/web/server')),
+    ];
+    const conPlaywright = archivos
+      .filter((archivo) => !archivo.includes('node_modules') && !archivo.includes('/test/'))
+      .filter((archivo) => importsDe(archivo).some((imp) => /^playwright/.test(imp)))
+      .map((archivo) => archivo.replace(RAIZ, ''));
+    expect(conPlaywright).toEqual(['/packages/adaptadores/src/dian/conexion-muisca.ts']);
+  });
+
+  it('la UI no habla con adaptadores: solo con core y con rutas HTTP', () => {
+    const prohibidos = [/^@turenta\/adaptadores/];
+    expect(violaciones('apps/web/components', prohibidos)).toEqual([]);
+  });
+
   it('shared no contiene lógica de negocio (no importa motor-fiscal ni core)', () => {
     const prohibidos = [/^@turenta\/(motor-fiscal|core|adaptadores)/];
     expect(violaciones('packages/shared/src', prohibidos)).toEqual([]);

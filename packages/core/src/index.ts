@@ -85,6 +85,7 @@ export {
   type TextoAutorizacion,
 } from './dian/autorizacion';
 export { Secreto, MARCA_REDACTADO } from './dian/secreto';
+export { mensajeDeFallo, estadoDeFallo, esFaltaDeDatos } from './dian/mensajes-fallo';
 export {
   redactar,
   redactarValores,

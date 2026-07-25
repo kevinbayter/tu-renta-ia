@@ -7,59 +7,108 @@ import { AvisoTransparencia } from './aviso-transparencia';
 import { FormularioCredenciales } from './formulario-credenciales';
 import { PanelAutorizacion } from './panel-autorizacion';
 
-import type { EtapaConexion } from '@turenta/core';
+import type { Credenciales } from './formulario-credenciales';
+import type { AlcanceAutorizacion, EtapaConexion } from '@turenta/core';
 
-type Fase = 'autorizar' | 'credenciales' | 'progreso' | 'listo' | 'error';
+type Fase = 'autorizar' | 'credenciales' | 'progreso' | 'listo' | 'sin_dato' | 'error';
+
+export type OperacionDian = 'exogena' | 'declaracion';
 
 export interface ResultadoConexion {
   nombreArchivo: string;
   contenidoBase64: string;
 }
 
+const OPERACIONES: Record<
+  OperacionDian,
+  { ruta: string; alcance: AlcanceAutorizacion; titulo: string; subtitulo: string }
+> = {
+  exogena: {
+    ruta: '/api/dian/exogena',
+    alcance: 'leer_exogena',
+    titulo: 'Traer mi información de la DIAN',
+    subtitulo: 'Tu exógena, sin que tengas que descargarla',
+  },
+  declaracion: {
+    ruta: '/api/dian/declaracion',
+    alcance: 'leer_declaraciones',
+    titulo: 'Traer mi última declaración',
+    subtitulo: 'La que ya presentaste, directo de la DIAN',
+  },
+};
+
+interface RespuestaApi {
+  nombreArchivo?: string;
+  contenidoBase64?: string;
+  mensaje?: string;
+  motivoFallo?: string;
+}
+
 /**
- * Conexión con la DIAN: autorización explícita → credenciales de un solo uso →
- * progreso en vivo. El formulario es NUESTRO (el iframe del portal no sirve: su
- * sesión no es accesible para el worker), por eso la transparencia es máxima.
+ * Conexión con la DIAN: autorización explícita, credenciales de un solo uso y
+ * progreso en vivo. El formulario es nuestro porque la sesión de un iframe del
+ * portal no sería accesible; de ahí que la transparencia sea máxima.
  */
 export function ConexionDian({
+  operacion,
   titular,
+  anioGravable,
   alCerrar,
   alCompletar,
 }: {
+  operacion: OperacionDian;
   titular: string;
+  anioGravable: number;
   alCerrar: () => void;
   alCompletar: (resultado: ResultadoConexion) => void;
 }) {
   const [fase, setFase] = useState<Fase>('autorizar');
   const [etapa, setEtapa] = useState<EtapaConexion>('iniciando');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const config = OPERACIONES[operacion];
 
-  const conectar = async (credenciales: { tipoDocumento: string; numeroDocumento: string; contrasena: string }) => {
+  const conectar = async (credenciales: Credenciales) => {
     setFase('progreso');
     setEtapa('autenticando');
-    const respuesta = await fetch('/api/dian/exogena', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...credenciales, titular }),
-    }).catch(() => null);
-    const cuerpo = respuesta ? ((await respuesta.json()) as Record<string, string>) : null;
-    if (!respuesta?.ok || !cuerpo?.contenidoBase64) {
-      setError(cuerpo?.mensaje ?? 'No pudimos conectarnos. Puedes subir tu exógena manualmente.');
-      setFase('error');
+    const cuerpo = await pedir(config.ruta, { ...credenciales, titular, anioGravable });
+    if (cuerpo?.contenidoBase64) {
+      setEtapa('completado');
+      setFase('listo');
+      alCompletar({
+        nombreArchivo: cuerpo.nombreArchivo ?? 'descarga',
+        contenidoBase64: cuerpo.contenidoBase64,
+      });
       return;
     }
-    setEtapa('completado');
-    setFase('listo');
-    alCompletar({ nombreArchivo: cuerpo.nombreArchivo ?? 'exogena.xlsx', contenidoBase64: cuerpo.contenidoBase64 });
+    setError(cuerpo?.mensaje ?? 'No pudimos conectarnos. Puedes subir el archivo tú mismo.');
+    setFase(cuerpo?.motivoFallo === 'sin_declaracion' ? 'sin_dato' : 'error');
   };
 
+  // Cerrar a media sesión dejaría un navegador abierto contra el portal.
+  const cerrable = fase !== 'progreso';
+
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal>
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4"
+      role="dialog"
+      aria-modal
+      aria-labelledby="titulo-conexion-dian"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' && cerrable) {
+          alCerrar();
+        }
+      }}
+    >
       <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-card shadow-2xl">
-        <Encabezado alCerrar={alCerrar} />
+        <Encabezado config={config} alCerrar={alCerrar} cerrable={cerrable} />
         <div className="px-6 pb-6">
           {fase === 'autorizar' && (
-            <PanelAutorizacion titular={titular} alAceptar={() => setFase('credenciales')} alCancelar={alCerrar} />
+            <PanelAutorizacion
+              titular={titular}
+              alcance={config.alcance}
+              alAceptar={() => setFase('credenciales')}
+              alCancelar={alCerrar}
+            />
           )}
           {fase === 'credenciales' && (
             <>
@@ -68,7 +117,10 @@ export function ConexionDian({
             </>
           )}
           {fase === 'progreso' && <Progreso etapa={etapa} />}
-          {fase === 'error' && <ErrorConexion mensaje={error ?? ''} alReintentar={() => setFase('credenciales')} alCerrar={alCerrar} />}
+          {fase === 'error' && (
+            <ErrorConexion mensaje={error} alReintentar={() => setFase('credenciales')} alCerrar={alCerrar} />
+          )}
+          {fase === 'sin_dato' && <SinDato mensaje={error} alCerrar={alCerrar} />}
           {fase === 'listo' && <Exito />}
         </div>
       </div>
@@ -76,7 +128,28 @@ export function ConexionDian({
   );
 }
 
-function Encabezado({ alCerrar }: { alCerrar: () => void }) {
+/** Un cuerpo ilegible dejaría el modal clavado en "progreso": se trata como fallo. */
+async function pedir(ruta: string, cuerpo: Record<string, unknown>): Promise<RespuestaApi | null> {
+  const respuesta = await fetch(ruta, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(cuerpo),
+  }).catch(() => null);
+  if (!respuesta) {
+    return null;
+  }
+  return (await respuesta.json().catch(() => null)) as RespuestaApi | null;
+}
+
+function Encabezado({
+  config,
+  alCerrar,
+  cerrable,
+}: {
+  config: { titulo: string; subtitulo: string };
+  alCerrar: () => void;
+  cerrable: boolean;
+}) {
   return (
     <div className="flex items-start justify-between gap-3 border-b border-borde p-6">
       <div className="flex items-center gap-3">
@@ -84,11 +157,19 @@ function Encabezado({ alCerrar }: { alCerrar: () => void }) {
           <ShieldCheck size={22} />
         </span>
         <div>
-          <h2 className="text-lg font-bold">Conectar con la DIAN</h2>
-          <p className="text-xs text-texto-suave">Traemos tu información sin que tengas que descargarla</p>
+          <h2 id="titulo-conexion-dian" className="text-lg font-bold">
+            {config.titulo}
+          </h2>
+          <p className="text-xs text-texto-suave">{config.subtitulo}</p>
         </div>
       </div>
-      <button type="button" onClick={alCerrar} aria-label="Cerrar" className="rounded-lg p-1.5 text-texto-suave hover:bg-background">
+      <button
+        type="button"
+        onClick={alCerrar}
+        disabled={!cerrable}
+        aria-label="Cerrar"
+        className="cursor-pointer rounded-lg p-1.5 text-texto-suave hover:bg-background disabled:cursor-not-allowed disabled:opacity-30"
+      >
         <X size={18} />
       </button>
     </div>
@@ -97,14 +178,14 @@ function Encabezado({ alCerrar }: { alCerrar: () => void }) {
 
 const ETAPAS: { clave: EtapaConexion; texto: string }[] = [
   { clave: 'autenticando', texto: 'Ingresando a tu cuenta' },
-  { clave: 'navegando', texto: 'Buscando tu información exógena' },
-  { clave: 'descargando', texto: 'Descargando el reporte' },
+  { clave: 'navegando', texto: 'Buscando tu información' },
+  { clave: 'descargando', texto: 'Descargando el documento' },
 ];
 
 function Progreso({ etapa }: { etapa: EtapaConexion }) {
   const indiceActual = ETAPAS.findIndex((e) => e.clave === etapa);
   return (
-    <div className="pt-5">
+    <div className="pt-5" role="status" aria-live="polite">
       <ul className="space-y-3">
         {ETAPAS.map((e, i) => (
           <li key={e.clave} className="flex items-center gap-3 text-sm">
@@ -143,6 +224,25 @@ function Exito() {
   );
 }
 
+/** No encontrar declaración no es una avería: mucha gente declara por primera vez. */
+function SinDato({ mensaje, alCerrar }: { mensaje: string; alCerrar: () => void }) {
+  return (
+    <div className="pt-5">
+      <p className="rounded-xl bg-background px-3 py-2.5 text-sm">{mensaje}</p>
+      <p className="mt-3 text-xs leading-relaxed text-texto-suave">
+        Si es tu primera declaración esto es normal y no tienes que hacer nada: seguimos sin problema.
+      </p>
+      <button
+        type="button"
+        onClick={alCerrar}
+        className="mt-4 h-11 w-full cursor-pointer rounded-2xl bg-primario font-semibold text-white transition hover:bg-primario-oscuro"
+      >
+        Entendido, continuar
+      </button>
+    </div>
+  );
+}
+
 function ErrorConexion({
   mensaje,
   alReintentar,
@@ -159,17 +259,21 @@ function ErrorConexion({
       </p>
       <p className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-texto-suave">
         <Lock size={13} className="mt-0.5 shrink-0 text-primario" aria-hidden />
-        Tus credenciales no se guardaron. Puedes reintentar o descargar la exógena tú mismo desde el portal
-        de la DIAN y subirla — funciona exactamente igual.
+        Tus credenciales no se guardaron. Puedes reintentar o descargar el archivo tú mismo desde el portal
+        de la DIAN y subirlo: funciona exactamente igual.
       </p>
       <div className="mt-4 flex gap-3">
-        <button type="button" onClick={alCerrar} className="h-11 flex-1 rounded-2xl border border-borde font-semibold">
-          Subirla manualmente
+        <button
+          type="button"
+          onClick={alCerrar}
+          className="h-11 flex-1 cursor-pointer rounded-2xl border border-borde font-semibold"
+        >
+          Subirlo manualmente
         </button>
         <button
           type="button"
           onClick={alReintentar}
-          className="h-11 flex-1 rounded-2xl bg-primario font-semibold text-white transition hover:bg-primario-oscuro"
+          className="h-11 flex-1 cursor-pointer rounded-2xl bg-primario font-semibold text-white transition hover:bg-primario-oscuro"
         >
           Reintentar
         </button>

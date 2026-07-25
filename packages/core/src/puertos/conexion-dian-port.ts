@@ -1,30 +1,37 @@
 /**
- * Puerto hacia el portal de la DIAN (MUISCA). El dominio no sabe que del otro
- * lado hay un navegador automatizado: solo pide operaciones.
+ * Port towards the DIAN portal (MUISCA). The domain does not know there is an
+ * automated browser on the other side: it only asks for operations.
  *
- * REGLA INNEGOCIABLE: las credenciales son de un solo uso y jamás se persisten
- * (ver PLAN-DIAN.md §1). Ningún método las devuelve ni las almacena.
+ * NON-NEGOTIABLE: credentials are single-use and never persisted (PLAN-DIAN §1).
  */
+
+import type { Secreto } from '../dian/secreto';
 
 export type TipoDocumentoDian = 'CC' | 'CE' | 'NIT' | 'PA' | 'TI';
 
-/** Credenciales efímeras: viven en memoria durante la operación y se descartan. */
+/**
+ * How to sign in. DIAN offers both doors: in `tercero` the operator signs in
+ * with their OWN credentials and acts for the taxpayer, who never shares a
+ * password (research/07 §2.1.1).
+ */
+export type ModoIngresoDian = 'propio' | 'tercero';
+
+/** Ephemeral credentials. The password is a [[Secreto]] so it cannot be printed. */
 export interface CredencialesDian {
   tipoDocumento: TipoDocumentoDian;
   numeroDocumento: string;
-  contrasena: string;
+  contrasena: Secreto;
 }
 
-/**
- * Quién declara vs. quién opera. Hoy coinciden; en el futuro B2B un contador
- * (operador) actuará por su cliente (titular). La evidencia guarda ambos.
- */
+/** Who files vs. who operates. Today the same; later an accountant for a client. */
 export interface ContextoOperacionDian {
-  /** Cédula de la persona cuya información se consulta. */
+  /** National ID of the taxpayer whose data is queried. */
   titularIdentificacion: string;
-  /** Usuario de la plataforma que ejecuta la operación. */
+  /** Platform user running the operation. */
   operadorUsuarioId: string;
   anioGravable: number;
+  /** Defaults to 'propio'; 'tercero' uses DIAN's door for representatives. */
+  modoIngreso?: ModoIngresoDian;
 }
 
 export type EtapaConexion =
@@ -40,20 +47,22 @@ export interface ProgresoConexion {
   mensaje: string;
 }
 
-/** Motivos de fallo que la UI traduce a mensajes accionables para el usuario. */
+/** Failure reasons the UI turns into actionable messages. */
 export type MotivoFalloDian =
   | 'credenciales_invalidas'
   | 'portal_no_disponible'
   | 'estructura_cambiada'
   | 'requiere_verificacion'
   | 'tiempo_agotado'
-  /** La cuenta no tiene una declaración presentada de ese año: no es un error. */
+  /** No filed return for that year. Not an error: first-time filers hit this. */
   | 'sin_declaracion'
+  /** Our own worker is down. Not DIAN's fault: do not tell the user otherwise. */
+  | 'servicio_no_disponible'
   | 'desconocido';
 
 export interface ResultadoDescarga {
   exito: boolean;
-  /** Contenido del archivo descargado; el llamador decide si lo procesa o descarta. */
+  /** Downloaded file; the caller decides whether to process or discard it. */
   contenido?: Uint8Array;
   nombreArchivo?: string;
   motivoFallo?: MotivoFalloDian;
@@ -61,14 +70,14 @@ export interface ResultadoDescarga {
 }
 
 export interface ConexionDianPort {
-  /** Descarga el reporte de información exógena del año gravable indicado. */
+  /** Downloads the third-party report (exógena) for the given tax year. */
   descargarExogena(
     credenciales: CredencialesDian,
     contexto: ContextoOperacionDian,
     alProgresar?: (progreso: ProgresoConexion) => void,
   ): Promise<ResultadoDescarga>;
 
-  /** Descarga el PDF de una declaración ya presentada (para leer sus casillas). */
+  /** Downloads the PDF of an already filed return. */
   descargarDeclaracion(
     credenciales: CredencialesDian,
     contexto: ContextoOperacionDian,

@@ -1,0 +1,43 @@
+# Production deployment (Dokploy). Only `web` gets a domain; the DIAN worker
+# lives on the internal network and is unreachable from outside.
+#
+# The local development compose with Postgres is docker-compose.yml; this file
+# does not include it because in production the database already exists.
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      WORKER_DIAN_URL: http://worker-dian:8080
+      WORKER_DIAN_TOKEN: ${WORKER_DIAN_TOKEN}
+    expose:
+      - '3000'
+    # No depends_on the worker on purpose: the app must boot even when the
+    # worker is down, because the manual path never disappears (PLAN-DIAN §1.4).
+    networks: [turenta]
+
+  worker-dian:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker-dian
+    restart: unless-stopped
+    environment:
+      WORKER_DIAN_TOKEN: ${WORKER_DIAN_TOKEN}
+      WORKER_DIAN_CONCURRENCIA: '2'
+    # Neither ports nor expose towards the host: only `web` reaches it.
+    networks: [turenta]
+    # Chromium allocates in bursts; without a cap a spike takes the database
+    # on the same server down with it.
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    # Chromium needs more than the default 64 MB of /dev/shm.
+    shm_size: 512mb
+
+networks:
+  turenta:
+    driver: bridge

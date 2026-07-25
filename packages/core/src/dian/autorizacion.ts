@@ -1,27 +1,45 @@
 /**
- * Evidencia de autorización para operar en la DIAN a nombre del titular.
- * Es la pieza que sostiene legalmente la conexión (art. 269A Ley 1273: el
- * acceso debe ser autorizado y "dentro de lo acordado").
- * Ver research/07-automatizacion-dian-analisis-2026.md §3.1.
+ * Authorization evidence for operating on the taxpayer's behalf at the DIAN
+ * portal. This is what legally supports the connection (art. 269A, Law 1273:
+ * access must be authorized and "within what was agreed").
+ * See research/07-automatizacion-dian-analisis-2026.md §3.1.
+ *
+ * The text is structured and versioned on purpose: the screen renders it from
+ * here and the server hashes exactly this. If the UI had its own wording we
+ * would store the hash of a text the user never saw, and the evidence would
+ * prove nothing.
  */
 
 export type AlcanceAutorizacion = 'leer_exogena' | 'leer_declaraciones' | 'presentar_declaracion';
 
 export interface AutorizacionDian {
-  /** Cédula de la persona cuya cuenta se consulta. */
+  /** National ID of the taxpayer whose account is queried. */
   titularIdentificacion: string;
-  /** Usuario de la plataforma que ejecuta (hoy = titular; futuro B2B = contador). */
+  /** Platform user running the operation (today the taxpayer; later, an accountant). */
   operadorUsuarioId: string;
   alcances: AlcanceAutorizacion[];
-  /** Texto exacto que el usuario aceptó (se guarda su hash, no el texto completo). */
+  /** Exact text the user accepted; only its hash is persisted. */
   textoAceptado: string;
   otorgadaEn: Date;
-  /** La autorización es puntual: vence sola para que no queden permisos abiertos. */
+  /** Expires on its own so no standing permission is left behind. */
   expiraEn: Date;
 }
 
-/** Minutos de vigencia: lo justo para completar la operación, nunca "para siempre". */
+/** Just enough to complete the operation, never an open-ended grant. */
 export const MINUTOS_VIGENCIA_AUTORIZACION = 15;
+
+/** Changing the wording requires bumping this, so old evidence stays verifiable. */
+export const VERSION_TEXTO_AUTORIZACION = 'v1';
+
+export interface TextoAutorizacion {
+  version: string;
+  titular: string;
+  alcances: AlcanceAutorizacion[];
+  encabezado: string;
+  haremos: string[];
+  noHaremos: string[];
+  declaraciones: string[];
+}
 
 export function crearAutorizacion(
   datos: Omit<AutorizacionDian, 'otorgadaEn' | 'expiraEn'>,
@@ -38,7 +56,7 @@ export function autorizacionVigente(autorizacion: AutorizacionDian, ahora: Date)
   return autorizacion.expiraEn.getTime() > ahora.getTime();
 }
 
-/** Una autorización solo habilita lo que enumera: nunca se asume un alcance mayor. */
+/** An authorization only grants what it lists; a wider scope is never assumed. */
 export function permiteAlcance(
   autorizacion: AutorizacionDian,
   alcance: AlcanceAutorizacion,
@@ -47,21 +65,53 @@ export function permiteAlcance(
   return autorizacionVigente(autorizacion, ahora) && autorizacion.alcances.includes(alcance);
 }
 
-/** Texto legal que el usuario debe aceptar antes de conectar (queda como evidencia). */
-export function textoAutorizacion(titular: string, alcances: AlcanceAutorizacion[]): string {
-  const descripciones: Record<AlcanceAutorizacion, string> = {
-    leer_exogena: 'consultar y descargar mi información exógena reportada por terceros',
-    leer_declaraciones: 'consultar y descargar mis declaraciones ya presentadas',
-    presentar_declaracion: 'diligenciar, firmar y presentar mi declaración de renta',
+const ACCIONES: Record<AlcanceAutorizacion, string> = {
+  leer_exogena: 'Descargar tu información exógena reportada por terceros',
+  leer_declaraciones: 'Descargar tus declaraciones de renta ya presentadas',
+  presentar_declaracion: 'Diligenciar, firmar y presentar tu declaración de renta',
+};
+
+const NO_HAREMOS = [
+  'Guardar tu contraseña — ni cifrada, ni en registros, en ningún lado',
+  'Volver a entrar a tu cuenta sin que tú lo pidas',
+  'Hacer nada distinto de lo enumerado arriba',
+];
+
+const DECLARACIONES = [
+  `Esta autorización vence en ${String(MINUTOS_VIGENCIA_AUTORIZACION)} minutos y es revocable en cualquier momento.`,
+  'Mis credenciales se usan solo durante esta operación y NO serán almacenadas.',
+  'Soy el titular de la cuenta y de la información consultada.',
+  'Puedo hacer este mismo trámite manualmente en el portal de la DIAN si lo prefiero.',
+];
+
+/** Legal text the user sees and accepts. Single source: the UI renders it as-is. */
+export function textoAutorizacion(
+  titular: string,
+  alcances: AlcanceAutorizacion[],
+): TextoAutorizacion {
+  return {
+    version: VERSION_TEXTO_AUTORIZACION,
+    titular,
+    alcances,
+    encabezado: `Autorizo a TuRenta AI a ingresar a la cuenta de la DIAN de la cédula ${titular} una sola vez, ahora mismo y conmigo presente, para:`,
+    haremos: [
+      ...alcances.map((a) => ACCIONES[a]),
+      'Cerrar la sesión y borrar las credenciales de la memoria',
+    ],
+    noHaremos: NO_HAREMOS,
+    declaraciones: DECLARACIONES,
   };
-  const lista = alcances.map((a) => `• ${descripciones[a]}`).join('\n');
-  return `Yo, identificado con cédula ${titular}, autorizo de forma expresa, informada y revocable a TuRenta AI para ingresar a mi cuenta de la DIAN, únicamente con el fin de:
+}
 
-${lista}
-
-Declaro que:
-- Mis credenciales se usarán solo durante esta operación y NO serán almacenadas.
-- Esta autorización vence en ${String(MINUTOS_VIGENCIA_AUTORIZACION)} minutos y puedo revocarla en cualquier momento.
-- Soy el titular de la cuenta y de la información consultada.
-- Puedo realizar este mismo trámite manualmente en el portal de la DIAN si lo prefiero.`;
+/** Canonical form: this is what gets hashed. Deterministic and stable. */
+export function serializarAutorizacion(texto: TextoAutorizacion): string {
+  return [
+    `version: ${texto.version}`,
+    `titular: ${texto.titular}`,
+    `alcances: ${texto.alcances.join(',')}`,
+    texto.encabezado,
+    ...texto.haremos.map((h) => `SI: ${h}`),
+    ...texto.noHaremos.map((n) => `NO: ${n}`),
+    ...texto.declaraciones.map((d) => `DECLARO: ${d}`),
+  ].join('\n');
 }

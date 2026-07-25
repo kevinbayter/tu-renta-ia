@@ -69,6 +69,7 @@ export {
   type EtapaConexion,
   type ResultadoDescarga,
   type MotivoFalloDian,
+  type ModoIngresoDian,
   type TipoDocumentoDian,
 } from './puertos/conexion-dian-port';
 export {
@@ -76,7 +77,39 @@ export {
   autorizacionVigente,
   permiteAlcance,
   textoAutorizacion,
+  serializarAutorizacion,
   MINUTOS_VIGENCIA_AUTORIZACION,
+  VERSION_TEXTO_AUTORIZACION,
   type AutorizacionDian,
   type AlcanceAutorizacion,
+  type TextoAutorizacion,
 } from './dian/autorizacion';
+export { Secreto, MARCA_REDACTADO } from './dian/secreto';
+export {
+  redactar,
+  redactarValores,
+  detalleSeguro,
+  esClaveSecreta,
+} from './dian/redaccion';
+export {
+  evaluarConexionDian,
+  evaluarAmbito,
+  vigentes,
+  LIMITES,
+  MAXIMO_CONEXIONES_CONCURRENTES,
+  type AmbitoLimite,
+  type Veredicto,
+} from './dian/limite-conexiones';
+export {
+  validarSolicitudConexion,
+  type CuerpoConexion,
+  type SolicitudConexionDian,
+  type ResultadoValidacion,
+} from './dian/solicitud-conexion';
+export {
+  type EvidenciaAutorizacionPort,
+  type EvidenciaAutorizacion,
+  type HuellaPeticion,
+  type ResultadoAutorizacion,
+  type DesenlaceAutorizacion,
+} from './puertos/evidencia-autorizacion-port';

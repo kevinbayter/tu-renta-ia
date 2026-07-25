@@ -22,6 +22,39 @@ model Usuario {
   personas       Persona[]
   actividades    Actividad[]
   notificaciones Notificacion[]
+  autorizacionesDian AutorizacionDian[]
+}
+
+/// Evidencia de que el titular autorizó una conexión con la DIAN (PLAN-DIAN §1.3).
+/// Solo se anexa: se escribe al aceptar y se cierra con el desenlace real.
+/// NUNCA contiene la contraseña de la DIAN ni nada derivado de ella.
+model AutorizacionDian {
+  id                    String    @id @default(uuid())
+  /// Quién operó (hoy = titular; futuro B2B = contador). Null si borró su cuenta:
+  /// la evidencia sobrevive disociada en vez de destruirse.
+  operadorUsuarioId     String?
+  operador              Usuario?  @relation(fields: [operadorUsuarioId], references: [id], onDelete: SetNull)
+  /// Cédula del titular cuya cuenta DIAN se consulta.
+  titularIdentificacion String
+  /// Exactamente los alcances que enumeró la autorización aceptada.
+  alcances              String[]
+  /// Versión del texto legal y SHA-256 de lo que el usuario vio en pantalla.
+  /// Se guarda el hash, no el texto: prueba integridad sin duplicar el contenido.
+  versionTexto          String
+  textoHash             String
+  otorgadaEn            DateTime  @default(now())
+  expiraEn              DateTime
+  /// Trazas de la aceptación (prueba de la autorización, Ley 1581 art. 9).
+  ip                    String    @default("")
+  userAgent             String    @default("")
+  /// en_curso | exitosa | fallida | revocada
+  resultado             String    @default("en_curso")
+  motivoFallo           String    @default("")
+  finalizadaEn          DateTime?
+  revocadaEn            DateTime?
+
+  @@index([operadorUsuarioId, otorgadaEn])
+  @@index([titularIdentificacion, otorgadaEn])
 }
 
 /// Persona administrada (tercero cuyas declaraciones elabora el usuario)

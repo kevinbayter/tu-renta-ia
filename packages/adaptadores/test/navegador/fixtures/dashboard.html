@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>DIAN — Dashboard (fixture de prueba)</title>
+    <style>
+      /* The side menu only opens on real pointer :hover. A synthetic
+         element.click() does not trigger :hover, which is exactly the finding in
+         research §2.1.3. If someone "simplifies" the adapter's hover into a
+         click, these tests fail. */
+      #divMenuTd .arbol {
+        display: none;
+      }
+      #divMenuTd:hover .arbol {
+        display: block;
+      }
+      #divMenuTd {
+        width: 40px;
+        height: 600px;
+        background: #ccc;
+      }
+      /* Exógena panel controls: present in the DOM from the start but hidden
+         until the terms are accepted (research §2.1.2). */
+      .oculto {
+        display: none;
+      }
+      /* The download link is empty and 0x0: no coordinate click is possible,
+         only firing its onclick programmatically. */
+      #vistaPrueba\:frmPrueba\:lnkDescargarReporteExogena {
+        display: inline-block;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Test dashboard - NOT the DIAN</h1>
+
+    <!-- Collapsed side menu. -->
+    <table>
+      <tr>
+        <td id="divMenuTd">
+          MENÚ
+          <div class="arbol">
+            <a href="/WebDilIngresoFormRenta210/">Diligenciar / Presentar</a>
+            <a href="#">Consultar documento Diligenciado</a>
+          </div>
+        </td>
+        <td>
+          <!-- The JSF prefix here is "vistaPrueba:frmPrueba", different from
+               production, proving the [id$=...] suffix anchoring works and that
+               nobody hardcoded the real prefix. -->
+          <a href="#" id="enlaceExogena">Consultar información Exógena Información Reportada por terceros</a>
+
+          <div id="panelExogena">
+            <p>CONDICIONES ACEPTACION INFORMACION REPORTADA POR TERCEROS</p>
+            <input
+              type="image"
+              id="vistaPrueba:frmPrueba:btnBuscar"
+              src="/img/aceptar.png"
+              alt="Aceptar condiciones"
+            />
+
+            <select id="vistaPrueba:frmPrueba:anioSel" class="oculto">
+              <option value="">Seleccione</option>
+              <option value="2022">2022</option>
+              <option value="2023">2023</option>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+            </select>
+
+            <input
+              type="image"
+              id="vistaPrueba:frmPrueba:btnExogenaGenerar"
+              class="oculto"
+              src="/img/generar.png"
+              alt="Generar"
+            />
+
+            <a href="#" id="vistaPrueba:frmPrueba:lnkDescargarReporteExogena" class="oculto"></a>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <script>
+      const id = (valor) => document.getElementById(valor);
+      const anioSel = id('vistaPrueba:frmPrueba:anioSel');
+      const generar = id('vistaPrueba:frmPrueba:btnExogenaGenerar');
+      const descargar = id('vistaPrueba:frmPrueba:lnkDescargarReporteExogena');
+
+      // Accepting the terms reveals year, generate and download - not before.
+      id('vistaPrueba:frmPrueba:btnBuscar').addEventListener('click', (evento) => {
+        evento.preventDefault();
+        [anioSel, generar, descargar].forEach((el) => el.classList.remove('oculto'));
+      });
+
+      let generado = false;
+      generar.addEventListener('click', (evento) => {
+        evento.preventDefault();
+        generado = true;
+      });
+
+      // The download carries the chosen year in its name, so tests can check
+      // selectOption really applied instead of merely not throwing.
+      descargar.addEventListener('click', (evento) => {
+        evento.preventDefault();
+        if (!generado || !anioSel.value) return;
+        window.location.href = `/descargar/exogena/${anioSel.value}`;
+      });
+    </script>
+  </body>
+</html>

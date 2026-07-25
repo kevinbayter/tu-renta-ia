@@ -15,6 +15,10 @@ const reglasEstrictas = {
     'max-lines': ['error', { max: 400, skipBlankLines: false, skipComments: false }],
     'no-tabs': 'error',
     'max-depth': ['error', { max: 1 }],
+    // max-depth reinicia dentro de cada función: estas cierran el hueco de un
+    // if escondido en un callback anidado.
+    'max-nested-callbacks': ['error', { max: 2 }],
+    'no-nested-ternary': 'error',
     'no-console': ['error', { allow: ['assert', 'error'] }],
     curly: ['error', 'all'],
     'no-empty': ['error', { allowEmptyCatch: false }],

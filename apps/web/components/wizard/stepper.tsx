@@ -44,7 +44,7 @@ function PasoStepper({
   indiceActual: number;
   alIr: () => void;
 }) {
-  const estado = indice < indiceActual ? 'hecho' : indice === indiceActual ? 'actual' : 'pendiente';
+  const estado = estadoDelPaso(indice, indiceActual);
   return (
     <div className="flex flex-1 flex-col items-center">
       <div className="flex w-full items-center">
@@ -84,4 +84,11 @@ function claseCirculo(estado: 'hecho' | 'actual' | 'pendiente'): string {
     return 'border-primario bg-primario text-white';
   }
   return 'border-borde bg-card text-texto-suave';
+}
+
+function estadoDelPaso(indice: number, indiceActual: number): 'hecho' | 'actual' | 'pendiente' {
+  if (indice < indiceActual) {
+    return 'hecho';
+  }
+  return indice === indiceActual ? 'actual' : 'pendiente';
 }

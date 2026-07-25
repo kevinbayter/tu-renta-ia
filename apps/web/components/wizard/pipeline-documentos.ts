@@ -93,6 +93,35 @@ function precargarMesesDesde220(doc: DocumentoProcesado): void {
   }
 }
 
+/**
+ * Registra un documento en el flujo: lo sube, lo guarda en el estado y aplica
+ * la precarga. Es el trío que antes estaba duplicado en cada pantalla.
+ */
+export async function registrarDocumento(
+  archivo: File,
+): Promise<DocumentoProcesado | { error: string }> {
+  const resultado = await subirArchivo(archivo);
+  if ('error' in resultado) {
+    return resultado;
+  }
+  useDeclaracion.getState().agregarDocumento(resultado);
+  aplicarPrecarga(resultado);
+  return resultado;
+}
+
+/**
+ * Lo que llega de la DIAN entra por el MISMO camino que un archivo subido a
+ * mano: se convierte en File y se reutiliza el pipeline completo. Así no hay
+ * una segunda ruta de parseo que mantener sincronizada.
+ */
+export function registrarDocumentoDian(
+  nombreArchivo: string,
+  contenidoBase64: string,
+): Promise<DocumentoProcesado | { error: string }> {
+  const binario = Uint8Array.from(atob(contenidoBase64), (c) => c.charCodeAt(0));
+  return registrarDocumento(new File([binario], nombreArchivo));
+}
+
 async function enviarArchivo(archivo: File): Promise<DocumentoProcesado | { error: string }> {
   const formData = new FormData();
   formData.append('archivo', archivo);

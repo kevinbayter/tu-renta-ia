@@ -30,7 +30,7 @@ function MetricaSaldo({ lista }: { lista: DeclaracionResumen[] }) {
   if (conResultado.length === 0) {
     return <Tarjeta Icono={CircleDollarSign} titulo="Saldo total" valor="—" detalle="Aún sin cálculos" />;
   }
-  const detalle = neto > 0 ? 'A favor' : neto < 0 ? 'A pagar' : 'Sin saldo';
+  const detalle = detalleDeSaldo(neto);
   return <Tarjeta Icono={CircleDollarSign} titulo="Saldo total" valor={formatearPesos(Math.abs(neto))} detalle={detalle} />;
 }
 
@@ -49,8 +49,22 @@ function MetricaPersonas({ lista }: { lista: DeclaracionResumen[] }) {
   const cedulas = new Set(lista.map((d) => d.titular.identificacion));
   const propia = lista.some((d) => d.titular.esPropia);
   const otras = cedulas.size - (propia ? 1 : 0);
-  const detalle = propia ? (otras > 0 ? `Tú y ${otras} más` : 'Solo tú') : `${cedulas.size} personas`;
+  const detalle = detalleDePersonas(propia, otras, cedulas.size);
   return <Tarjeta Icono={Users} titulo="Personas administradas" valor={String(cedulas.size)} detalle={detalle} />;
+}
+
+function detalleDeSaldo(neto: number): string {
+  if (neto > 0) {
+    return 'A favor';
+  }
+  return neto < 0 ? 'A pagar' : 'Sin saldo';
+}
+
+function detalleDePersonas(propia: boolean, otras: number, total: number): string {
+  if (!propia) {
+    return `${total} personas`;
+  }
+  return otras > 0 ? `Tú y ${otras} más` : 'Solo tú';
 }
 
 function Tarjeta({

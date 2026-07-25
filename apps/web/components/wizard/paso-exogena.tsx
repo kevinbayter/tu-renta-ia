@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { useRef, useState } from 'react';
 
 import { BloqueDeclaracionAnterior } from './bloque-declaracion-anterior';
-import { aplicarPrecarga, NOMBRES_TIPO, subirArchivo, useSubidas } from './pipeline-documentos';
+import { OpcionConectarDian } from './opcion-conectar-dian';
+import { NOMBRES_TIPO, registrarDocumento, useSubidas } from './pipeline-documentos';
 import { TarjetaDocumento } from './tarjeta-documento';
 import { useDeclaracion } from '@/lib/store';
 
@@ -33,6 +34,12 @@ export function PasoExogena() {
           </div>
         </div>
         <div className="mt-5 space-y-4">
+          {!exogena && (
+            <>
+              <OpcionConectarDian operacion="exogena" />
+              <Separador />
+            </>
+          )}
           <ZonaSubida hayExogena={Boolean(exogena)} />
           <p className="flex items-center gap-2 text-xs text-texto-suave">
             <Lock size={13} className="shrink-0 text-primario" aria-hidden />
@@ -96,7 +103,7 @@ function ZonaSubida({ hayExogena }: { hayExogena: boolean }) {
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={cargando}
-          className="rounded-xl bg-primario px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-primario-oscuro disabled:opacity-50"
+          className="cursor-pointer rounded-xl border border-borde bg-card px-5 py-2.5 text-sm font-semibold transition hover:border-primario/40 disabled:opacity-50"
         >
           {hayExogena ? 'Reemplazar archivo' : 'Seleccionar archivo'}
         </button>
@@ -224,13 +231,22 @@ function nombreCorto(nombre: string): string {
 }
 
 async function subirExogena(archivo: File): Promise<string | null> {
-  const resultado = await subirArchivo(archivo);
+  const resultado = await registrarDocumento(archivo);
   if ('error' in resultado) {
     return `${archivo.name}: ${resultado.error}`;
   }
-  useDeclaracion.getState().agregarDocumento(resultado);
-  aplicarPrecarga(resultado);
   return avisoPorTipo(resultado);
+}
+
+/** Deja claro que subir el archivo es una alternativa, no el plan B de un fallo. */
+function Separador() {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="h-px flex-1 bg-borde" />
+      <span className="text-xs font-medium text-texto-suave">o sube el archivo tú mismo</span>
+      <span className="h-px flex-1 bg-borde" />
+    </div>
+  );
 }
 
 function avisoPorTipo(doc: DocumentoProcesado): string | null {

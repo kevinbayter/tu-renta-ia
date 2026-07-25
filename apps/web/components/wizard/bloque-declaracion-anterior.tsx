@@ -3,7 +3,8 @@
 import { FileCheck2, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 
-import { aplicarPrecarga, NOMBRES_TIPO, subirArchivo, useSubidas } from './pipeline-documentos';
+import { OpcionConectarDian } from './opcion-conectar-dian';
+import { ANIO_GRAVABLE, NOMBRES_TIPO, registrarDocumento, useSubidas } from './pipeline-documentos';
 import { useDeclaracion } from '@/lib/store';
 import { formatearPesos } from '@/lib/tipos';
 
@@ -56,10 +57,17 @@ function ZonaSubidaAnterior() {
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={subiendo}
-          className="flex shrink-0 items-center gap-1.5 rounded-xl border border-borde bg-card px-4 py-2 text-xs font-semibold transition hover:border-primario/40 disabled:opacity-50"
+          className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-borde bg-card px-4 py-2 text-xs font-semibold transition hover:border-primario/40 disabled:opacity-50"
         >
           <Upload size={14} aria-hidden /> {subiendo ? 'Leyendo…' : 'Subir PDF'}
         </button>
+      </div>
+      <div className="mt-3">
+        <OpcionConectarDian
+          operacion="declaracion"
+          anioGravable={ANIO_GRAVABLE - 1}
+          alTerminar={(error) => setAviso(error)}
+        />
       </div>
       <input ref={inputRef} type="file" accept=".pdf" hidden onChange={(e) => void procesar(e.target.files?.[0])} />
       {aviso && (
@@ -105,12 +113,10 @@ function Dato({ etiqueta, valor }: { etiqueta: string; valor: number }) {
 }
 
 async function subirDeclaracionAnterior(archivo: File): Promise<string | null> {
-  const resultado = await subirArchivo(archivo);
+  const resultado = await registrarDocumento(archivo);
   if ('error' in resultado) {
     return `${archivo.name}: ${resultado.error}`;
   }
-  useDeclaracion.getState().agregarDocumento(resultado);
-  aplicarPrecarga(resultado);
   if (resultado.tipo !== 'declaracion_anterior') {
     return `Esto parece un "${NOMBRES_TIPO[resultado.tipo]}", no una declaración presentada. Lo guardamos igual en su sección.`;
   }

@@ -61,6 +61,9 @@ hubiera subido a mano.
 - Nunca se guarda el archivo original (coherente con la decisión de privacidad ya tomada:
   solo datos extraídos).
 
+**Estado (25-jul-2026)**: implementada y cableada en el wizard. "Conectar con la DIAN"
+es la opción principal del paso 1 y la subida manual queda siempre visible al lado.
+
 **Criterio de salida**: 20 conexiones reales exitosas y fallback probado.
 
 ### Fase 2 — Descargar declaraciones anteriores
@@ -75,10 +78,14 @@ líquido anterior, impuesto neto y anticipo (comparación patrimonial del art. 2
 - El PDF pasa por el extractor `declaracion_anterior` que ya existe.
 - Si la cuenta no tiene declaración de ese año, el puerto responde `sin_declaracion`: no es
   un error, es el caso normal de quien declara por primera vez.
+- **Estado (25-jul-2026)**: implementada. Botón "Traer mi última declaración" en el bloque de
+  declaración anterior, con ruta `/api/dian/declaracion`.
 
 ### Fase 3 — Presentar el 210 con un clic
 
-**Solo si Fases 1-2 llevan al menos una temporada estables.**
+**Solo si Fases 1-2 llevan al menos una temporada estables.** Nada de esta fase está
+implementado: el flujo de escritura del portal no se ha tocado siquiera en el mapeo, a
+propósito, porque entrar ahí crea borradores reales en la cuenta del usuario.
 
 **Requisitos previos (bloqueantes)**:
 
@@ -96,15 +103,15 @@ recibo 490.
 
 ## 4. Seguridad (transversal)
 
-| Medida                  | Detalle                                                                   |
-| ----------------------- | ------------------------------------------------------------------------- |
-| Credenciales en memoria | Variables locales del worker, `finally` que las sobrescribe               |
-| Sin logs                | Filtro que impide imprimir campos marcados como secretos                  |
-| Aislamiento             | Worker en contenedor propio, sin `DATABASE_URL` ni secretos de la app     |
-| Sesión de un uso        | Token efímero (minutos), invalidado tras la operación                     |
-| Rate limiting           | Por usuario y global, para no parecer un ataque de credenciales al MUISCA |
-| Auditoría               | Qué se hizo, cuándo y con qué autorización — sin la credencial            |
-| Salida de red           | IP estable y reputada (ver riesgo de CGNAT en el informe)                 |
+| Medida                  | Estado | Detalle                                                                        |
+| ----------------------- | ------ | ------------------------------------------------------------------------------ |
+| Credenciales en memoria | ✅     | Tipo `Secreto`: `toString`/`toJSON`/`inspect` devuelven `[REDACTADO]`          |
+| Sin logs                | ✅     | `detalleSeguro` descarta el volcado de Playwright; test estático lo vigila     |
+| Aislamiento             | ✅     | `apps/worker-dian` en contenedor propio, sin `DATABASE_URL` ni secretos        |
+| Rate limiting           | ✅     | Por fallos, usuario, documento y global, más portón de concurrencia            |
+| Auditoría               | ✅     | Modelo `AutorizacionDian`: hash del texto, IP, alcances y desenlace            |
+| Sesión de un uso        | ❌     | Descartado: la credencial ya viaja en un único POST; el token no añadiría nada |
+| Salida de red           | ❌     | Pendiente del VPS con IP fija (ver §9 y el riesgo de CGNAT del informe)        |
 
 ## 5. Textos legales a redactar
 
@@ -155,3 +162,37 @@ Fase 1 → probar una temporada → Fase 2 → validación legal → Fase 3.
 **Nota de infraestructura**: antes de Fase 1 conviene mover la app a un VPS con IP fija y
 reputada. El servidor doméstico tras CGNAT funciona para la beta, pero no es el origen
 adecuado para conectarse a la DIAN a nombre de terceros.
+
+## 10. Cómo desplegarlo
+
+```bash
+# Un token compartido entre la app y el worker (no es una contraseña de usuario)
+export WORKER_DIAN_TOKEN="$(openssl rand -hex 32)"
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+Variables que lee `apps/web`:
+
+| Variable            | Efecto                                                               |
+| ------------------- | -------------------------------------------------------------------- |
+| `WORKER_DIAN_URL`   | Sin ella, la conexión automática queda deshabilitada (no rompe nada) |
+| `WORKER_DIAN_TOKEN` | Debe coincidir con la del worker                                     |
+
+El worker **no recibe** `DATABASE_URL` ni ningún otro secreto de la aplicación: es
+deliberado, no un olvido.
+
+## 11. Cómo se prueba
+
+```bash
+pnpm test                                        # dominio, adaptadores y guardianes
+pnpm --filter @turenta/adaptadores test:navegador # flujo completo contra un MUISCA falso
+pnpm --filter @turenta/worker-dian test:navegador # integración HTTP → Chromium → portal falso
+```
+
+Los de navegador necesitan Chromium (`pnpm exec playwright install chromium`) y van aparte
+para no romper máquinas sin navegador; en CI deben ser **bloqueantes**.
+
+**Lo que estos tests NO cubren, dicho sin adornos**: las fixtures congelan lo que _nosotros_
+creemos del portal, no lo que el portal es. Si la DIAN renombra un control, siguen en verde y
+producción se cae igual. Son regresión de nuestro código, no un contrato con la DIAN. Tampoco
+cubren el salto OAuth/STS real, el `ViewState` de JSF, captcha, MFA ni la latencia del portal.

@@ -28,6 +28,13 @@ apps/web  →  core (puerto ConexionDianPort)  →  adaptadores/dian (Playwright
                                             (sin acceso a la BD)
 ```
 
+**Decisión con vista al futuro B2B (contadores, tipo Contadia)**: el puerto se diseña con
+un **titular explícito** (la cédula de quien declara) separado de **quién opera** (el usuario
+autenticado en nuestra plataforma). Hoy coinciden; mañana, cuando un contador conecte la
+cuenta de su cliente, solo cambia quién autoriza — no la arquitectura. Por eso las
+operaciones reciben `titular` como parámetro desde el primer día y la evidencia de
+autorización registra **ambas identidades**.
+
 - **Puerto en `core`**: `ConexionDianPort` con `descargarExogena`, `descargarDeclaracion`,
   `presentarDeclaracion`. El dominio no sabe que existe un navegador.
 - **Adaptador en `adaptadores/dian`**: Playwright encapsulado. Es el único que ve las
@@ -119,7 +126,22 @@ Todos deben ser revisados por abogado antes de Fase 3.
 | Bloqueo de IP por parte de la DIAN                   | Rate limiting + IP dedicada                              | Medio          |
 | Filtración de credenciales                           | No se almacenan: no hay qué filtrar                      | Muy bajo       |
 
-## 8. Orden sugerido
+## 8. Futuro B2B — contadores (fuera del alcance de estas fases)
+
+Referencia de mercado: **Contadia** ($270.000/año, ilimitado) ofrece a contadores "conexión
+automática de la cuenta de Muisca de tu cliente", "presentación directa sin transcripciones"
+y "garantía ante sanciones de la DIAN por cálculos en la app".
+
+Lo que se decide **ahora** para no bloquearlo después:
+
+- El puerto separa titular de operador (ver §2).
+- La entidad `Persona` (clientes) ya existe y soporta múltiples titulares por cuenta.
+- La evidencia de autorización guarda quién autorizó y a nombre de quién se operó.
+
+Lo que quedará pendiente cuando llegue el momento: mandato del cliente hacia el contador,
+facturación por suscripción, y roles/permisos dentro de una misma cuenta.
+
+## 9. Orden sugerido
 
 Fase 1 → probar una temporada → Fase 2 → validación legal → Fase 3.
 

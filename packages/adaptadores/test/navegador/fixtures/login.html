@@ -105,7 +105,9 @@
           window.location.href = '/WebDashboard/DefDashboard.faces';
           return;
         }
-        $('#mensaje').textContent = datos.mensaje;
+        // Faithful to the live portal: rejection just re-renders the empty
+        // form, with no message the adapter could match.
+        window.location.reload();
       });
     </script>
   </body>

@@ -83,7 +83,7 @@ export async function levantarMuiscaFalso(modo: ModoServidor = 'normal'): Promis
     const ruta = (peticion.url ?? '').split('?')[0] ?? '';
     visitas.push(ruta);
 
-    if (ruta.startsWith('/WebArquitectura')) {
+    if (ruta.startsWith('/WebArquitectura') || ruta.startsWith('/WebIdentidadLogin')) {
       return responderHtml(respuesta, leerFixture('login.html'));
     }
     if (ruta === '/autenticar') {

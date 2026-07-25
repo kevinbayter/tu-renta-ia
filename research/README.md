@@ -29,3 +29,4 @@ Investigación realizada el 23 de julio de 2026 como base para planificar el pro
 - Decreto definitivo del componente inflacionario AG2025 (55,43% está en proyecto de decreto; coincide con certificado del banco).
 - Descargar el PDF oficial del formulario 210 + instructivo desde dian.gov.co para la numeración exacta de casillas.
 - Reglas finas observadas en el caso dorado: prorrateo de dependientes por meses trabajados (referencia usó 11 meses), anticipo con promedio y 75%, tratamiento del segundo certificado de Salud Prepagada.
+  | [07-automatizacion-dian-analisis-2026.md](07-automatizacion-dian-analisis-2026.md) | Análisis técnico y legal de la conexión con la DIAN (RPA, art. 269A Ley 1273, firma electrónica, responsabilidad solidaria del art. 572-1, precedente referencia). Base de [PLAN-DIAN.md](../PLAN-DIAN.md). |

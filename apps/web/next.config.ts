@@ -14,6 +14,8 @@ const monorepoRoot = join(__dirname, '../..');
 const nextConfig: NextConfig = {
   transpilePackages: ['@turenta/motor-fiscal', '@turenta/core', '@turenta/adaptadores', '@turenta/shared'],
   outputFileTracingRoot: monorepoRoot,
+  // Servidor autocontenido para la imagen Docker (Dokploy): copia solo lo necesario.
+  output: 'standalone',
   turbopack: {
     root: monorepoRoot,
   },

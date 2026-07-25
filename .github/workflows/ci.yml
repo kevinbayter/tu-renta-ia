@@ -8,6 +8,10 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      # Prisma exige la variable para leer su configuración, aunque `generate` y
+      # el build no lleguen a conectarse. Es un valor de relleno, no una base real.
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

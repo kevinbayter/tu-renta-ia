@@ -3,7 +3,7 @@
 import { Info, ShieldCheck, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { ANIO_GRAVABLE, registrarDocumentoDian } from './pipeline-documentos';
+import { ANIO_GRAVABLE, registrarDocumentoDian, useSubidas } from './pipeline-documentos';
 import { ConexionDian } from '@/components/dian/conexion-dian';
 import { useDeclaracion } from '@/lib/store';
 
@@ -40,6 +40,7 @@ export function OpcionConectarDian({
   const [abierto, setAbierto] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const habilitada = useConexionHabilitada();
+  const leyendo = useSubidas((s) => s.enCurso > 0);
   const declarante = useDeclaracion((s) => s.declarante);
   const esPropia = useDeclaracion((s) => s.esPropia);
   // Mismos dígitos que enviará el servidor: si aquí se mostrara la cédula con
@@ -70,7 +71,7 @@ export function OpcionConectarDian({
 
   return (
     <>
-      <Tarjeta operacion={operacion} alAbrir={() => setAbierto(true)} />
+      <Tarjeta operacion={operacion} alAbrir={() => setAbierto(true)} ocupado={leyendo} />
       {aviso !== null && (
         <p role="alert" className="mt-2 text-xs text-alerta">
           Llegó el archivo pero no pudimos leerlo: {aviso}. Puedes subirlo tú mismo aquí abajo.
@@ -102,7 +103,15 @@ const TEXTOS: Record<OperacionDian, { titulo: string; detalle: string; boton: st
   },
 };
 
-function Tarjeta({ operacion, alAbrir }: { operacion: OperacionDian; alAbrir: () => void }) {
+function Tarjeta({
+  operacion,
+  alAbrir,
+  ocupado,
+}: {
+  operacion: OperacionDian;
+  alAbrir: () => void;
+  ocupado: boolean;
+}) {
   const texto = TEXTOS[operacion];
   return (
     <div className="rounded-2xl border border-primario/30 bg-primario-suave/40 p-4">
@@ -118,9 +127,10 @@ function Tarjeta({ operacion, alAbrir }: { operacion: OperacionDian; alAbrir: ()
       <button
         type="button"
         onClick={alAbrir}
-        className="mt-3 flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primario font-semibold text-white transition hover:bg-primario-oscuro"
+        disabled={ocupado}
+        className="mt-3 flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primario font-semibold text-white transition hover:bg-primario-oscuro disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <ShieldCheck size={16} aria-hidden /> {texto.boton}
+        <ShieldCheck size={16} aria-hidden /> {ocupado ? 'Leyendo documento…' : texto.boton}
       </button>
     </div>
   );

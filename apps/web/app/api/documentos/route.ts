@@ -1,6 +1,8 @@
 import { extraerTextoPdf, parsearExogena } from '@turenta/adaptadores';
 import { NextResponse } from 'next/server';
 
+import { completarTarea, consultarTarea, crearTarea, fallarTarea } from '@/server/documentos/tareas';
+
 import { obtenerExtractor, obtenerRepositorio } from '@/server/composicion';
 import { leerSesion } from '@/server/sesion';
 
@@ -9,24 +11,54 @@ import type { DocumentoFuente } from '@turenta/core';
 
 export const maxDuration = 300;
 
-/** Recibe un archivo (XLSX de exógena o PDF de certificado), lo clasifica y extrae sus datos. */
+/**
+ * Recibe el archivo y responde de inmediato con un identificador: leerlo puede
+ * tardar más de lo que el proxy aguanta con la petición abierta. El resultado
+ * se consulta con GET.
+ */
 export async function POST(request: Request): Promise<NextResponse> {
   const formData = await request.formData();
   const archivo = formData.get('archivo');
   if (!(archivo instanceof File)) {
     return NextResponse.json({ error: 'Falta el archivo' }, { status: 400 });
   }
+  const contenido = new Uint8Array(await archivo.arrayBuffer());
+  // Lo traído de la DIAN ya viene identificado: clasificarlo otra vez con el
+  // modelo duplicaba el tiempo sin aportar nada.
+  const tipoConocido = tipoValido(formData.get('tipoConocido'));
+  const tareaId = crearTarea();
+  void procesarEnSegundoPlano(tareaId, archivo.name, contenido, tipoConocido);
+  return NextResponse.json({ tareaId }, { status: 202 });
+}
+
+/** Consulta del resultado. El cliente pregunta hasta que deja de estar en curso. */
+export function GET(request: Request): NextResponse {
+  const id = new URL(request.url).searchParams.get('tarea') ?? '';
+  const tarea = consultarTarea(id);
+  if (!tarea) {
+    return NextResponse.json({ error: 'La lectura del documento caducó' }, { status: 404 });
+  }
+  if (tarea.estado === 'en_curso') {
+    return NextResponse.json({ estado: 'en_curso' });
+  }
+  if (tarea.estado === 'error') {
+    return NextResponse.json({ error: tarea.error }, { status: 422 });
+  }
+  return NextResponse.json(tarea.resultado);
+}
+
+async function procesarEnSegundoPlano(
+  tareaId: string,
+  nombre: string,
+  contenido: Uint8Array,
+  tipoConocido: TipoConocido | null,
+): Promise<void> {
   try {
-    const contenido = new Uint8Array(await archivo.arrayBuffer());
-    // Lo traído de la DIAN ya viene identificado: clasificarlo otra vez con el
-    // modelo duplicaba el tiempo y era lo que hacía saltar el límite del proxy.
-    const tipoConocido = tipoValido(formData.get('tipoConocido'));
-    const cuerpo = await procesarArchivo(archivo.name, contenido, tipoConocido);
-    await registrarProcesado(archivo.name, cuerpo);
-    return NextResponse.json(cuerpo);
+    const cuerpo = await procesarArchivo(nombre, contenido, tipoConocido);
+    await registrarProcesado(nombre, cuerpo);
+    completarTarea(tareaId, cuerpo);
   } catch (error) {
-    const mensaje = error instanceof Error ? error.message : 'Error procesando el documento';
-    return NextResponse.json({ error: mensaje }, { status: 422 });
+    fallarTarea(tareaId, error instanceof Error ? error.message : 'Error procesando el documento');
   }
 }
 

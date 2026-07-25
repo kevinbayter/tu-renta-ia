@@ -103,6 +103,8 @@ function casillasLiquidacion(l: ResultadoLiquidacion): Record<string, number> {
   return {
     '116': l.impuestoSobreRentaLiquida,
     '121': l.impuestoSobreRentaLiquida,
+    '123': l.descuentos.porDonaciones,
+    '125': l.descuentos.total,
     '126': l.impuestoNetoRenta,
     '127': 0,
     '129': l.totalImpuestoACargo,

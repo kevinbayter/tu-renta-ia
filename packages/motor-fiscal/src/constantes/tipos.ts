@@ -51,6 +51,12 @@ export interface ConstantesAnio {
 
   /** Num. 5 art. 206 E.T. (mod. Ley 2277/2022): mesada exenta hasta este tope mensual. */
   pensiones: { exencionMensualUvt: number };
+
+  /** Descuentos tributarios: art. 257 (25% de la donación) con el tope del art. 258. */
+  descuentos: {
+    donacionesPorcentaje: number;
+    limiteSobreImpuesto: number;
+  };
   gmf: { porcentajeDeducible: number };
   afcFvp: { porcentaje: number; topeAnualUvt: number };
 

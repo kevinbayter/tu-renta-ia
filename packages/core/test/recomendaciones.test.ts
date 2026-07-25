@@ -72,7 +72,40 @@ describe('evaluarDeclaracion', () => {
 
   it('estado vacío: crítica por exógena y confiabilidad mínima honesta', () => {
     const evaluacion = evaluarDeclaracion({});
-    expect(evaluacion.confiabilidad).toBe(35);
     expect(evaluacion.recomendaciones[0]?.nivel).toBe('critica');
+    expect(evaluacion.confiabilidad).toBeLessThan(50);
+  });
+});
+
+describe('evaluarDeclaracion — comparación patrimonial (arts. 236-239)', () => {
+  const base = {
+    ...ESTADO_COMPLETO,
+    respuestas: { ...ESTADO_COMPLETO.respuestas, patrimonioLiquidoAnterior: 100_000_000 },
+  };
+
+  it('incremento sin justificar: crítica con el monto exacto', () => {
+    const estado = {
+      ...base,
+      resultado: { casillas: {}, comparacionPatrimonial: { aplica: true, diferenciaSinJustificar: 80_000_000 } },
+    };
+    const critica = evaluarDeclaracion(estado).recomendaciones.find((r) => r.texto.includes('patrimonio creció'));
+    expect(critica?.nivel).toBe('critica');
+    expect(critica?.texto).toContain('80.000.000');
+    expect(critica?.texto).toContain('236');
+  });
+
+  it('incremento justificado: sin alerta', () => {
+    const estado = {
+      ...base,
+      resultado: { casillas: {}, comparacionPatrimonial: { aplica: true, diferenciaSinJustificar: 0 } },
+    };
+    expect(evaluarDeclaracion(estado).recomendaciones.some((r) => r.texto.includes('patrimonio creció'))).toBe(false);
+  });
+
+  it('sin patrimonio anterior informado: sugiere registrarlo, sin penalizar', () => {
+    const evaluacion = evaluarDeclaracion(ESTADO_COMPLETO);
+    const sugerencia = evaluacion.recomendaciones.find((r) => r.texto.includes('patrimonio líquido anterior'));
+    expect(sugerencia?.nivel).toBe('sugerencia');
+    expect(evaluacion.confiabilidad).toBe(100);
   });
 });

@@ -54,8 +54,27 @@ export interface ResultadoCedulaGeneral {
   rentaLiquidaGravable: number;
 }
 
+export interface ResultadoDescuentos {
+  donacionesRealizadas: number;
+  porDonaciones: number;
+  /** Tope del art. 258 (25% del impuesto) que se pudo aplicar. */
+  limiteAplicado: number;
+  total: number;
+}
+
+export interface ResultadoComparacionPatrimonial {
+  /** false cuando no se informó el patrimonio líquido del año anterior. */
+  aplica: boolean;
+  patrimonioLiquidoAnterior: number;
+  incremento: number;
+  capacidadDeJustificacion: number;
+  /** > 0 exige explicación al usuario (art. 239); la plataforma NO la grava sola. */
+  diferenciaSinJustificar: number;
+}
+
 export interface ResultadoLiquidacion {
   impuestoSobreRentaLiquida: number;
+  descuentos: ResultadoDescuentos;
   impuestoNetoRenta: number;
   totalImpuestoACargo: number;
   anticipoAnioSiguiente: number;
@@ -73,6 +92,7 @@ export interface ResultadoDeclaracion {
   patrimonioLiquido: number;
   cedulaGeneral: ResultadoCedulaGeneral;
   cedulaPensiones: ResultadoRentasPensiones;
+  comparacionPatrimonial: ResultadoComparacionPatrimonial;
   liquidacion: ResultadoLiquidacion;
   /** Casillas del formulario 210 (clave = número de casilla). */
   casillas: Record<string, number>;

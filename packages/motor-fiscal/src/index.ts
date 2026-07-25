@@ -13,6 +13,8 @@ export type {
   RentasCapitalInput,
   RentasNoLaboralesInput,
   RentasPensionesInput,
+  DescuentosInput,
+  ComparacionPatrimonialInput,
   DeduccionesInput,
   PatrimonioInput,
   ActivoPatrimonial,
@@ -23,5 +25,9 @@ export type {
   ResultadoCedulaGeneral,
   ResultadoRentasTrabajo,
   ResultadoRentasCapital,
+  ResultadoRentasNoLaborales,
+  ResultadoRentasPensiones,
+  ResultadoDescuentos,
+  ResultadoComparacionPatrimonial,
   ResultadoLiquidacion,
 } from './modelo/resultado';

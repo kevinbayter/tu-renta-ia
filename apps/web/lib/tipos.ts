@@ -45,6 +45,9 @@ export const RESPUESTAS_INICIALES: RespuestasEntrevista = {
   declaracionesPrevias: 0,
   impuestoNetoAnioAnterior: 0,
   anticipoLiquidadoAnioAnterior: 0,
+  donacionesEsal: 0,
+  patrimonioLiquidoAnterior: 0,
+  justificacionesPatrimoniales: 0,
 };
 
 export function formatearPesos(valor: number): string {

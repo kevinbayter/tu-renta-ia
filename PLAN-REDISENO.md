@@ -6,7 +6,7 @@
 > Regla de oro: **mejoras y no retroceso** — el motor fiscal, el wizard probado contra
 > el caso dorado y la extracción con doble pasada NO se tocan.
 
-## 1. Decisiones de producto (confirmadas con Ana, 2026-07-24)
+## 1. Decisiones de producto (confirmadas con el equipo, 2026-07-24)
 
 | Tema               | Decisión                                                                                                                                                                                                                      |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -211,7 +211,7 @@ pueda explicar: el detalle lista exactamente qué sumó y qué restó.
 | **2. Personas + Actividad + Notificaciones** | Tablas Prisma, backfill de terceros, `/clientes`, campana funcional, registro de eventos en los flujos existentes.                                                                  | Clientes y campana reales.                                     |
 | **3. IA Fiscal + Recomendaciones**           | `/ia-fiscal` (chat + simulador), motor de reglas + confiabilidad, banda de recomendaciones y widget del panel derecho.                                                              | El asistente y las recomendaciones funcionan con datos reales. |
 | **4. Secciones restantes**                   | Calendario, Documentos, Plan, Facturación, Configuración (avatar/preferencias), Ayuda, búsqueda ⌘K, Personalizar vista, FAB.                                                        | Todos los ítems del sidebar operativos.                        |
-| **5. Emails + pulido**                       | Emails de vencimiento (Brevo), responsive fino, revisión visual contra el mockup, capturas para Ana.                                                                              | Paridad total con el diseño.                                   |
+| **5. Emails + pulido**                       | Emails de vencimiento (Brevo), responsive fino, revisión visual contra el mockup, capturas de revisión.                                                                             | Paridad total con el diseño.                                   |
 
 ## 11. Qué NO se toca
 

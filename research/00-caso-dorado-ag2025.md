@@ -49,17 +49,17 @@ Este documento consolida los datos de entrada (documentos en `/docs`) y el resul
 
 ## Patrimonio (31-dic-2025)
 
-| Activo                        | Valor          |
-| ----------------------------- | -------------- |
-| Bienes personales             | 24.500.000     |
-| Ejemplo Dos cuenta             | 6.909          |
-| Nu cuenta ahorros             | 20.902.486     |
-| FIC Ejemplo Dos                | 15.205         |
-| Fondo Uno (Fiduciaria Uno)              | 1.467.428      |
-| Comisionista (Comisionista Ejemplo)     | 682.355        |
-| CxC apartamento | 20.900.000     |
-| CxC Saldo a favor DIAN        | 1.401.000      |
-| **Total**                     | **69.875.000** |
+| Activo                              | Valor          |
+| ----------------------------------- | -------------- |
+| Bienes personales                   | 24.500.000     |
+| Ejemplo Dos cuenta                  | 6.909          |
+| Nu cuenta ahorros                   | 20.902.486     |
+| FIC Ejemplo Dos                     | 15.205         |
+| Fondo Uno (Fiduciaria Uno)          | 1.467.428      |
+| Comisionista (Comisionista Ejemplo) | 682.355        |
+| CxC apartamento                     | 20.900.000     |
+| CxC Saldo a favor DIAN              | 1.401.000      |
+| **Total**                           | **69.875.000** |
 
 Nota: patrimonio bruto año anterior (AG2024): 45.053.000. No incluyó saldos menores (Pagos Digitales 5.001, Billetera Digital 165, Colfondos cesantías saldo?, activos laborales PTC 682.052) — revisar criterio.
 
@@ -67,11 +67,11 @@ Nota: patrimonio bruto año anterior (AG2024): 45.053.000. No incluyó saldos me
 
 | Fuente                      | Valor                                      |
 | --------------------------- | ------------------------------------------ |
-| ANDINA (trabajo)              | 386.000                                    |
+| ANDINA (trabajo)            | 386.000                                    |
 | PTC/WOM (trabajo)           | 396.000                                    |
 | Nu (rendimientos)           | 42.540                                     |
-| Fiduciaria Tres Fiduciaria          | 3.309                                      |
-| Fiduciaria Uno                   | 13+15                                      |
+| Fiduciaria Tres Fiduciaria  | 3.309                                      |
+| Fiduciaria Uno              | 13+15                                      |
 | **Total usado por referencia** | 825.000 (trabajo 782.000 + capital 43.000) |
 
 ## Documentos fuente en /docs

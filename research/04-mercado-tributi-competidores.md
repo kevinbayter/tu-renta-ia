@@ -59,7 +59,7 @@ Adicional: **recuperación de saldo a favor** — revisión inicial $60.000 no r
 ### 1.5 B2B y alianzas
 
 - **[referencia para empresas](https://www.plataforma de referencia)**: paquetes por empleados (target 10–200 empleados, salario > $3,56M/mes), cupones; clientes: Scotiabank Colpatria, Bancolombia, Grupo Éxito, Puma Energy, Bavaria, Protección, Uber, Holcim (+30).
-- **Fiduciaria Tres Bancolombia** ([página](https://www.bancolombia.com/pagos/impuestos/referencia)): en 2021 gratis para clientes; hoy cupones + 20% dcto. También **Banco Nacional** ([bbva.com.co](https://www.bbva.com.co/personas/productos/tarjetas/beneficios/referencia.html)), Banco de Bogotá, Comfama ([comfama.com](https://www.comfama.com/finanzas/referencia/)).
+- **Fiduciaria Tres Bancolombia** ([página](https://www.bancolombia.com/pagos/impuestos/referencia)): en 2021 gratis para clientes; hoy cupones + 20% dcto. También **Banco Nacional** ([bbva.com.co](https://www.bbva.com.co/personas/productos/tarjetas/beneficios/referencia.html)), Banco de la ciudad, Comfama ([comfama.com](https://www.comfama.com/finanzas/referencia/)).
 
 ---
 

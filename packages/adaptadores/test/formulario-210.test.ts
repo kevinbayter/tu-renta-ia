@@ -89,8 +89,8 @@ describe('formulario 210 fiel (plantilla oficial DIAN)', () => {
   });
 
   it('calcula el dígito de verificación DIAN', () => {
-    expect(calcularDigitoVerificacion('1234567890')).toBe('9');
-    expect(calcularDigitoVerificacion('900111222')).toBe('6');
-    expect(calcularDigitoVerificacion('900333444')).toBe('1');
+    expect(calcularDigitoVerificacion('1234567890')).toBe('2');
+    expect(calcularDigitoVerificacion('900111222')).toBe('1');
+    expect(calcularDigitoVerificacion('900333444')).toBe('0');
   });
 });

@@ -26,6 +26,9 @@ const CAMPOS_EDITABLES: { campo: keyof RespuestasEntrevista; etiqueta: string }[
   { campo: 'declaracionesPrevias', etiqueta: 'Declaraciones presentadas antes' },
   { campo: 'impuestoNetoAnioAnterior', etiqueta: 'Impuesto neto del año anterior ($)' },
   { campo: 'anticipoLiquidadoAnioAnterior', etiqueta: 'Anticipo liquidado en tu declaración anterior ($)' },
+  { campo: 'donacionesEsal', etiqueta: 'Donaciones con certificado, a fundaciones ($)' },
+  { campo: 'patrimonioLiquidoAnterior', etiqueta: 'Patrimonio líquido del año anterior ($)' },
+  { campo: 'justificacionesPatrimoniales', etiqueta: 'Herencias, préstamos o valorizaciones del año ($)' },
 ];
 
 export function PasoRevision() {

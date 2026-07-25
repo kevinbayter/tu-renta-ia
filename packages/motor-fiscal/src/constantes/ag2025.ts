@@ -44,6 +44,14 @@ export const AG2025: ConstantesAnio = {
   // Num. 5 art. 206 E.T. (mod. Ley 2277/2022): mesada exenta hasta 1.000 UVT/mes
   // (normativa/ag2025/04-pensiones.md)
   pensiones: { exencionMensualUvt: 1_000 },
+
+  // Art. 257: descuento del 25% de lo donado a ESAL del régimen especial.
+  // Art. 258: los descuentos 255/256/257 no exceden el 25% del impuesto de renta.
+  // (normativa/ag2025/06-descuentos-y-comparacion.md)
+  descuentos: {
+    donacionesPorcentaje: 0.25,
+    limiteSobreImpuesto: 0.25,
+  },
   gmf: { porcentajeDeducible: 0.5 },
   afcFvp: { porcentaje: 0.3, topeAnualUvt: 3_800 },
 

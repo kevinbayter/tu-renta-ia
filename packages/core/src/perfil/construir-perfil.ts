@@ -1,6 +1,7 @@
 import type {
   ActivoPatrimonial,
   CertificadoLaboral,
+  ComparacionPatrimonialInput,
   PerfilFiscal,
   RentasCapitalInput,
   RentasPensionesInput,
@@ -50,7 +51,19 @@ export function construirPerfilFiscal(insumos: InsumosPerfil): PerfilFiscal {
     deducciones: armarDeducciones(respuestas),
     comprasFacturaElectronica: comprasFacturaElectronicaConBeneficio(insumos.exogena),
     patrimonio: armarPatrimonio(insumos.exogena, insumos.certificadosBancarios, respuestas),
+    descuentos: { donacionesEsal: respuestas.donacionesEsal ?? 0 },
+    comparacionPatrimonial: armarComparacion(respuestas),
     historial: armarHistorial(insumos.exogena, respuestas),
+  };
+}
+
+/** Datos del art. 236: el impuesto pagado en el año es el neto de la declaración anterior. */
+function armarComparacion(r: RespuestasEntrevista): ComparacionPatrimonialInput {
+  return {
+    patrimonioLiquidoAnterior: r.patrimonioLiquidoAnterior ?? 0,
+    gananciaOcasionalNeta: 0,
+    impuestosPagadosEnElAnio: r.impuestoNetoAnioAnterior,
+    justificacionesDeclaradas: r.justificacionesPatrimoniales ?? 0,
   };
 }
 

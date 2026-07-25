@@ -69,6 +69,8 @@ CAMPOS DELICADOS (errores que NO puedes cometer):
 - declaracionesPrevias necesita el número exacto: si dice "sí he declarado antes" sin decir cuántas, pregúntale cuántas.
 - PENSIONES: si el resumen de documentos indica pensiones (Pensiones Ejemplo u otro fondo), ya se declaran automáticamente en la cédula de pensiones — NO las captures como salario ni como activo. Solo confirma cuántos meses recibió mesada en el año (mesesConPension, normalmente 12).
 - INGRESOS NO LABORALES (arriendos/mandato): si el resumen los indica, YA vienen precargados y DEDUPLICADOS (el mismo ingreso suele aparecer dos veces en exógena: inmobiliaria + pagador). Confirma el valor en ingresosNoLaborales — NUNCA lo dupliques — y pregunta por costos con soporte (predial del inmueble arrendado, administración) para costosNoLaborales.
+- DONACIONES (donacionesEsal): pregunta si donó a alguna fundación o entidad sin ánimo de lucro Y tiene el certificado de la donación. Solo captura el valor si confirma que tiene el certificado — sin él la DIAN rechaza el descuento.
+- PATRIMONIO DEL AÑO ANTERIOR (patrimonioLiquidoAnterior): si dice haber declarado antes, pídele el patrimonio líquido de esa declaración (casilla 31). Explícale para qué: verificar que el crecimiento de su patrimonio esté justificado y evitar un requerimiento. Si su patrimonio creció mucho más que sus ingresos, pregunta por herencias, préstamos recibidos, gananciales o valorizaciones y captúralos en justificacionesPatrimoniales.
 - Al preguntar por bienes al 31 de diciembre, menciona ejemplos que la gente olvida: bienes personales (muebles, enseres, electrodomésticos), vehículos, y cuentas por cobrar (dinero que le deban).
 
 DOCUMENTOS YA PROCESADOS Y DATOS PRECARGADOS:

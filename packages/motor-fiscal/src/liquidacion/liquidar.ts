@@ -1,30 +1,33 @@
 import { calcularAnticipo } from './anticipo';
+import { calcularDescuentos } from './descuentos';
 import { impuestoTabla241 } from './tabla-241';
 
 import type { ConstantesAnio } from '../constantes/tipos';
 import type { ResultadoLiquidacion } from '../modelo/resultado';
-import type { HistorialInput } from '../modelo/tipos';
+import type { DescuentosInput, HistorialInput } from '../modelo/tipos';
 
 /**
- * Liquidación privada: impuesto por tabla, anticipo y saldo final.
- * Descuentos tributarios y ganancias ocasionales se incorporan en fases posteriores
- * (hoy: impuesto neto = impuesto por tabla; total a cargo = impuesto neto).
+ * Liquidación privada: impuesto por tabla, descuentos tributarios (art. 257
+ * con el tope del 258), anticipo y saldo final. Las ganancias ocasionales
+ * quedan fuera de alcance y documentadas como tal.
  */
 export function liquidar(
   rentaLiquidaGravable: number,
   retenciones: number,
   historial: HistorialInput,
   c: ConstantesAnio,
+  descuentosInput?: DescuentosInput,
 ): ResultadoLiquidacion {
   const impuestoSobreRentaLiquida = impuestoTabla241(rentaLiquidaGravable, c);
-  const impuestoNetoRenta = impuestoSobreRentaLiquida;
-  const totalImpuestoACargo = impuestoNetoRenta;
+  const descuentos = calcularDescuentos(descuentosInput, impuestoSobreRentaLiquida, c);
+  const impuestoNetoRenta = Math.max(0, impuestoSobreRentaLiquida - descuentos.total);
   const anticipoAnioSiguiente = calcularAnticipo(impuestoNetoRenta, retenciones, historial, c);
-  const neto = calcularNeto(totalImpuestoACargo, anticipoAnioSiguiente, retenciones, historial);
+  const neto = calcularNeto(impuestoNetoRenta, anticipoAnioSiguiente, retenciones, historial);
   return {
     impuestoSobreRentaLiquida,
+    descuentos,
     impuestoNetoRenta,
-    totalImpuestoACargo,
+    totalImpuestoACargo: impuestoNetoRenta,
     anticipoAnioSiguiente,
     retenciones,
     saldoFavorAnterior: historial.saldoFavorAnioAnterior,

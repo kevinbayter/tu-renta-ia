@@ -64,6 +64,21 @@ export interface PatrimonioInput {
   deudas: number;
 }
 
+export interface DescuentosInput {
+  /** Donaciones a ESAL del régimen especial con certificación (art. 257). */
+  donacionesEsal: number;
+}
+
+export interface ComparacionPatrimonialInput {
+  /** Casilla 31 de la declaración del año anterior; 0 = no se compara. */
+  patrimonioLiquidoAnterior: number;
+  gananciaOcasionalNeta: number;
+  /** Impuestos de renta y complementarios pagados durante el año (art. 237). */
+  impuestosPagadosEnElAnio: number;
+  /** Causas justificativas declaradas por el usuario (art. 239): herencias, préstamos, valorizaciones. */
+  justificacionesDeclaradas: number;
+}
+
 export interface HistorialInput {
   /** Número de declaraciones presentadas antes de esta (define % de anticipo). */
   declaracionesPrevias: number;
@@ -84,5 +99,9 @@ export interface PerfilFiscal {
   /** Monto de compras con factura electrónica susceptible del beneficio del 1%. */
   comprasFacturaElectronica: number;
   patrimonio: PatrimonioInput;
+  /** Descuentos tributarios (art. 257); ausente = sin descuentos. */
+  descuentos?: DescuentosInput;
+  /** Datos para la comparación patrimonial (arts. 236-239); ausente = no se evalúa. */
+  comparacionPatrimonial?: ComparacionPatrimonialInput;
   historial: HistorialInput;
 }

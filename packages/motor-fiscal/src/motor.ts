@@ -3,6 +3,7 @@ import { depurarCedulaGeneral } from './depuracion/cedula-general';
 import { depurarPensiones } from './depuracion/pensiones';
 import { mapearCasillas } from './formulario210/casillas';
 import { liquidar } from './liquidacion/liquidar';
+import { compararPatrimonio } from './patrimonio/comparacion';
 import { redondearMil } from './redondeo';
 
 import type { ResultadoDeclaracion } from './modelo/resultado';
@@ -16,23 +17,35 @@ export function liquidarDeclaracion(perfil: PerfilFiscal): ResultadoDeclaracion 
   const c = obtenerConstantes(perfil.anioGravable);
   const cedulaGeneral = depurarCedulaGeneral(perfil, c);
   const cedulaPensiones = depurarPensiones(perfil.rentasPensiones, c);
-  const retenciones = calcularRetenciones(perfil);
   // Art. 331 E.T. (Ley 2277/2022): la tarifa del 241 se aplica a la SUMA de cédulas.
-  const rentaLiquidaGravableTotal = cedulaGeneral.rentaLiquidaGravable + cedulaPensiones.rentaLiquidaGravable;
-  const liquidacion = liquidar(rentaLiquidaGravableTotal, retenciones, perfil.historial, c);
-  const patrimonioBruto = redondearMil(sumarActivos(perfil));
-  const deudas = redondearMil(perfil.patrimonio.deudas);
-  const patrimonioLiquido = Math.max(0, patrimonioBruto - deudas);
+  const rentaLiquidaGravable = cedulaGeneral.rentaLiquidaGravable + cedulaPensiones.rentaLiquidaGravable;
+  const liquidacion = liquidar(rentaLiquidaGravable, calcularRetenciones(perfil), perfil.historial, c, perfil.descuentos);
+  const patrimonio = calcularPatrimonio(perfil);
   return {
     anioGravable: perfil.anioGravable,
-    patrimonioBruto,
-    deudas,
-    patrimonioLiquido,
+    ...patrimonio,
     cedulaGeneral,
     cedulaPensiones,
+    comparacionPatrimonial: compararPatrimonio(
+      perfil.comparacionPatrimonial,
+      patrimonio.patrimonioLiquido,
+      rentaLiquidaGravable,
+      // Art. 237: las rentas exentas suman a la capacidad de justificación.
+      cedulaGeneral.totalExentasYDeduccionesConFueraDeLimite + cedulaPensiones.rentaExenta,
+    ),
     liquidacion,
-    casillas: construirCasillas(perfil, cedulaGeneral, cedulaPensiones, liquidacion, patrimonioBruto, deudas),
+    casillas: construirCasillas(perfil, cedulaGeneral, cedulaPensiones, liquidacion, patrimonio),
   };
+}
+
+function calcularPatrimonio(perfil: PerfilFiscal): {
+  patrimonioBruto: number;
+  deudas: number;
+  patrimonioLiquido: number;
+} {
+  const patrimonioBruto = redondearMil(sumarActivos(perfil));
+  const deudas = redondearMil(perfil.patrimonio.deudas);
+  return { patrimonioBruto, deudas, patrimonioLiquido: Math.max(0, patrimonioBruto - deudas) };
 }
 
 function calcularRetenciones(perfil: PerfilFiscal): number {
@@ -51,14 +64,11 @@ function construirCasillas(
   cedula: ResultadoDeclaracion['cedulaGeneral'],
   pensiones: ResultadoDeclaracion['cedulaPensiones'],
   liquidacion: ResultadoDeclaracion['liquidacion'],
-  patrimonioBruto: number,
-  deudas: number,
+  patrimonio: { patrimonioBruto: number; deudas: number; patrimonioLiquido: number },
 ): Record<string, number> {
   return mapearCasillas({
     facturaElectronica: cedula.deduccionFacturaElectronica,
-    patrimonioBruto,
-    deudas,
-    patrimonioLiquido: Math.max(0, patrimonioBruto - deudas),
+    ...patrimonio,
     cedula,
     pensiones,
     liquidacion,

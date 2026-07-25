@@ -29,4 +29,10 @@ export interface RespuestasEntrevista {
   declaracionesPrevias: number;
   impuestoNetoAnioAnterior: number;
   anticipoLiquidadoAnioAnterior: number;
+  /** Donaciones a ESAL con certificación del donatario (descuento del 25%, art. 257). */
+  donacionesEsal?: number;
+  /** Casilla 31 de la declaración anterior; habilita la comparación patrimonial (art. 236). */
+  patrimonioLiquidoAnterior?: number;
+  /** Causas justificativas del incremento patrimonial (art. 239): herencias, préstamos, valorizaciones. */
+  justificacionesPatrimoniales?: number;
 }

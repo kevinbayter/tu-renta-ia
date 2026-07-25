@@ -31,12 +31,13 @@ interface DocumentoEstado {
 interface EstadoWizard {
   documentos?: DocumentoEstado[];
   entrevistaCompleta?: boolean;
-  resultado?: unknown;
+  resultado?: { comparacionPatrimonial?: { aplica?: boolean; diferenciaSinJustificar?: number } } | null;
   declarante?: { identificacion?: string };
   respuestas?: {
     anticipoLiquidadoAnioAnterior?: number;
     tieneDependiente387?: boolean;
     ingresosNoLaborales?: number;
+    patrimonioLiquidoAnterior?: number;
   };
 }
 
@@ -58,6 +59,8 @@ export function evaluarDeclaracion(estado: unknown): EvaluacionDeclaracion {
     reglaEntrevista,
     reglaSinResultado,
     reglaDobleConteo,
+    reglaComparacionPatrimonial,
+    reglaSinPatrimonioAnterior,
     reglaDependientes,
   ];
   const hallazgos = reglas.map((regla) => regla(e)).filter((h): h is Hallazgo => h !== null);
@@ -193,6 +196,37 @@ function reglaDobleConteo(e: EstadoWizard): Hallazgo | null {
       texto: 'El "anticipo liquidado" es idéntico al saldo a favor que ya trae tu exógena: se restaría dos veces. Déjalo en $0 en Revisión si es el mismo valor.',
     },
     penalizacion: 20,
+  };
+}
+
+/** Art. 236: incremento patrimonial que las rentas del año no alcanzan a explicar. */
+function reglaComparacionPatrimonial(e: EstadoWizard): Hallazgo | null {
+  const comparacion = e.resultado?.comparacionPatrimonial;
+  const sinJustificar = comparacion?.diferenciaSinJustificar ?? 0;
+  if (comparacion?.aplica !== true || sinJustificar <= 0) {
+    return null;
+  }
+  return {
+    recomendacion: {
+      nivel: 'critica',
+      texto: `Tu patrimonio creció $${sinJustificar.toLocaleString('es-CO')} más de lo que explican tus ingresos del año: la DIAN puede gravar esa diferencia (art. 236 E.T.). Registra en Revisión lo que la justifica — herencias, préstamos recibidos, gananciales o valorizaciones — o revisa que el patrimonio anterior sea correcto.`,
+    },
+    penalizacion: 20,
+  };
+}
+
+/** Sugerencia: sin el patrimonio del año anterior no se puede prevenir el art. 236. */
+function reglaSinPatrimonioAnterior(e: EstadoWizard): Hallazgo | null {
+  const declaroAntes = (e.respuestas?.anticipoLiquidadoAnioAnterior ?? 0) >= 0;
+  if (!declaroAntes || (e.respuestas?.patrimonioLiquidoAnterior ?? 0) > 0) {
+    return null;
+  }
+  return {
+    recomendacion: {
+      nivel: 'sugerencia',
+      texto: 'Si declaraste el año pasado, registra tu patrimonio líquido anterior (casilla 31 de esa declaración): con él verificamos que tu incremento patrimonial esté justificado y evitamos un requerimiento de la DIAN.',
+    },
+    penalizacion: 0,
   };
 }
 

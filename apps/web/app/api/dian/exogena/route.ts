@@ -101,6 +101,7 @@ const MENSAJES: Record<MotivoFalloDian, string> = {
   estructura_cambiada: 'El portal de la DIAN cambió y no pudimos completar la descarga.',
   requiere_verificacion: 'La DIAN pidió una verificación adicional que debes hacer tú directamente.',
   tiempo_agotado: 'La DIAN tardó demasiado en responder.',
+  sin_declaracion: 'No encontramos una declaración presentada de ese año en tu cuenta.',
   desconocido: 'No pudimos completar la conexión.',
 };
 

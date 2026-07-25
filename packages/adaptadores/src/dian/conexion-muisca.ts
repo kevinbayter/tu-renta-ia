@@ -9,7 +9,7 @@ import type {
   ResultadoDescarga,
 } from '@turenta/core';
 
-import type { Browser, Page } from 'playwright';
+import type { Browser, Download, Page } from 'playwright';
 
 /**
  * Adaptador del portal MUISCA (Playwright). Es el ÚNICO punto del sistema que
@@ -162,11 +162,15 @@ async function descargarReporteExogena(
   if (!descarga) {
     return fallo('estructura_cambiada', 'No encontramos la opción de exógena en el portal');
   }
-  const ruta = await descarga.path();
+  return archivoDe(descarga);
+}
+
+/** Lee el archivo descargado a memoria; el llamador decide si lo procesa o descarta. */
+async function archivoDe(descarga: Download): Promise<ResultadoDescarga> {
   const { readFile } = await import('node:fs/promises');
   return {
     exito: true,
-    contenido: new Uint8Array(await readFile(ruta)),
+    contenido: new Uint8Array(await readFile(await descarga.path())),
     nombreArchivo: descarga.suggestedFilename(),
   };
 }
@@ -200,13 +204,80 @@ function dispararDescarga(pagina: Page): Promise<void> {
   );
 }
 
-/** TODO Fase 2. */
-function descargarDeclaracionPresentada(
-  _pagina: Page,
-  _anioGravable: number,
-  _alProgresar?: (p: ProgresoConexion) => void,
+/**
+ * Ruta a las declaraciones ya presentadas, verificada el 25-jul-2026. A
+ * diferencia de la exógena (JSF), esto vive en una SPA de Angular:
+ * `WebDilIngresoFormRenta210/#/ingreso/presentados`. La tabla lista número de
+ * formulario, año, concepto y fecha, con iconos de acción por fila.
+ */
+const DECLARACIONES = {
+  barraMenu: '#divMenuTd',
+  diligenciar: 'Diligenciar / Presentar',
+  formulario210: 'Formulario 210',
+  presentadas: 'Declaraciones de renta presentadas',
+  /** Se ancla al nombre del archivo del icono, no al matTooltip: los atributos
+   *  `ng-reflect-*` solo existen cuando Angular corre en modo desarrollo. */
+  iconoDescargar: 'img[src*="descargar"]',
+} as const;
+
+/**
+ * Descarga el PDF de la declaración presentada del año pedido. El archivo llega
+ * nombrado con el número del formulario (`<numero>.pdf`).
+ */
+async function descargarDeclaracionPresentada(
+  pagina: Page,
+  anioGravable: number,
+  alProgresar?: (p: ProgresoConexion) => void,
 ): Promise<ResultadoDescarga> {
-  return Promise.resolve(fallo('desconocido', 'Descarga de declaraciones: pendiente de la Fase 2'));
+  await irADeclaracionesPresentadas(pagina);
+  const icono = await iconoDescargaDelAnio(pagina, anioGravable);
+  if (!icono) {
+    return fallo('sin_declaracion', `No hay una declaración presentada del año ${anioGravable}`);
+  }
+  alProgresar?.({ etapa: 'descargando', mensaje: `Descargando tu declaración ${anioGravable}` });
+  const descarga = await Promise.all([
+    pagina.waitForEvent('download', { timeout: ESPERA_MS }),
+    icono.click(),
+  ])
+    .then(([d]) => d)
+    .catch(() => null);
+  return descarga ? await archivoDe(descarga) : fallo('estructura_cambiada', 'No se pudo descargar el PDF');
+}
+
+/**
+ * El menú lateral del MUISCA solo se despliega con el ratón real: un clic
+ * sintético sobre su contenedor no lo abre (comprobado contra el portal). Por
+ * eso se usa `hover`, que mueve el puntero de verdad.
+ */
+async function irADeclaracionesPresentadas(pagina: Page): Promise<void> {
+  await pagina.locator(DECLARACIONES.barraMenu).hover({ timeout: ESPERA_MS });
+  await pagina.getByRole('link', { name: DECLARACIONES.diligenciar, exact: true }).first().click({ timeout: ESPERA_MS });
+  await pagina.getByText(DECLARACIONES.formulario210, { exact: true }).first().click({ timeout: ESPERA_MS });
+  await pagina.getByText(DECLARACIONES.presentadas, { exact: true }).first().click({ timeout: ESPERA_MS });
+}
+
+/** Empareja cada icono de descarga con el año de su fila y devuelve el que toca. */
+async function iconoDescargaDelAnio(pagina: Page, anioGravable: number) {
+  const iconos = await pagina.$$(DECLARACIONES.iconoDescargar);
+  const anios = await Promise.all(iconos.map((icono) => icono.evaluate(anioDeLaFila)));
+  const indice = anios.indexOf(String(anioGravable));
+  return indice >= 0 ? iconos[indice] : null;
+}
+
+/**
+ * Se ejecuta dentro del navegador: sube por los ancestros del icono hasta la
+ * fila —la que trae el número de formulario de 13 dígitos— y lee su año.
+ */
+function anioDeLaFila(elemento: Element): string | null {
+  const ancestros: Element[] = [];
+  let nodo = elemento.parentElement;
+  while (nodo && ancestros.length < 6) {
+    ancestros.push(nodo);
+    nodo = nodo.parentElement;
+  }
+  const textoDe = (n: Element) => (n.textContent ?? '').replace(/\s+/g, ' ');
+  const fila = ancestros.find((n) => /\d{13}/.test(textoDe(n)) && / \/ anual/.test(textoDe(n)));
+  return (textoDe(fila ?? elemento).match(/(20\d\d) \/ anual/) ?? [])[1] ?? null;
 }
 
 function fallo(motivo: MotivoFalloDian, detalle: string): ResultadoDescarga {

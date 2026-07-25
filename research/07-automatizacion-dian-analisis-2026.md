@@ -110,6 +110,44 @@ por terceros"_ abre un `rich-modalpanel` (`…:aniosPanel`) con las condiciones 
 - El dashboard también expone **"Presentar Declaración de Renta"** — punto de entrada de la
   Fase 3.
 
+### 2.1.3 Declaraciones presentadas, verificado de punta a punta (25-jul-2026)
+
+El portal **no es una sola aplicación**: conviven el dashboard JSF/RichFaces y una SPA de
+Angular para el 210. La ruta al histórico es:
+
+```
+Dashboard → [menú lateral] → Diligenciar / Presentar → Formulario 210
+          → Declaraciones de renta presentadas
+          → muisca.dian.gov.co/WebDilIngresoFormRenta210/#/ingreso/presentados
+```
+
+La tabla lista **No. formulario · Año/frecuencia · Concepto · Fecha de presentación** y, por
+fila, iconos de acción: `descargar.png`, `corregir.png`, `pagar.png`. El PDF se descarga con
+el nombre `<númeroFormulario>.pdf`.
+
+| Elemento          | Selector                | Notas                             |
+| ----------------- | ----------------------- | --------------------------------- |
+| Barra del menú    | `#divMenuTd`            | **Requiere hover del ratón real** |
+| Icono de descarga | `img[src*="descargar"]` | Anclado al archivo, no al tooltip |
+
+> ⚠️ **El hallazgo que más cuesta descubrir**: el menú lateral **solo se despliega con hover
+> del ratón real**. Un `element.click()` sintético sobre `#divMenuTd` no lo abre, y tampoco
+> lo abre hacer clic en el texto "Mis actividades". Por eso el adaptador usa `hover()` de
+> Playwright, que mueve el puntero de verdad. Sin esto, toda la Fase 2 es inalcanzable.
+
+Otros detalles verificados:
+
+- El árbol del menú **aparece y desaparece del DOM** según el estado del desplegable: buscar
+  el enlace y activarlo deben ocurrir en la misma operación, o se pierde entre re-renders.
+- Los `<a>` del menú traen `onclick` con ids JSF generados
+  (`…_id32('…:id5043','seleccionar')`). **Ese id cambia entre sesiones**: hay que resolver el
+  enlace por su texto, nunca por el id.
+- Los iconos de acción usan `matTooltip`, que se refleja como `ng-reflect-message`
+  **solo en modo desarrollo**. Anclarse a eso sería frágil; el `src` del icono es estable.
+- La pantalla JSF _"Consultar documento Diligenciado"_ (`vistaImprimirFormualrioPDF:…`,
+  con el typo incluido) también entrega el PDF, pero **exige conocer el número de
+  declaración** de antemano, así que no sirve para descubrir el histórico.
+
 ### 2.2 Obstáculos técnicos reales
 
 - **Fragilidad estructural**: el MUISCA cambia sin aviso ni versionado. Un selector roto en

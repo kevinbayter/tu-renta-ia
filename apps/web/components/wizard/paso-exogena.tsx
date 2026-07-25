@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, CloudUpload, ExternalLink, Lock } from 'lucide-r
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 
+import { BloqueDeclaracionAnterior } from './bloque-declaracion-anterior';
 import { aplicarPrecarga, NOMBRES_TIPO, subirArchivo, useSubidas } from './pipeline-documentos';
 import { TarjetaDocumento } from './tarjeta-documento';
 import { useDeclaracion } from '@/lib/store';
@@ -46,6 +47,7 @@ export function PasoExogena() {
             </>
           )}
           {!exogena && <GuiaDescarga />}
+          <BloqueDeclaracionAnterior />
         </div>
       </div>
       <PieNavegacion habilitado={Boolean(exogena)} alContinuar={() => irAPaso('documentos')} />

@@ -63,6 +63,8 @@ async function extraerCertificado(extractor: ExtractorCertificados, doc: Documen
       return { tipo, ...(await extractor.extraerBancario(doc)) };
     case 'medicina_prepagada':
       return { tipo, ...(await extractor.extraerPrepagada(doc)) };
+    case 'declaracion_anterior':
+      return { tipo, ...(await extractor.extraerDeclaracionAnterior(doc)) };
     case 'exogena':
       throw new Error('Este documento parece la exógena: súbela como el archivo Excel descargado de la DIAN.');
     case 'otro':

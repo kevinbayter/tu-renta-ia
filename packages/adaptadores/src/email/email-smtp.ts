@@ -2,6 +2,8 @@ import { createTransport } from 'nodemailer';
 
 import type { EmailPort } from '@turenta/core';
 
+import { cuerpoHtmlAviso, cuerpoHtmlCodigo, cuerpoTextoCodigo } from './plantillas';
+
 import type { Transporter } from 'nodemailer';
 
 export interface SmtpConfig {
@@ -34,26 +36,20 @@ export class EmailSmtpAdapter implements EmailPort {
       from: this.config.from,
       to: email,
       subject: `${codigo} es tu código de ingreso a TuRenta AI`,
-      text: cuerpoTexto(codigo),
-      html: cuerpoHtml(codigo),
+      text: cuerpoTextoCodigo(codigo),
+      html: cuerpoHtmlCodigo(codigo),
     });
   }
 
   async enviarAviso(email: string, asunto: string, mensaje: string): Promise<void> {
-    await this.transporter.sendMail({ from: this.config.from, to: email, subject: asunto, text: mensaje });
+    await this.transporter.sendMail({
+      from: this.config.from,
+      to: email,
+      subject: asunto,
+      text: mensaje,
+      html: cuerpoHtmlAviso(asunto, mensaje),
+    });
   }
 }
 
-function cuerpoTexto(codigo: string): string {
-  return `Tu código de ingreso a TuRenta AI es: ${codigo}\n\nVence en 10 minutos. Si no lo solicitaste, ignora este correo.`;
-}
 
-function cuerpoHtml(codigo: string): string {
-  return `<div style="font-family:system-ui,sans-serif;max-width:420px;margin:0 auto;padding:24px">
-  <p style="color:#4f46e5;font-weight:700;font-size:14px;letter-spacing:1px;text-transform:uppercase">TuRenta AI</p>
-  <h1 style="font-size:20px;margin:8px 0 16px">Tu código de ingreso</h1>
-  <p style="font-size:14px;color:#57534e">Úsalo para entrar a tu cuenta. Vence en 10 minutos.</p>
-  <p style="font-size:34px;font-weight:700;letter-spacing:8px;font-family:monospace;background:#eef2ff;color:#4338ca;text-align:center;padding:16px;border-radius:12px;margin:16px 0">${codigo}</p>
-  <p style="font-size:12px;color:#a8a29e">Si no solicitaste este código, ignora este correo.</p>
-</div>`;
-}

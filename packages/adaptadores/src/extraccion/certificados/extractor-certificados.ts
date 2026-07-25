@@ -9,6 +9,7 @@ import {
   certificadoBancarioSchema,
   certificadoPrepagadaSchema,
   clasificacionDocumentoSchema,
+  declaracionAnteriorSchema,
   jsonSchemas,
 } from '@turenta/shared';
 import type {
@@ -16,6 +17,7 @@ import type {
   CertificadoBancarioExtraido,
   CertificadoPrepagadaExtraido,
   ClasificacionDocumento,
+  DeclaracionAnteriorExtraida,
 } from '@turenta/shared';
 
 import type { ZodType } from 'zod';
@@ -38,6 +40,7 @@ export class ExtractorCertificados implements ExtractorDocumentosPort {
 - certificado_220: "Certificado de Ingresos y Retenciones por Rentas de Trabajo y de Pensiones" (formulario 220 DIAN) emitido por UN empleador a UN trabajador; tiene pagos por salarios, aportes y retención.
 - certificado_bancario: certificado tributario emitido por un banco/entidad financiera con saldos, rendimientos, GMF y/o retenciones de UNA entidad.
 - medicina_prepagada: certificado de pagos de medicina prepagada o seguro de salud.
+- declaracion_anterior: un formulario 210 YA PRESENTADO (declaración de renta de un año gravable anterior), con casillas numeradas del 28 al 141 y sellos o número de autoadhesivo de la DIAN.
 - exogena: reporte "Consulta de información reportada por terceros" de la DIAN — tabla con MÚLTIPLES empresas informantes distintas y sus reportes.
 - otro: cualquier otro documento.`;
     const bruto = await this.llm.extraerEstructurado({
@@ -87,6 +90,18 @@ Extrae cada amparo/contrato como un elemento del arreglo con su valor pagado y v
       certificadoPrepagadaSchema,
       jsonSchemas.certificadoPrepagada,
     );
+  }
+
+  extraerDeclaracionAnterior(doc: DocumentoFuente): Promise<ResultadoExtraccion<DeclaracionAnteriorExtraida>> {
+    const instruccion = `Documento: formulario 210 DIAN YA PRESENTADO de un año gravable anterior.
+Extrae SOLO estas casillas por su número (el valor a la derecha de cada número de casilla):
+- anioGravable: el año gravable de ESTA declaración (encabezado, "Año" — NO el año de presentación).
+- patrimonioLiquido: casilla 31 "Total patrimonio líquido".
+- impuestoNetoRenta: casilla 126 "Impuesto neto de renta".
+- anticipoAnioSiguiente: casilla 133 "Anticipo renta para el año gravable siguiente".
+- totalSaldoAFavor: casilla 137 "Total saldo a favor".
+Si una casilla está vacía o en cero, usa 0. NO confundas casillas contiguas: guíate por el número impreso.`;
+    return this.extraerConDoblePasada(doc, instruccion, declaracionAnteriorSchema, jsonSchemas.declaracionAnterior);
   }
 
   private async extraerConDoblePasada<T>(

@@ -168,7 +168,8 @@ function VistaPrevia({ exogena }: { exogena: ExogenaParseada }) {
     return null;
   }
   const obligatorios = esperados.filter((e) => !e.opcional);
-  const opcionales = esperados.filter((e) => e.opcional);
+  const conRespaldo = esperados.filter((e) => e.opcional && e.tipo !== 'otro');
+  const sugerencias = esperados.filter((e) => e.tipo === 'otro');
   return (
     <div className="rounded-2xl border border-primario/25 bg-primario-suave/50 p-4">
       <p className="text-sm font-semibold">Según tu exógena, en el siguiente paso te pediremos:</p>
@@ -179,10 +180,15 @@ function VistaPrevia({ exogena }: { exogena: ExogenaParseada }) {
           </li>
         ))}
       </ul>
-      {opcionales.length > 0 && (
+      {conRespaldo.length > 0 && (
         <p className="mt-2 text-xs text-texto-suave">
-          Y {opcionales.length} certificado(s) opcionales ({opcionales.map((e) => nombreCorto(e.nombre)).join(', ')}):
-          si no los subes, tomamos sus valores directo de la exógena.
+          Opcionales con respaldo automático ({conRespaldo.map((e) => nombreCorto(e.nombre)).join(', ')}): si no
+          los subes, tomamos sus valores directo de la exógena.
+        </p>
+      )}
+      {sugerencias.length > 0 && (
+        <p className="mt-2 text-xs text-texto-suave">
+          Soportes sugeridos por lo que reporta tu exógena: {sugerencias.map((e) => nombreCorto(e.nombre)).join(' · ')}.
         </p>
       )}
     </div>

@@ -50,6 +50,49 @@ describe('documentosEsperados', () => {
   });
 });
 
+describe('documentosEsperados — señales de predial, deudas, ICETEX y prepagada', () => {
+  function filaCon(nit: string, nombre: string, detalle: string, infoAdicional = ''): FilaExogena {
+    return { nitInformante: nit, nombreInformante: nombre, detalle, valor: 1000, usoSugerido: '', infoAdicional };
+  }
+
+  const exogena: ExogenaParseada = {
+    ...EXOGENA,
+    filas: [
+      filaCon('899999061', 'MUNICIPIO EJEMPLO', 'Valor avalúo catastral (Concepto: 1476)', 'Matricula: 000A00000001'),
+      filaCon('899999061', 'MUNICIPIO EJEMPLO', 'Valor base del impuesto predial (Concepto: 1476)', 'Matricula: 000A00000001'),
+      filaCon('899999061', 'MUNICIPIO EJEMPLO', 'Valor avalúo catastral (Concepto: 1476)', 'Matricula: 000B00000002'),
+      filaCon('900181818', 'BANCO SOCIAL EJEMPLO S.A.', 'Cuentas por pagar de clientes (Concepto: 1315)'),
+      filaCon('899999035', 'ICETEX', 'Cuentas por pagar de clientes (Concepto: 1315)'),
+      filaCon('900101010', 'SALUD PREPAGADA S.A.', 'Pagos por planes de medicina prepagada (Concepto: 5007)'),
+    ],
+  };
+  const esperados = documentosEsperados(exogena);
+
+  it('inmuebles: pide el recibo del predial contando matrículas distintas', () => {
+    const predial = esperados.find((e) => e.nombre.startsWith('Predial'));
+    expect(predial?.tipo).toBe('otro');
+    expect(predial?.motivo).toContain('2 inmueble(s)');
+  });
+
+  it('deudas bancarias e ICETEX: sugiere el certificado con el motivo correcto', () => {
+    const caja = esperados.find((e) => e.nombre === 'Deuda BANCO SOCIAL EJEMPLO S.A.');
+    expect(caja?.motivo).toContain('pasivo');
+    const icetex = esperados.find((e) => e.nombre === 'Deuda ICETEX');
+    expect(icetex?.motivo).toContain('ICETEX');
+  });
+
+  it('medicina prepagada reportada: chip verificable en su sección', () => {
+    const prepagada = esperados.find((e) => e.tipo === 'medicina_prepagada');
+    expect(prepagada?.nombre).toContain('SALUD PREPAGADA');
+  });
+
+  it('un empleador normal no dispara señales de predial ni deuda', () => {
+    const deMeli = documentosEsperados(EXOGENA).filter((e) => e.nit === '900111222');
+    expect(deMeli).toHaveLength(1);
+    expect(deMeli[0]?.tipo).toBe('certificado_220');
+  });
+});
+
 describe('bancos sin certificado (fallback desde exógena)', () => {
   const filas = [
     fila('900555666', 'BANCO EJEMPLO COMPAÑIA DE FINANCIAMIENTO S.A.', 'Saldo cuentas bancarias (Titular Principal)'),

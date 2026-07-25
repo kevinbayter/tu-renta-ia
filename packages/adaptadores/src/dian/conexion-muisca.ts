@@ -23,6 +23,21 @@ import type { Browser, Page } from 'playwright';
 const URL_LOGIN = 'https://muisca.dian.gov.co/WebArquitectura/DefLogin.faces';
 const ESPERA_MS = 45_000;
 
+/**
+ * Panel de exógena del dashboard, verificado contra el portal real el
+ * 25-jul-2026 con mapeo asistido (el titular autenticó en pantalla; no se
+ * guardó ninguna credencial). Los ids son de JSF —`vistaDashboard:frmDashboard:*`—
+ * y se anclan por sufijo porque el prefijo del árbol de componentes cambia
+ * entre vistas del MUISCA.
+ */
+const EXOGENA = {
+  enlace: /Consultar informaci[oó]n Ex[oó]gena|Informaci[oó]n Reportada por terceros/i,
+  aceptarCondiciones: '[id$="btnBuscar"]',
+  anio: '[id$="anioSel"]',
+  generar: '[id$="btnExogenaGenerar"]',
+  descargar: '[id$="lnkDescargarReporteExogena"]',
+} as const;
+
 export class ConexionMuisca implements ConexionDianPort {
   async descargarExogena(
     credenciales: CredencialesDian,
@@ -109,7 +124,10 @@ async function seleccionarTipoDocumento(pagina: Page, tipo: string): Promise<voi
 
 async function verificarIngreso(pagina: Page): Promise<ResultadoDescarga> {
   const resultado = await Promise.race([
-    pagina.waitForURL(/WebArquitectura|Muisca|portal/i, { timeout: ESPERA_MS }).then(() => 'ok' as const),
+    // Tras autenticar (con su salto por el STS) el portal aterriza en el
+    // dashboard. Anclar en el host o en 'WebArquitectura' daría un falso
+    // positivo: la propia pantalla de login los cumple.
+    pagina.waitForURL(/WebDashboard/i, { timeout: ESPERA_MS }).then(() => 'ok' as const),
     pagina
       .locator('text=/credenciales|contraseña incorrecta|usuario no|no coincide/i')
       .first()
@@ -153,12 +171,33 @@ async function descargarReporteExogena(
   };
 }
 
-/** TODO Fase 1: calibrar contra el portal real (requiere una cuenta con credenciales). */
+/**
+ * Flujo real del portal: el enlace del dashboard abre un panel modal con las
+ * condiciones de uso de la información reportada por terceros; "btnBuscar" las
+ * acepta y revela el selector de año, el botón de generar y el enlace de
+ * descarga. El archivo llega como `reporteExogena<año>.xlsx`.
+ *
+ * Los botones son `input[type=image]`, por eso el clic va con `force`.
+ */
 async function irAConsultaExogena(pagina: Page, anioGravable: number): Promise<void> {
-  await pagina.getByRole('link', { name: /informaci[oó]n.*terceros|ex[oó]gena/i }).first().click({ timeout: ESPERA_MS });
-  await pagina.getByRole('button', { name: /aceptar|continuar/i }).first().click({ timeout: 10_000 }).catch(() => null);
-  await pagina.getByRole('combobox').first().selectOption(String(anioGravable)).catch(() => null);
-  await pagina.getByRole('button', { name: /consultar|generar|descargar/i }).first().click({ timeout: ESPERA_MS });
+  await pagina.getByRole('link', { name: EXOGENA.enlace }).first().click({ timeout: ESPERA_MS });
+  await pagina.locator(EXOGENA.aceptarCondiciones).click({ timeout: ESPERA_MS, force: true });
+  await pagina.locator(EXOGENA.anio).selectOption(String(anioGravable), { timeout: ESPERA_MS });
+  await pagina.locator(EXOGENA.generar).click({ timeout: ESPERA_MS, force: true });
+  await pagina.waitForLoadState('networkidle', { timeout: ESPERA_MS }).catch(() => null);
+  await dispararDescarga(pagina);
+}
+
+/**
+ * El enlace de descarga no tiene contenido (mide 0×0 px): Playwright no puede
+ * hacer clic por coordenadas. Su `onclick` arma el submit JSF que devuelve el
+ * archivo, así que se invoca el clic directamente sobre el elemento.
+ */
+function dispararDescarga(pagina: Page): Promise<void> {
+  return pagina.evaluate(
+    (selector) => document.querySelector<HTMLElement>(selector)?.click(),
+    EXOGENA.descargar as string,
+  );
 }
 
 /** TODO Fase 2. */

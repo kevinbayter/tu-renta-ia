@@ -38,7 +38,7 @@ const CARPETAS_FUENTE = ['packages/core/src', 'packages/adaptadores/src', 'apps/
  */
 const SALIDAS_AUTORIZADAS = [
   // Written into the portal form: the legitimate final destination.
-  '/packages/adaptadores/src/dian/conexion-muisca.ts',
+  '/packages/adaptadores/src/dian/sesion-muisca.ts',
   // Process boundary: travels to the isolated worker over Docker's network.
   '/packages/adaptadores/src/dian/conexion-dian-remota.ts',
 ];
@@ -70,11 +70,11 @@ describe('la contraseña de la DIAN no puede escaparse', () => {
 
   it('las trazas de Playwright están prohibidas: graban el DOM y la contraseña', () => {
     // tracing.start, recordVideo and recordHar store the whole session.
-    const adaptador = readFileSync(
-      join(RAIZ, 'packages/adaptadores/src/dian/conexion-muisca.ts'),
-      'utf8',
-    );
-    expect(adaptador).not.toMatch(/tracing\.start|recordVideo|recordHar/);
+    const ficheros = ['conexion-muisca', 'sesion-muisca', 'exogena-muisca', 'declaraciones-muisca'];
+    ficheros.forEach((nombre) => {
+      const codigo = readFileSync(join(RAIZ, `packages/adaptadores/src/dian/${nombre}.ts`), 'utf8');
+      expect(codigo).not.toMatch(/tracing\.start|recordVideo|recordHar/);
+    });
   });
 });
 

@@ -95,9 +95,13 @@ async function ejecutarConEvidencia(
 }
 
 function desenlaceDe(resultado: ResultadoDescarga) {
-  return resultado.exito
-    ? ({ resultado: 'exitosa' } as const)
-    : ({ resultado: 'fallida', motivoFallo: resultado.motivoFallo ?? 'desconocido' } as const);
+  if (resultado.exito) {
+    return { resultado: 'exitosa' } as const;
+  }
+  // El detalle ya viene redactado; guardarlo es lo que permite diagnosticar
+  // después sin pedirle al usuario que reproduzca el fallo.
+  const motivo = resultado.motivoFallo ?? 'desconocido';
+  return { resultado: 'fallida', motivoFallo: `${motivo}: ${resultado.detalle ?? ''}`.slice(0, 200) } as const;
 }
 
 function ejecutar(

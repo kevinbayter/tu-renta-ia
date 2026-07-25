@@ -79,7 +79,8 @@ describe('arquitectura hexagonal', () => {
       .filter((archivo) => !archivo.includes('node_modules') && !archivo.includes('/test/'))
       .filter((archivo) => importsDe(archivo).some((imp) => /^playwright/.test(imp)))
       .map((archivo) => archivo.replace(RAIZ, ''));
-    expect(conPlaywright).toEqual(['/packages/adaptadores/src/dian/conexion-muisca.ts']);
+    const fuera = conPlaywright.filter((a) => !a.startsWith('/packages/adaptadores/src/dian/'));
+    expect(fuera).toEqual([]);
   });
 
   it('la UI no habla con adaptadores: solo con core y con rutas HTTP', () => {

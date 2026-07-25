@@ -216,6 +216,9 @@ async function seleccionarTipoDocumento(pagina: Page, tipo: string, esperaMs: nu
   await pagina.getByRole('option', { name: etiquetas[tipo] ?? (etiquetas['CC'] as string) }).click();
 }
 
+/** Screens that mean "still not signed in", whatever the portal renamed. */
+const URL_IDENTIDAD = /WebIdentidadLogin|DefLogin/i;
+
 async function verificarIngreso(pagina: Page, esperaMs: number): Promise<ResultadoDescarga> {
   const resultado = await Promise.race([
     // After the STS hop the portal lands on the dashboard. Anchoring on the
@@ -223,6 +226,8 @@ async function verificarIngreso(pagina: Page, esperaMs: number): Promise<Resulta
     pagina.waitForURL(/WebDashboard/i, { timeout: esperaMs }).then(() => 'ok' as const),
     pagina
       .locator('text=/credenciales|contraseña incorrecta|usuario no|no coincide/i')
+      .or(pagina.locator('mat-error'))
+      .or(pagina.locator('mat-snack-bar-container'))
       .first()
       .waitFor({ timeout: esperaMs })
       .then(() => 'credenciales' as const),
@@ -232,7 +237,19 @@ async function verificarIngreso(pagina: Page, esperaMs: number): Promise<Resulta
       .waitFor({ timeout: esperaMs })
       .then(() => 'verificacion' as const),
   ]).catch(() => 'tiempo' as const);
-  return resultadoDeIngreso(resultado);
+  return resultado === 'tiempo' ? desenlacePorUrl(pagina) : resultadoDeIngreso(resultado);
+}
+
+/**
+ * On bad credentials the portal just re-renders the empty login form, with no
+ * message this side can match. Staying on the identity screen is the reliable
+ * signal; reporting a timeout there would blame the DIAN for answering.
+ */
+function desenlacePorUrl(pagina: Page): ResultadoDescarga {
+  if (URL_IDENTIDAD.test(pagina.url())) {
+    return fallo('credenciales_invalidas', 'La DIAN no aceptó los datos de ingreso');
+  }
+  return fallo('tiempo_agotado', 'El portal de la DIAN no respondió a tiempo');
 }
 
 /** Un 2FA o un captcha no son un timeout: el usuario debe saber qué pasó. */

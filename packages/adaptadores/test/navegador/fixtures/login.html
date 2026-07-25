@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>DIAN — Ingreso (fixture de prueba)</title>
+    <style>
+      /* The real checkbox hides behind Material's visual, which is why the
+         adapter needs check(..., { force: true }). */
+      .casilla-real {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+      }
+      .overlay {
+        display: none;
+      }
+      .overlay.abierto {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Test portal - NOT the DIAN</h1>
+
+    <!-- Sign-in modes: the adapter must pick "A nombre propio". -->
+    <button type="button" id="propio">A nombre propio</button>
+    <button type="button" id="tercero">A nombre de un tercero</button>
+
+    <form id="acceso">
+      <!-- Angular Material mat-select: NOT a native <select>. -->
+      <label for="tipoDoc">Tipo de documento</label>
+      <mat-select id="tipoDoc" role="listbox" tabindex="0">Seleccione</mat-select>
+      <div class="overlay" id="opciones">
+        <div role="option" data-valor="CC">Cédula de ciudadanía</div>
+        <div role="option" data-valor="CE">Cédula de extranjería</div>
+        <div role="option" data-valor="NIT">NIT</div>
+        <div role="option" data-valor="PA">Pasaporte</div>
+        <div role="option" data-valor="TI">Tarjeta de identidad</div>
+      </div>
+
+      <!-- Starts disabled and is only enabled after picking the document type,
+           so removing or reordering that step makes fill() fail. -->
+      <label for="numDocumento">Número de documento</label>
+      <input id="numDocumento" name="numDocumento" type="text" disabled />
+
+      <label for="password">Contraseña</label>
+      <input id="password" name="password" type="password" />
+
+      <label>
+        <input class="casilla-real" name="aceptaTratamientoDatos" type="checkbox" />
+        <span>Acepto el tratamiento de datos</span>
+      </label>
+
+      <button type="submit" id="ingresar">Ingresar</button>
+    </form>
+
+    <p id="mensaje"></p>
+
+    <script>
+      const $ = (sel) => document.querySelector(sel);
+
+      $('#tipoDoc').addEventListener('click', () => $('#opciones').classList.add('abierto'));
+      $('#opciones').addEventListener('click', (evento) => {
+        const opcion = evento.target.closest('[role=option]');
+        if (!opcion) return;
+        $('#tipoDoc').textContent = opcion.textContent;
+        $('#tipoDoc').dataset.valor = opcion.dataset.valor;
+        $('#opciones').classList.remove('abierto');
+        $('#numDocumento').disabled = false;
+      });
+
+      $('#acceso').addEventListener('submit', async (evento) => {
+        evento.preventDefault();
+        const cuerpo = {
+          numDocumento: $('#numDocumento').value,
+          password: $('#password').value,
+          acepta: $('input[name=aceptaTratamientoDatos]').checked,
+        };
+        const respuesta = await fetch('/autenticar', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(cuerpo),
+        });
+        const datos = await respuesta.json();
+        if (datos.ok) {
+          window.location.href = '/WebDashboard/DefDashboard.faces';
+          return;
+        }
+        $('#mensaje').textContent = datos.mensaje;
+      });
+    </script>
+  </body>
+</html>

@@ -36,6 +36,8 @@ const reglasBase = {
 
   // Anidamiento (CRÍTICO): sin estructuras de control anidadas — guard clauses
   'max-depth': ['error', { max: 1 }],
+  'max-nested-callbacks': ['error', { max: 2 }],
+  'no-nested-ternary': 'error',
 
   // Funciones
   'max-lines-per-function': ['error', { max: 25, skipBlankLines: true, skipComments: false }],
@@ -136,11 +138,13 @@ const capaInfraestructura = {
 };
 
 const archivosTest = {
-  files: ['packages/**/test/**/*.ts', 'packages/**/*.test.ts'],
+  files: ['packages/**/test/**/*.ts', 'packages/**/*.test.ts', 'apps/**/test/**/*.ts'],
   rules: {
     'max-lines-per-function': 'off',
     'max-lines': 'off',
     'max-depth': 'off',
+    // describe > describe > it is test structure, not nested logic.
+    'max-nested-callbacks': ['error', { max: 4 }],
     'no-console': 'off',
     'sonarjs/no-duplicate-string': 'off',
     '@typescript-eslint/no-unsafe-member-access': 'off',
@@ -158,14 +162,16 @@ export default tseslint.config(
       '**/.turbo/',
       '**/coverage/',
       'packages/adaptadores/src/persistencia/generado/**',
-      'apps/**',
+      // apps/web trae su propia config (Next) que extiende estas reglas base.
+      // El resto de apps —como el worker de la DIAN— sí se lintan aquí.
+      'apps/web/**',
       'scripts/**',
       '**/*.config.{js,mjs,cjs,ts}',
       'eslint.config.mjs',
     ],
   },
   {
-    files: ['packages/**/*.ts'],
+    files: ['packages/**/*.ts', 'apps/worker-dian/**/*.ts'],
     extends: [js.configs.recommended, ...tseslint.configs.recommendedTypeChecked],
     languageOptions: {
       parserOptions: {

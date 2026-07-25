@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Formulario 210 (fixture de prueba)</title>
+    <style>
+      .pantalla {
+        display: none;
+      }
+      .pantalla.activa {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Form 210 - test fixture</h1>
+
+    <!-- Form selector (an Angular SPA in the real portal). -->
+    <div id="selector" class="pantalla activa">
+      <div>Formulario 110</div>
+      <div id="ir210">Formulario 210</div>
+      <div>Formulario 310</div>
+    </div>
+
+    <!-- Form 210 menu; the history lives among these options. -->
+    <div id="menu210" class="pantalla">
+      <div>Haga su declaración de renta</div>
+      <div>Edite su declaración de renta</div>
+      <div id="irPresentadas">Declaraciones de renta presentadas</div>
+    </div>
+
+    <!-- History. The header proves the screen loaded even with no rows. -->
+    <div id="presentadas" class="pantalla">
+      <div class="cabecera">
+        <span>No. formulario</span><span>Año / frecuencia</span><span>Concepto</span>
+        <span>Fecha de presentación</span><span>Acciones</span>
+      </div>
+      <div id="filas"></div>
+    </div>
+
+    <script>
+      const $ = (sel) => document.querySelector(sel);
+      const mostrar = (id) => {
+        document.querySelectorAll('.pantalla').forEach((p) => p.classList.remove('activa'));
+        document.getElementById(id).classList.add('activa');
+      };
+
+      $('#ir210').addEventListener('click', () => mostrar('menu210'));
+
+      $('#irPresentadas').addEventListener('click', async () => {
+        const declaraciones = await (await fetch('/api/presentadas')).json();
+        $('#filas').innerHTML = declaraciones
+          .map(
+            (d) => `
+          <div class="fila">
+            <span>${d.formulario}</span>
+            <span>${d.anio} / anual</span>
+            <span>Inicial</span>
+            <span>${d.presentada}</span>
+            <span>
+              <button class="buttonIconAccion" data-formulario="${d.formulario}">
+                <img src="./assets/img/descargar.png" width="20px" />
+              </button>
+              <button class="buttonIconAccion"><img src="./assets/img/corregir.png" width="20px" /></button>
+              <button class="buttonIconAccion"><img src="./assets/img/pagar.png" width="20px" /></button>
+            </span>
+          </div>`,
+          )
+          .join('');
+        mostrar('presentadas');
+      });
+
+      // Only the download icon fetches the PDF: corregir and pagar must not
+      // be matched by the img[src*="descargar"] selector.
+      $('#filas').addEventListener('click', (evento) => {
+        const boton = evento.target.closest('button[data-formulario]');
+        if (!boton) return;
+        window.location.href = `/descargar/declaracion/${boton.dataset.formulario}`;
+      });
+    </script>
+  </body>
+</html>

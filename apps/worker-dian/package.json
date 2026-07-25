@@ -1,0 +1,23 @@
+{
+  "name": "@turenta/worker-dian",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --max-warnings 0",
+    "test": "vitest run --passWithNoTests",
+    "start": "node --experimental-strip-types src/servidor.ts",
+    "test:navegador": "vitest run --config vitest.navegador.config.ts",
+    "bundle": "esbuild src/servidor.ts --bundle --platform=node --format=esm --target=node22 --external:playwright --outfile=dist/servidor.mjs"
+  },
+  "dependencies": {
+    "@turenta/adaptadores": "workspace:*",
+    "@turenta/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "esbuild": "^0.28.1"
+  }
+}

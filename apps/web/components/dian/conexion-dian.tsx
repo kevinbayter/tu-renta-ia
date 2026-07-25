@@ -1,7 +1,7 @@
 'use client';
 
 import { CheckCircle2, Loader2, Lock, ShieldCheck, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { AvisoTransparencia } from './aviso-transparencia';
 import { FormularioCredenciales } from './formulario-credenciales';
@@ -176,14 +176,27 @@ function Encabezado({
   );
 }
 
+const SEGUNDOS_POR_ETAPA = 12_000;
+
+function siguienteEtapa(previo: number): number {
+  return Math.min(previo + 1, ETAPAS.length - 1);
+}
+
 const ETAPAS: { clave: EtapaConexion; texto: string }[] = [
   { clave: 'autenticando', texto: 'Ingresando a tu cuenta' },
   { clave: 'navegando', texto: 'Buscando tu información' },
   { clave: 'descargando', texto: 'Descargando el documento' },
 ];
 
+/** El servidor no transmite etapas: se avanza por tiempo estimado en vez de
+ *  dejar el indicador congelado en la primera durante todo el minuto. */
 function Progreso({ etapa }: { etapa: EtapaConexion }) {
-  const indiceActual = ETAPAS.findIndex((e) => e.clave === etapa);
+  const [avance, setAvance] = useState(0);
+  useEffect(() => {
+    const reloj = setInterval(() => setAvance(siguienteEtapa), SEGUNDOS_POR_ETAPA);
+    return () => clearInterval(reloj);
+  }, []);
+  const indiceActual = Math.max(ETAPAS.findIndex((e) => e.clave === etapa), avance);
   return (
     <div className="pt-5" role="status" aria-live="polite">
       <ul className="space-y-3">

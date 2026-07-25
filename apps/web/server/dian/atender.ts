@@ -6,7 +6,7 @@ import { huellaDe, leerSolicitud } from './peticion';
 import { leerSesion } from '@/server/sesion';
 
 import type { Operacion } from './descarga';
-import type { MotivoFalloDian, ResultadoDescarga } from '@turenta/core';
+import type { MotivoFalloDian, ResultadoDescarga, SolicitudConexionDian } from '@turenta/core';
 
 /**
  * HTTP handler shared by both DIAN routes. Credentials arrive, get used and are
@@ -24,19 +24,35 @@ export async function atenderDescarga(
   if (!validacion.valida) {
     return respuesta({ mensaje: validacion.error }, 400);
   }
-  const { solicitud } = validacion;
+  try {
+    return await ejecutar(operacion, validacion.solicitud, sesion.usuarioId, request);
+  } finally {
+    validacion.solicitud.credenciales.contrasena.olvidar();
+  }
+}
+
+async function ejecutar(
+  operacion: Operacion,
+  solicitud: SolicitudConexionDian,
+  usuarioId: string,
+  request: Request,
+): Promise<NextResponse> {
   try {
     const { resultado, esperarSegundos } = await descargarDeLaDian(
       operacion,
       solicitud,
-      sesion.usuarioId,
+      usuarioId,
       huellaDe(request),
     );
     return esperarSegundos === null ? aRespuesta(resultado) : demasiadosIntentos(esperarSegundos);
-  } finally {
-    solicitud.credenciales.contrasena.olvidar();
+  } catch {
+    // Sin evidencia no se opera: hay que decirlo, no devolver un 500 opaco.
+    return respuesta({ mensaje: MENSAJE_SIN_EVIDENCIA, motivoFallo: 'servicio_no_disponible' }, 503);
   }
 }
+
+const MENSAJE_SIN_EVIDENCIA =
+  'No pudimos dejar constancia de tu autorización, así que no nos conectamos. Inténtalo en un momento.';
 
 function aRespuesta(resultado: ResultadoDescarga): NextResponse {
   if (!resultado.exito || !resultado.contenido) {

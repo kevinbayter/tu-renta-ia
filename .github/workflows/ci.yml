@@ -24,5 +24,11 @@ jobs:
         run: pnpm typecheck
       - name: Tests (golden tests bloqueantes)
         run: pnpm test
+      - name: Instalar Chromium
+        run: pnpm --filter @turenta/adaptadores exec playwright install --with-deps chromium
+      - name: Tests de navegador (MUISCA falso, bloqueantes)
+        run: |
+          pnpm --filter @turenta/adaptadores test:navegador
+          pnpm --filter @turenta/worker-dian test:navegador
       - name: Build
         run: pnpm build

@@ -41,10 +41,10 @@ RUN pnpm --filter @turenta/worker-dian bundle
 # ---------- Runtime ----------
 FROM base AS runner
 ENV NODE_ENV=production PORT=8080
-# Playwright only: no Prisma, no pg, no mail client. The bundle already carries
-# the domain and the adapter inside.
-COPY --from=deps --chown=pwuser:pwuser /app/node_modules/playwright ./node_modules/playwright
-COPY --from=deps --chown=pwuser:pwuser /app/node_modules/playwright-core ./node_modules/playwright-core
+# Installed flat with npm, not copied from the pnpm stage: pnpm links through
+# node_modules/.pnpm and the copy would land a dangling symlink.
+RUN npm install --no-save --omit=dev playwright@1.61.1 \
+    && chown -R pwuser:pwuser /app
 COPY --from=build --chown=pwuser:pwuser /app/apps/worker-dian/dist ./dist
 
 # pwuser ships with the official image: Chromium never runs as root.

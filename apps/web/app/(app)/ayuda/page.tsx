@@ -42,7 +42,7 @@ export default function PaginaAyuda() {
           <p className="mt-0.5 text-sm text-texto-suave">Escríbenos y te ayudamos con tu caso.</p>
         </div>
         <a
-          href="mailto:soporte@ejemplo.com?subject=Ayuda%20TuRenta%20AI"
+          href="mailto:soporte@turenta.tax?subject=Ayuda%20TuRenta%20AI"
           className="flex items-center gap-2 rounded-xl bg-primario px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primario-oscuro"
         >
           <Mail size={16} aria-hidden /> Escribir al soporte

@@ -4,13 +4,22 @@
     <meta charset="utf-8" />
     <title>DIAN — Ingreso (fixture de prueba)</title>
     <style>
-      /* The real checkbox hides behind Material's visual, which is why the
-         adapter needs check(..., { force: true }). */
+      /* Faithful to the live portal: the real checkbox is behind Material's
+         visual and ignores direct clicks, so check({force:true}) does NOT
+         change its state. Only its label toggles it. */
       .casilla-real {
         position: absolute;
+        top: 0;
+        left: 0;
         opacity: 0;
         width: 1px;
         height: 1px;
+        pointer-events: none;
+      }
+      #visualDatos {
+        display: block;
+        cursor: pointer;
+        padding: 4px;
       }
       .overlay {
         display: none;
@@ -47,10 +56,13 @@
       <label for="password">Contraseña</label>
       <input id="password" name="password" type="password" />
 
-      <label>
-        <input class="casilla-real" name="aceptaTratamientoDatos" type="checkbox" />
-        <span>Acepto el tratamiento de datos</span>
-      </label>
+      <!-- Faithful to the live portal: the input sits OUTSIDE the label, parked
+           where a forced click hits nothing. Only the Material visual toggles
+           it, so check({force:true}) fails exactly as it does in production. -->
+      <input class="casilla-real" name="aceptaTratamientoDatos" type="checkbox" />
+      <mat-checkbox id="visualDatos" tabindex="0">
+        <label for="__nada">Acepto el tratamiento de datos</label>
+      </mat-checkbox>
 
       <button type="submit" id="ingresar">Ingresar</button>
     </form>
@@ -68,6 +80,12 @@
         $('#tipoDoc').dataset.valor = opcion.dataset.valor;
         $('#opciones').classList.remove('abierto');
         $('#numDocumento').disabled = false;
+      });
+
+      $('#visualDatos').addEventListener('click', () => {
+        const casilla = $('input[name=aceptaTratamientoDatos]');
+        casilla.checked = !casilla.checked;
+        casilla.dispatchEvent(new Event('change', { bubbles: true }));
       });
 
       $('#acceso').addEventListener('submit', async (evento) => {

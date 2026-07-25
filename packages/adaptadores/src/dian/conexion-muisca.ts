@@ -151,9 +151,56 @@ async function autenticar(
   await pagina.fill('input[name="numDocumento"]', credenciales.numeroDocumento);
   // Only authorized reveal(): the password enters the portal here.
   await pagina.fill('input[name="password"]', credenciales.contrasena.revelar());
-  await pagina.check('input[name="aceptaTratamientoDatos"]', { force: true });
+  await aceptarTratamientoDatos(pagina, esperaMs);
   await pagina.getByRole('button', { name: 'Ingresar' }).click();
   return verificarIngreso(pagina, esperaMs);
+}
+
+const CASILLA_DATOS = 'input[name="aceptaTratamientoDatos"]';
+
+/**
+ * The real checkbox sits behind Material's visual, so a forced click lands on
+ * something that ignores it and the state never changes. Verified against the
+ * live portal: `check({ force: true })` fails with "Clicking the checkbox did
+ * not change its state". Clicking its label is what a person actually does.
+ */
+async function aceptarTratamientoDatos(pagina: Page, esperaMs: number): Promise<void> {
+  const casilla = pagina.locator(CASILLA_DATOS);
+  await casilla.waitFor({ state: 'attached', timeout: esperaMs });
+  await intentarMarcar(pagina, esperaMs);
+  if (await casilla.isChecked()) {
+    return;
+  }
+  // Last resort: set it and tell Angular, which listens to these events.
+  await casilla.evaluate((el: HTMLInputElement) => {
+    el.checked = true;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+}
+
+/** From most specific to most generic; the first one that toggles it wins. */
+const OBJETIVOS_CASILLA = [
+  `label:has(${CASILLA_DATOS})`,
+  `mat-checkbox:has(${CASILLA_DATOS})`,
+  `label[for], mat-checkbox`,
+];
+
+const ESPERA_CASILLA_MS = 5_000;
+
+async function intentarMarcar(pagina: Page, esperaMs: number): Promise<void> {
+  const espera = Math.min(esperaMs, ESPERA_CASILLA_MS);
+  for (const objetivo of OBJETIVOS_CASILLA) {
+    await pulsarSiSigueSinMarcar(pagina, objetivo, espera);
+  }
+}
+
+async function pulsarSiSigueSinMarcar(pagina: Page, objetivo: string, espera: number): Promise<void> {
+  const marcada = await pagina.locator(CASILLA_DATOS).isChecked().catch(() => false);
+  if (marcada) {
+    return;
+  }
+  await pagina.locator(objetivo).first().click({ timeout: espera }).catch(() => null);
 }
 
 /** Document type is an Angular Material mat-select, not a native <select>. */

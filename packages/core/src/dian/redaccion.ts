@@ -4,7 +4,7 @@
  * this one cleans strings that were already built.
  */
 
-import { MARCA_REDACTADO } from './secreto';
+import { MARCA_REDACTADO, Secreto } from './secreto';
 
 const CLAVES_SECRETAS =
   /^(contrasena|contraseña|password|pass|clave|secret|token|authorization|cookie|otp|codigo)$/i;
@@ -29,11 +29,15 @@ export function redactarValores(texto: string, secretos: string[]): string {
  */
 export function detalleSeguro(nombre: string, mensaje: string, secretos: string[]): string {
   const primeraLinea = mensaje.split('\n')[0] ?? '';
-  return redactarValores(`${nombre}: ${primeraLinea}`.slice(0, LARGO_DETALLE), secretos);
+  // Redact before truncating: cutting first can leave half a secret behind.
+  return redactarValores(`${nombre}: ${primeraLinea}`, secretos).slice(0, LARGO_DETALLE);
 }
 
 /** Redacts recursively, both by key name and by literal value. */
 export function redactar(valor: unknown, secretos: string[] = []): unknown {
+  if (valor instanceof Secreto) {
+    return MARCA_REDACTADO;
+  }
   if (typeof valor === 'string') {
     return redactarValores(valor, secretos);
   }

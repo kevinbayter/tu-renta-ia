@@ -1,13 +1,27 @@
 'use client';
 
 import { Info, ShieldCheck, Zap } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ANIO_GRAVABLE, registrarDocumentoDian } from './pipeline-documentos';
 import { ConexionDian } from '@/components/dian/conexion-dian';
 import { useDeclaracion } from '@/lib/store';
 
 import type { OperacionDian, ResultadoConexion } from '@/components/dian/conexion-dian';
+
+const LARGO_MINIMO_CEDULA = 5;
+
+/** Sin worker configurado no se ofrece el flujo: pedir la clave sería en vano. */
+function useConexionHabilitada(): boolean {
+  const [habilitada, setHabilitada] = useState(false);
+  useEffect(() => {
+    fetch('/api/dian/estado')
+      .then((r) => r.json())
+      .then((d: { habilitada?: boolean }) => setHabilitada(d.habilitada === true))
+      .catch(() => setHabilitada(false));
+  }, []);
+  return habilitada;
+}
 
 /**
  * "Conectar con la DIAN" como opción principal. La vía manual sigue siempre
@@ -24,26 +38,40 @@ export function OpcionConectarDian({
   alTerminar?: (aviso: string | null) => void;
 }) {
   const [abierto, setAbierto] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const habilitada = useConexionHabilitada();
   const declarante = useDeclaracion((s) => s.declarante);
   const esPropia = useDeclaracion((s) => s.esPropia);
-  const titular = declarante?.identificacion ?? '';
+  // Mismos dígitos que enviará el servidor: si aquí se mostrara la cédula con
+  // puntos, el texto firmado y el que se hashea como evidencia no coincidirían.
+  const titular = (declarante?.identificacion ?? '').replace(/\D/g, '');
 
-  // La DIAN permite entrar "a nombre de un tercero", pero ese formulario aún no
-  // está mapeado. Antes que pedir una clave para un flujo que no funciona, se
-  // dice la verdad y se ofrece la vía manual.
+  // La DIAN permite entrar a nombre de un tercero, pero ese formulario aún no
+  // está mapeado: se dice la verdad en vez de pedir una clave para nada.
   if (esPropia === false) {
     return <NoDisponibleParaTerceros />;
+  }
+  // Sin cédula del titular la petición sería rechazada siempre; no tiene
+  // sentido pedir la contraseña de la DIAN para eso.
+  if (titular.length < LARGO_MINIMO_CEDULA || !habilitada) {
+    return null;
   }
 
   const completar = async (resultado: ResultadoConexion) => {
     const registrado = await registrarDocumentoDian(resultado.nombreArchivo, resultado.contenidoBase64);
     setAbierto(false);
+    setAviso('error' in registrado ? registrado.error : null);
     alTerminar?.('error' in registrado ? registrado.error : null);
   };
 
   return (
     <>
       <Tarjeta operacion={operacion} alAbrir={() => setAbierto(true)} />
+      {aviso !== null && (
+        <p role="alert" className="mt-2 text-xs text-alerta">
+          Llegó el archivo pero no pudimos leerlo: {aviso}. Puedes subirlo tú mismo aquí abajo.
+        </p>
+      )}
       {abierto && (
         <ConexionDian
           operacion={operacion}

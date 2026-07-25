@@ -179,13 +179,27 @@ async function verificarIngreso(pagina: Page, esperaMs: number): Promise<Resulta
       .first()
       .waitFor({ timeout: esperaMs })
       .then(() => 'credenciales' as const),
+    pagina
+      .locator('text=/c[oó]digo de verificaci[oó]n|doble factor|captcha|bloquead|intentos fallidos/i')
+      .first()
+      .waitFor({ timeout: esperaMs })
+      .then(() => 'verificacion' as const),
   ]).catch(() => 'tiempo' as const);
+  return resultadoDeIngreso(resultado);
+}
+
+/** Un 2FA o un captcha no son un timeout: el usuario debe saber qué pasó. */
+function resultadoDeIngreso(resultado: string): ResultadoDescarga {
   if (resultado === 'ok') {
     return { exito: true };
   }
-  return resultado === 'credenciales'
-    ? fallo('credenciales_invalidas', 'La DIAN rechazó los datos de ingreso')
-    : fallo('tiempo_agotado', 'El portal de la DIAN no respondió a tiempo');
+  if (resultado === 'credenciales') {
+    return fallo('credenciales_invalidas', 'La DIAN rechazó los datos de ingreso');
+  }
+  if (resultado === 'verificacion') {
+    return fallo('requiere_verificacion', 'La DIAN pidió una verificación adicional');
+  }
+  return fallo('tiempo_agotado', 'El portal de la DIAN no respondió a tiempo');
 }
 
 /**

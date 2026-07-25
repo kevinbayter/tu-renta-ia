@@ -82,4 +82,29 @@ describe('redacción de lo que sale a logs y respuestas', () => {
   it('redactarValores ignora secretos demasiado cortos', () => {
     expect(redactarValores('hola', ['a'])).toBe('hola');
   });
+
+  it('redactar() NUNCA destripa un Secreto, esté donde esté', () => {
+    const secreto = new Secreto(CLAVE);
+    [
+      redactar(secreto),
+      redactar({ datos: secreto }),
+      redactar({ credenciales: secreto }),
+      redactar([secreto]),
+      redactar({ nivel1: { nivel2: { payload: secreto } } }),
+    ].forEach((limpio) => {
+      expect(JSON.stringify(limpio)).not.toContain(CLAVE);
+    });
+  });
+
+  it('el valor no se ve ni con Object.keys ni con el spread', () => {
+    const secreto = new Secreto(CLAVE);
+    expect(Object.keys(secreto)).toEqual([]);
+    expect(JSON.stringify({ ...secreto })).not.toContain(CLAVE);
+  });
+
+  it('detalleSeguro redacta ANTES de truncar: no sobrevive un prefijo', () => {
+    const mensaje = 'x'.repeat(190) + CLAVE;
+    const detalle = detalleSeguro('Error', mensaje, [CLAVE]);
+    expect(detalle).not.toContain(CLAVE.slice(0, 6));
+  });
 });

@@ -18,7 +18,10 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
   try {
     const contenido = new Uint8Array(await archivo.arrayBuffer());
-    const cuerpo = await procesarArchivo(archivo.name, contenido);
+    // Lo traído de la DIAN ya viene identificado: clasificarlo otra vez con el
+    // modelo duplicaba el tiempo y era lo que hacía saltar el límite del proxy.
+    const tipoConocido = tipoValido(formData.get('tipoConocido'));
+    const cuerpo = await procesarArchivo(archivo.name, contenido, tipoConocido);
     await registrarProcesado(archivo.name, cuerpo);
     return NextResponse.json(cuerpo);
   } catch (error) {
@@ -43,7 +46,21 @@ async function registrarProcesado(nombreArchivo: string, cuerpo: unknown): Promi
     .catch(() => null);
 }
 
-async function procesarArchivo(nombre: string, contenido: Uint8Array): Promise<unknown> {
+/** Tipos cuyo origen ya los identifica sin ambigüedad. */
+const TIPOS_CONOCIDOS = ['declaracion_anterior'] as const;
+
+function tipoValido(valor: FormDataEntryValue | null): TipoConocido | null {
+  const texto = typeof valor === 'string' ? valor : '';
+  return TIPOS_CONOCIDOS.includes(texto as TipoConocido) ? (texto as TipoConocido) : null;
+}
+
+type TipoConocido = (typeof TIPOS_CONOCIDOS)[number];
+
+async function procesarArchivo(
+  nombre: string,
+  contenido: Uint8Array,
+  tipoConocido: TipoConocido | null,
+): Promise<unknown> {
   if (esExcel(nombre)) {
     return { tipo: 'exogena', exogena: parsearExogena(contenido) };
   }
@@ -51,11 +68,15 @@ async function procesarArchivo(nombre: string, contenido: Uint8Array): Promise<u
   if (esEscaneado) {
     throw new Error('Este PDF parece escaneado. Por ahora solo soportamos PDFs con texto (visión llega pronto).');
   }
-  return extraerCertificado(obtenerExtractor(), { texto });
+  return extraerCertificado(obtenerExtractor(), { texto }, tipoConocido);
 }
 
-async function extraerCertificado(extractor: ExtractorCertificados, doc: DocumentoFuente): Promise<unknown> {
-  const tipo = await extractor.clasificar(doc);
+async function extraerCertificado(
+  extractor: ExtractorCertificados,
+  doc: DocumentoFuente,
+  tipoConocido: TipoConocido | null,
+): Promise<unknown> {
+  const tipo = tipoConocido ?? (await extractor.clasificar(doc));
   switch (tipo) {
     case 'certificado_220':
       return { tipo, ...(await extractor.extraer220(doc)) };

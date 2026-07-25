@@ -114,3 +114,8 @@ export {
   type ResultadoAutorizacion,
   type DesenlaceAutorizacion,
 } from './puertos/evidencia-autorizacion-port';
+export {
+  type BovedaCredencialesPort,
+  type CredencialGuardada,
+  type AccesoGuardado,
+} from './puertos/boveda-credenciales-port';

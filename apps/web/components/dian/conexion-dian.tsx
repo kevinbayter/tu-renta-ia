@@ -78,6 +78,7 @@ export function ConexionDian({
         nombreArchivo: cuerpo.nombreArchivo ?? 'descarga',
         contenidoBase64: cuerpo.contenidoBase64,
       });
+      setTimeout(alCerrar, MS_ANTES_DE_CERRAR);
       return;
     }
     setError(cuerpo?.mensaje ?? 'No pudimos conectarnos. Puedes subir el archivo tú mismo.');
@@ -177,6 +178,8 @@ function Encabezado({
 }
 
 const SEGUNDOS_POR_ETAPA = 12_000;
+/** Lo justo para leer "listo" sin obligar a un clic de más. */
+const MS_ANTES_DE_CERRAR = 1_800;
 
 function siguienteEtapa(previo: number): number {
   return Math.min(previo + 1, ETAPAS.length - 1);

@@ -34,13 +34,15 @@ export function PasoExogena() {
           </div>
         </div>
         <div className="mt-5 space-y-4">
+          {/* Con la exógena ya importada no se vuelve a ofrecer cargarla: solo
+              se muestra lo que llegó, con la opción de reemplazarla. */}
           {!exogena && (
             <>
               <OpcionConectarDian operacion="exogena" />
               <Separador />
+              <ZonaSubida hayExogena={false} />
             </>
           )}
-          <ZonaSubida hayExogena={Boolean(exogena)} />
           <p className="flex items-center gap-2 text-xs text-texto-suave">
             <Lock size={13} className="shrink-0 text-primario" aria-hidden />
             Tu información viaja cifrada, se usa solo para tu declaración y puedes eliminarla cuando quieras.
@@ -51,6 +53,7 @@ export function PasoExogena() {
                 <TarjetaDocumento documento={exogena} />
               </ul>
               <VistaPrevia exogena={exogena.exogena} />
+              <Reemplazar />
             </>
           )}
           {!exogena && <GuiaDescarga />}
@@ -236,6 +239,23 @@ async function subirExogena(archivo: File): Promise<string | null> {
     return `${archivo.name}: ${resultado.error}`;
   }
   return avisoPorTipo(resultado);
+}
+
+/** Reemplazar existe, pero discreto: lo normal es que ya no haga falta. */
+function Reemplazar() {
+  const [abierto, setAbierto] = useState(false);
+  if (abierto) {
+    return <ZonaSubida hayExogena />;
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => setAbierto(true)}
+      className="cursor-pointer text-xs font-semibold text-texto-suave underline hover:text-primario"
+    >
+      ¿Necesitas cambiar el archivo? Reemplázalo aquí
+    </button>
+  );
 }
 
 /** Deja claro que subir el archivo es una alternativa, no el plan B de un fallo. */

@@ -47,6 +47,8 @@ export type MotivoFalloDian =
   | 'estructura_cambiada'
   | 'requiere_verificacion'
   | 'tiempo_agotado'
+  /** La cuenta no tiene una declaración presentada de ese año: no es un error. */
+  | 'sin_declaracion'
   | 'desconocido';
 
 export interface ResultadoDescarga {

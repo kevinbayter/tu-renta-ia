@@ -68,8 +68,13 @@ hubiera subido a mano.
 **Alcance**: botón "Traer mi última declaración". Alimenta lo que ya construimos: patrimonio
 líquido anterior, impuesto neto y anticipo (comparación patrimonial del art. 236).
 
-- Misma infraestructura de Fase 1, distinta ruta del portal.
+- ✅ **Adaptador calibrado contra el portal real** (25-jul-2026): descarga el PDF de la
+  declaración presentada del año pedido. Ruta y selectores en
+  [`research/07…`](research/07-automatizacion-dian-analisis-2026.md) §2.1.3.
+- Misma infraestructura de Fase 1, distinta ruta del portal (SPA de Angular, no JSF).
 - El PDF pasa por el extractor `declaracion_anterior` que ya existe.
+- Si la cuenta no tiene declaración de ese año, el puerto responde `sin_declaracion`: no es
+  un error, es el caso normal de quien declara por primera vez.
 
 ### Fase 3 — Presentar el 210 con un clic
 

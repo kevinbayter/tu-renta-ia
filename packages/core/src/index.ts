@@ -61,3 +61,22 @@ export {
   type EvaluacionDeclaracion,
   type Recomendacion,
 } from './declaracion/recomendaciones';
+export {
+  type ConexionDianPort,
+  type CredencialesDian,
+  type ContextoOperacionDian,
+  type ProgresoConexion,
+  type EtapaConexion,
+  type ResultadoDescarga,
+  type MotivoFalloDian,
+  type TipoDocumentoDian,
+} from './puertos/conexion-dian-port';
+export {
+  crearAutorizacion,
+  autorizacionVigente,
+  permiteAlcance,
+  textoAutorizacion,
+  MINUTOS_VIGENCIA_AUTORIZACION,
+  type AutorizacionDian,
+  type AlcanceAutorizacion,
+} from './dian/autorizacion';

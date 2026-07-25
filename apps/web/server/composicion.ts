@@ -1,6 +1,12 @@
-import { crearEmailDesdeEnv, crearLlmDesdeEnv, ExtractorCertificados, RepositorioPrisma } from '@turenta/adaptadores';
+import {
+  ConexionMuisca,
+  crearEmailDesdeEnv,
+  crearLlmDesdeEnv,
+  ExtractorCertificados,
+  RepositorioPrisma,
+} from '@turenta/adaptadores';
 
-import type { EmailPort, LlmPort, RepositorioPort } from '@turenta/core';
+import type { ConexionDianPort, EmailPort, LlmPort, RepositorioPort } from '@turenta/core';
 
 /**
  * Composición hexagonal del lado servidor: único lugar de apps/web
@@ -34,4 +40,12 @@ export function obtenerRepositorio(): RepositorioPort {
 export function obtenerEmail(): EmailPort {
   emailSingleton ??= crearEmailDesdeEnv(process.env);
   return emailSingleton;
+}
+
+let conexionDian: ConexionDianPort | null = null;
+
+/** Conexión con el MUISCA. Sin estado entre llamadas: cada operación abre y cierra su navegador. */
+export function obtenerConexionDian(): ConexionDianPort {
+  conexionDian ??= new ConexionMuisca();
+  return conexionDian;
 }

@@ -12,3 +12,4 @@ export { EmailConsolaAdapter } from './email/email-consola';
 export { EmailSmtpAdapter, type SmtpConfig } from './email/email-smtp';
 export { EmailBrevoAdapter, type BrevoConfig } from './email/email-brevo';
 export { crearEmailDesdeEnv } from './email/crear-email';
+export { ConexionMuisca } from './dian/conexion-muisca';

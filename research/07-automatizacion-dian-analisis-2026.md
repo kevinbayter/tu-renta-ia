@@ -54,6 +54,34 @@ La única vía es un navegador headless (Playwright) manejando: login, cookies d
 navegación por JSF/`.faces` (el MUISCA es JavaServer Faces con estado de vista), descargas
 y, en el peor caso, captcha.
 
+### 2.1.1 Estructura real del login (inspeccionada el 25-jul-2026)
+
+`muisca.dian.gov.co/WebArquitectura/DefLogin.faces` **redirige** a un sistema de identidad
+nuevo, tipo OAuth/STS: `muisca.dian.gov.co/WebIdentidadLogin/?ideRequest=<base64>` con
+`clientId`, `redirect_uri`, `state` y `nonce`. La pantalla es **Angular + Material** (ya no
+JSF), con estos controles:
+
+| Control                      | Selector                                                           |
+| ---------------------------- | ------------------------------------------------------------------ |
+| Tipo de documento            | `mat-select` (Material, no `<select>` nativo)                      |
+| Número de documento          | `input[name="numDocumento"]`                                       |
+| Contraseña                   | `input[name="password"]`                                           |
+| Aceptar tratamiento de datos | `input[name="aceptaTratamientoDatos"]` (checkbox, **obligatorio**) |
+| Ingresar                     | `button` con texto "Ingresar"                                      |
+
+**Modos de ingreso disponibles** (botones): _A nombre propio_, _**A nombre de un tercero**_,
+_Servidor DIAN_, **_Autorizaciones / Poderes_**, _Organización no obligada a RUT_.
+
+> 🔑 **Hallazgo decisivo para el futuro B2B**: la DIAN **ya ofrece** el ingreso "a nombre de
+> un tercero" y por "autorizaciones/poderes". Un contador con poder registrado entra con
+> **sus propias credenciales** y opera por su cliente — **sin que el cliente le comparta su
+> contraseña**. Ese es el camino legalmente limpio para el modelo tipo Contadia, y evita por
+> completo el problema de custodia de credenciales ajenas.
+
+⚠️ El checkbox `aceptaTratamientoDatos` implica que alguien acepta el tratamiento de datos en
+cada login: si lo marca nuestro RPA, lo hace en nombre del usuario, lo que refuerza la
+necesidad de la autorización explícita previa.
+
 ### 2.2 Obstáculos técnicos reales
 
 - **Fragilidad estructural**: el MUISCA cambia sin aviso ni versionado. Un selector roto en

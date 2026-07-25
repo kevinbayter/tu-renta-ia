@@ -104,7 +104,7 @@ Principios (de research/04: qué hace bien referencia y dónde duele):
 1. **Mobile-first responsive**: la mayoría declara desde el celular. Breakpoints Tailwind estándar; toda pantalla se diseña primero en 390px. Prohibido scroll horizontal; tablas → cards en móvil.
 2. **Un paso a la vez**: wizard con progreso visible (Documentos → Entrevista → Revisión → Borrador). El usuario nunca ve el formulario 210 crudo hasta el final.
 3. **Drag & drop + cámara**: zona de carga que acepta PDF/XLSX/imagen; en móvil, botón "tomar foto del certificado".
-4. **Transparencia que vende**: mostrar en vivo lo extraído de cada documento ("Encontré: salarios $52.926.000 de Comercial Andina ✓ confírmalo") — el usuario valida cada cifra extraída por IA (human-in-the-loop, además transfiere responsabilidad).
+4. **Transparencia que vende**: mostrar en vivo lo extraído de cada documento ("Encontré: salarios $52.926.000 de tu empleador ✓ confírmalo") — el usuario valida cada cifra extraída por IA (human-in-the-loop, además transfiere responsabilidad).
 5. **Resultado explicado**: pantalla final tipo referencia (impuesto/saldo a favor grande y claro) + desglose expandible por cédula + "por qué" en lenguaje simple generado por IA desde el JSON del motor.
 6. **Estados vacíos, carga y error diseñados** desde el día 1 (skeletons, reintentos de extracción, documento ilegible).
 7. Accesibilidad AA (Radix ya ayuda: focus, teclado, contraste).

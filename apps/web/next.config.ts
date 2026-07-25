@@ -7,7 +7,7 @@ import type { NextConfig } from 'next';
 cargarEnvRaiz();
 
 // Hay un package-lock.json suelto en ~/projects que hace que Turbopack infiera
-// mal el root (<ruta-local>) y vigile todos los repos hermanos →
+// mal el root (<monorepo>/..) y vigile todos los repos hermanos →
 // presión de memoria y caídas con exit 143 (SIGTERM). Fijar el monorepo real.
 const monorepoRoot = join(__dirname, '../..');
 

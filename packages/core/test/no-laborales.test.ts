@@ -17,7 +17,7 @@ function filaMandato(nit: string, nombre: string, valor: number): FilaExogena {
   };
 }
 
-// El caso real de la titular: el MISMO arriendo reportado por el pagador y por la inmobiliaria.
+// Caso real anonimizado: el MISMO arriendo reportado por el pagador y por la inmobiliaria.
 const EXOGENA_MANDATO: ExogenaParseada = {
   anioGravable: 2025,
   identificacionConsultante: '23456789',

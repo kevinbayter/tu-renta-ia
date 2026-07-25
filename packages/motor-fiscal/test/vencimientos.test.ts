@@ -10,8 +10,8 @@ describe('calendario de vencimientos AG2025 (Decreto 2229/2023)', () => {
     expect(AG2025.calendarioVencimientos).toHaveLength(50);
   });
 
-  it('caso dorado: cédula terminada en 61 vence el 24 de septiembre de 2026', () => {
-    expect(fechaVencimiento('1234567890', AG2025)).toBe('2026-09-24');
+  it('cédula terminada en 61 vence el 24 de septiembre de 2026', () => {
+    expect(fechaVencimiento('1234567861', AG2025)).toBe('2026-09-24');
   });
 
   it('bordes del calendario: 01/02 primera fecha, 99/00 última', () => {
@@ -22,11 +22,11 @@ describe('calendario de vencimientos AG2025 (Decreto 2229/2023)', () => {
   });
 
   it('acepta identificaciones con puntos o espacios', () => {
-    expect(fechaVencimiento('1.050.975.461', AG2025)).toBe('2026-09-24');
+    expect(fechaVencimiento('1.234.567.861', AG2025)).toBe('2026-09-24');
   });
 
   it('ultimosDosDigitos extrae correctamente', () => {
-    expect(ultimosDosDigitos('1234567890')).toBe(61);
+    expect(ultimosDosDigitos('1234567861')).toBe(61);
     expect(ultimosDosDigitos('900')).toBe(0);
     expect(() => ultimosDosDigitos('7')).toThrow('al menos dos dígitos');
   });

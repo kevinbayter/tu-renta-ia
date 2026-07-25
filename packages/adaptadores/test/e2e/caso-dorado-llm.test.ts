@@ -19,14 +19,13 @@ import { crearLlmDesdeEnv } from '../../src/llm/crear-llm';
  * Se salta si no hay documentos (CI) o no hay API key.
  */
 
+// Los documentos reales viven en docs/ (gitignored: contienen datos personales).
 const DOCS = join(import.meta.dirname, '../../../../docs');
 const ARCHIVOS = {
   exogena: join(DOCS, 'reporteExogena2025.xlsx'),
-  meli220: join(DOCS, 'certificado-220-empleador-1.pdf'),
-  stc220: join(DOCS, 'certificado-220-empleador-2.pdf'),
-  // OJO con los nombres: "Retefuente_..." es el certificado de Salud Prepagada (prepagada)
-  // y "certificado-de-retencion-en-la-fuente-2025" es el de Nu (bancario).
-  nu: join(DOCS, 'certificado-bancario.pdf'),
+  empleador1: join(DOCS, 'certificado-220-empleador-1.pdf'),
+  empleador2: join(DOCS, 'certificado-220-empleador-2.pdf'),
+  banco: join(DOCS, 'certificado-bancario.pdf'),
   prepagada: join(DOCS, 'certificado-prepagada.pdf'),
 };
 
@@ -68,27 +67,27 @@ describe.skipIf(!hayDocs)('E2E caso dorado con documentos reales + Kimi K3', () 
     expect(exogena.topes.ingresos).toBe(114_456_920);
 
     // Secuencial: el tier de la suscripción limita la concurrencia del proveedor.
-    const andina = await extraerYValidar220(extractor, ARCHIVOS.meli220);
-    const stc = await extraerYValidar220(extractor, ARCHIVOS.stc220);
-    const nu = await extraerBancario(extractor, ARCHIVOS.nu);
+    const empleador1 = await extraerYValidar220(extractor, ARCHIVOS.empleador1);
+    const empleador2 = await extraerYValidar220(extractor, ARCHIVOS.empleador2);
+    const banco = await extraerBancario(extractor, ARCHIVOS.banco);
     const prepagada = await extraerPrepagada(extractor, ARCHIVOS.prepagada);
 
     // Verificación de calidad de extracción contra valores conocidos de los documentos
-    expect(andina.totalIngresosBrutos).toBe(95_741_000);
-    expect(andina.cesantiasPagadas).toBe(5_535_000);
-    expect(andina.cesantiasConsignadas).toBe(6_156_000);
-    expect(andina.retencionFuente).toBe(386_000);
-    expect(stc.totalIngresosBrutos).toBe(17_493_000);
-    expect(stc.aportesSalud).toBe(631_000);
-    expect(nu.rendimientos).toBe(786_273);
-    expect(nu.saldoCuentas).toBe(20_902_486);
+    expect(empleador1.totalIngresosBrutos).toBe(95_741_000);
+    expect(empleador1.cesantiasPagadas).toBe(5_535_000);
+    expect(empleador1.cesantiasConsignadas).toBe(6_156_000);
+    expect(empleador1.retencionFuente).toBe(386_000);
+    expect(empleador2.totalIngresosBrutos).toBe(17_493_000);
+    expect(empleador2.aportesSalud).toBe(631_000);
+    expect(banco.rendimientos).toBe(786_273);
+    expect(banco.saldoCuentas).toBe(20_902_486);
     expect(prepagada.amparos.map((a) => a.valor)).toContain(3_199_749);
 
     const perfil = construirPerfilFiscal({
       anioGravable: 2025,
       exogena,
-      certificados220: [andina, ptc],
-      certificadosBancarios: [nu],
+      certificados220: [empleador1, empleador2],
+      certificadosBancarios: [banco],
       respuestas: RESPUESTAS,
     });
     const resultado = liquidarDeclaracion(perfil);

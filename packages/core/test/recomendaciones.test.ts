@@ -57,7 +57,7 @@ describe('evaluarDeclaracion', () => {
     const estado = { ...ESTADO_COMPLETO, documentos: [{ tipo: 'exogena', exogena: EXOGENA }] };
     const evaluacion = evaluarDeclaracion(estado);
     const textos = evaluacion.recomendaciones.map((r) => r.texto).join(' ');
-    expect(textos).toContain('COMERCIAL ANDINA');
+    expect(textos).toContain('COMERCIAL');
     expect(evaluacion.confiabilidad).toBe(85);
   });
 

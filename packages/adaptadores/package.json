@@ -9,7 +9,8 @@
     ".": "./src/index.ts",
     "./dian": "./src/dian/conexion-muisca.ts",
     "./test/navegador/servidor-fixtures": "./test/navegador/servidor-fixtures.ts",
-    "./test/navegador/fixtures/datos-ficticios": "./test/navegador/fixtures/datos-ficticios.ts"
+    "./test/navegador/fixtures/datos-ficticios": "./test/navegador/fixtures/datos-ficticios.ts",
+    "./cifrado": "./src/dian/cifrado-credenciales.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",

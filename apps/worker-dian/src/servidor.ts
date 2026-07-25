@@ -11,6 +11,11 @@
 
 import { createServer } from 'node:http';
 
+import {
+  cifrarCredencial,
+  descifrarCredencial,
+  leerClaveMaestra,
+} from '@turenta/adaptadores/cifrado';
 import { ConexionMuisca } from '@turenta/adaptadores/dian';
 import { Secreto, detalleSeguro } from '@turenta/core';
 import type { ContextoOperacionDian, ResultadoDescarga } from '@turenta/core';
@@ -66,25 +71,70 @@ function aRespuesta(resultado: ResultadoDescarga): Record<string, unknown> {
     exito: true,
     nombreArchivo: resultado.nombreArchivo,
     contenidoBase64: Buffer.from(resultado.contenido).toString('base64'),
+    cifrado: resultado.cifrado,
   };
 }
 
+/** The master key never leaves this process, and the database is unreachable from here. */
+const CLAVE_MAESTRA = leerClaveMaestra(process.env);
+
+/**
+ * The password comes either in the clear (the user just typed it) or sealed in
+ * an envelope this worker sealed earlier. The web app only ever moves the
+ * envelope around: it cannot open it.
+ */
+function contrasenaDe(cuerpo: CuerpoPeticion, contexto: ContextoOperacionDian): string | null {
+  if (!contexto.cifrado) {
+    return cuerpo.contrasena ?? '';
+  }
+  if (!CLAVE_MAESTRA) {
+    return null;
+  }
+  return descifrarCredencial(contexto.cifrado, CLAVE_MAESTRA);
+}
+
 async function ejecutar(operacion: string, cuerpo: CuerpoPeticion): Promise<ResultadoDescarga> {
-  const contrasena = new Secreto(cuerpo.contrasena ?? '');
+  const contexto = cuerpo.contexto as ContextoOperacionDian;
+  const clara = contrasenaDe(cuerpo, contexto);
+  if (clara === null) {
+    return { exito: false, motivoFallo: 'acceso_caducado', detalle: 'El acceso guardado no se pudo abrir' };
+  }
+  const contrasena = new Secreto(clara);
   const credenciales = {
     tipoDocumento: (cuerpo.tipoDocumento ?? 'CC') as 'CC',
     numeroDocumento: cuerpo.numeroDocumento ?? '',
     contrasena,
   };
-  const contexto = cuerpo.contexto as ContextoOperacionDian;
   try {
-    return operacion === 'exogena'
-      ? await conexion.descargarExogena(credenciales, contexto)
-      : await conexion.descargarDeclaracion(credenciales, contexto);
+    const resultado = await operar(operacion, credenciales, contexto);
+    return conSobre(resultado, contexto, clara);
   } finally {
     // The credential dies with the request.
     contrasena.olvidar();
   }
+}
+
+function operar(
+  operacion: string,
+  credenciales: Parameters<typeof conexion.descargarExogena>[0],
+  contexto: ContextoOperacionDian,
+): Promise<ResultadoDescarga> {
+  return operacion === 'exogena'
+    ? conexion.descargarExogena(credenciales, contexto)
+    : conexion.descargarDeclaracion(credenciales, contexto);
+}
+
+/** Seals the access only when it worked and the user actually asked for it. */
+function conSobre(
+  resultado: ResultadoDescarga,
+  contexto: ContextoOperacionDian,
+  clara: string,
+): ResultadoDescarga {
+  const debeGuardar = resultado.exito && contexto.recordarAcceso === true && !contexto.cifrado;
+  if (!debeGuardar || !CLAVE_MAESTRA) {
+    return resultado;
+  }
+  return { ...resultado, cifrado: cifrarCredencial(clara, CLAVE_MAESTRA) };
 }
 
 async function atenderOperacion(

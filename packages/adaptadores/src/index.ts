@@ -31,3 +31,8 @@ export {
   limiteDeRetencion,
   ANIOS_RETENCION_EVIDENCIA,
 } from './persistencia/evidencia-autorizacion-prisma';
+export {
+  BovedaCredencialesPrisma,
+  limiteDeInactividad,
+  DIAS_SIN_USO_ANTES_DE_BORRAR,
+} from './persistencia/boveda-credenciales-prisma';

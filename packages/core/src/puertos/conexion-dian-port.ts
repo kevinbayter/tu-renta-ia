@@ -23,6 +23,14 @@ export interface CredencialesDian {
   contrasena: Secreto;
 }
 
+/** AES-256-GCM envelope. Only the isolated worker holds the key to open it. */
+export interface SobreCifrado {
+  version: number;
+  nonce: string;
+  tag: string;
+  contenido: string;
+}
+
 /** Who files vs. who operates. Today the same; later an accountant for a client. */
 export interface ContextoOperacionDian {
   /** National ID of the taxpayer whose data is queried. */
@@ -32,6 +40,10 @@ export interface ContextoOperacionDian {
   anioGravable: number;
   /** Defaults to 'propio'; 'tercero' uses DIAN's door for representatives. */
   modoIngreso?: ModoIngresoDian;
+  /** Stored access: when present the password is not needed at all. */
+  cifrado?: SobreCifrado;
+  /** The user asked us to remember this access, so the worker returns a sealed envelope. */
+  recordarAcceso?: boolean;
 }
 
 export type EtapaConexion =
@@ -56,6 +68,8 @@ export type MotivoFalloDian =
   | 'tiempo_agotado'
   /** No filed return for that year. Not an error: first-time filers hit this. */
   | 'sin_declaracion'
+  /** The stored access no longer works: the user has to sign in again. */
+  | 'acceso_caducado'
   /** Our own worker is down. Not DIAN's fault: do not tell the user otherwise. */
   | 'servicio_no_disponible'
   | 'desconocido';
@@ -67,6 +81,8 @@ export interface ResultadoDescarga {
   nombreArchivo?: string;
   motivoFallo?: MotivoFalloDian;
   detalle?: string;
+  /** Present only when the user asked to be remembered: store it as-is. */
+  cifrado?: SobreCifrado;
 }
 
 export interface ConexionDianPort {

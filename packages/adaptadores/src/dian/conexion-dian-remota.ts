@@ -27,6 +27,7 @@ interface RespuestaWorker {
   nombreArchivo?: string;
   motivoFallo?: ResultadoDescarga['motivoFallo'];
   detalle?: string;
+  cifrado?: ResultadoDescarga['cifrado'];
 }
 
 export class ConexionDianRemota implements ConexionDianPort {
@@ -100,11 +101,13 @@ function aResultado(cuerpo: RespuestaWorker): ResultadoDescarga {
       detalle: cuerpo.detalle ?? '',
     };
   }
-  return {
+  const base: ResultadoDescarga = {
     exito: true,
     contenido: Uint8Array.from(Buffer.from(cuerpo.contenidoBase64, 'base64')),
     nombreArchivo: cuerpo.nombreArchivo ?? 'descarga',
   };
+  // The envelope travels straight through: this side has no key to open it.
+  return cuerpo.cifrado ? { ...base, cifrado: cuerpo.cifrado } : base;
 }
 
 /** A dead worker is NOT 'portal_no_disponible': we do not blame DIAN for our outage. */

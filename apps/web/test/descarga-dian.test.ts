@@ -42,10 +42,20 @@ function crearLimitador() {
   };
 }
 
+const boveda = {
+  guardar: vi.fn(() => Promise.resolve()),
+  buscar: vi.fn(() => Promise.resolve(null)),
+  marcarUso: vi.fn(() => Promise.resolve()),
+  olvidar: vi.fn(() => Promise.resolve(true)),
+  listar: vi.fn(() => Promise.resolve([])),
+  purgarSinUsoDesde: vi.fn(() => Promise.resolve(0)),
+};
+
 vi.mock('@/server/composicion', () => ({
   obtenerConexionDian: () => conexion,
   obtenerEvidenciaDian: () => evidencia,
   obtenerLimitadorDian: () => limitador,
+  obtenerBovedaDian: () => boveda,
 }));
 
 const { descargarDeLaDian } = await import('@/server/dian/descarga');
@@ -56,6 +66,7 @@ function solicitud(): SolicitudConexionDian {
     titular: '1000000001',
     anioGravable: 2025,
     modoIngreso: 'propio',
+    recordarAcceso: false,
   };
 }
 

@@ -5,10 +5,12 @@ import {
   textoAutorizacion,
 } from '@turenta/core';
 
+import { accesoDe, guardarSiProcede, marcarUso, olvidarSiCaduco } from './acceso-guardado';
 import { obtenerConexionDian, obtenerEvidenciaDian, obtenerLimitadorDian } from '@/server/composicion';
 
 import type {
   AlcanceAutorizacion,
+  SobreCifrado,
   HuellaPeticion,
   ResultadoDescarga,
   SolicitudConexionDian,
@@ -104,10 +106,29 @@ function desenlaceDe(resultado: ResultadoDescarga) {
   return { resultado: 'fallida', motivoFallo: `${motivo}: ${resultado.detalle ?? ''}`.slice(0, 200) } as const;
 }
 
-function ejecutar(
+async function ejecutar(
   operacion: Operacion,
   solicitud: SolicitudConexionDian,
   usuarioId: string,
+): Promise<ResultadoDescarga> {
+  const acceso = await accesoDe(usuarioId, solicitud.titular);
+  const resultado = await pedirAlPortal(operacion, solicitud, usuarioId, acceso);
+  await Promise.all([
+    guardarSiProcede(resultado, usuarioId, solicitud.titular, {
+      tipoDocumento: solicitud.credenciales.tipoDocumento,
+      numeroDocumento: solicitud.credenciales.numeroDocumento,
+    }),
+    olvidarSiCaduco(resultado, usuarioId, solicitud.titular),
+    resultado.exito ? marcarUso(acceso.id, new Date()) : Promise.resolve(),
+  ]);
+  return resultado;
+}
+
+function pedirAlPortal(
+  operacion: Operacion,
+  solicitud: SolicitudConexionDian,
+  usuarioId: string,
+  acceso: { cifrado?: SobreCifrado },
 ): Promise<ResultadoDescarga> {
   const conexion = obtenerConexionDian();
   const contexto = {
@@ -115,6 +136,8 @@ function ejecutar(
     operadorUsuarioId: usuarioId,
     anioGravable: solicitud.anioGravable,
     modoIngreso: solicitud.modoIngreso,
+    ...(acceso.cifrado ? { cifrado: acceso.cifrado } : {}),
+    ...(solicitud.recordarAcceso === true ? { recordarAcceso: true } : {}),
   };
   return operacion === 'exogena'
     ? conexion.descargarExogena(solicitud.credenciales, contexto)

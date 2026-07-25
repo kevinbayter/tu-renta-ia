@@ -65,12 +65,21 @@ export function ConexionDian({
   const [fase, setFase] = useState<Fase>('autorizar');
   const [etapa, setEtapa] = useState<EtapaConexion>('iniciando');
   const [error, setError] = useState('');
+  const [recordar, setRecordar] = useState(false);
   const config = OPERACIONES[operacion];
+  const alcances: AlcanceAutorizacion[] = recordar
+    ? [config.alcance, 'recordar_acceso']
+    : [config.alcance];
 
   const conectar = async (credenciales: Credenciales) => {
     setFase('progreso');
     setEtapa('autenticando');
-    const cuerpo = await pedir(config.ruta, { ...credenciales, titular, anioGravable });
+    const cuerpo = await pedir(config.ruta, {
+      ...credenciales,
+      titular,
+      anioGravable,
+      recordarAcceso: recordar,
+    });
     if (cuerpo?.contenidoBase64) {
       setEtapa('completado');
       setFase('listo');
@@ -103,30 +112,69 @@ export function ConexionDian({
       <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-card shadow-2xl">
         <Encabezado config={config} alCerrar={alCerrar} cerrable={cerrable} />
         <div className="px-6 pb-6">
-          {fase === 'autorizar' && (
-            <PanelAutorizacion
-              titular={titular}
-              alcance={config.alcance}
-              alAceptar={() => setFase('credenciales')}
-              alCancelar={alCerrar}
-            />
-          )}
-          {fase === 'credenciales' && (
-            <>
-              <AvisoTransparencia />
-              <FormularioCredenciales alEnviar={(c) => void conectar(c)} alVolver={() => setFase('autorizar')} />
-            </>
-          )}
-          {fase === 'progreso' && <Progreso etapa={etapa} />}
-          {fase === 'error' && (
-            <ErrorConexion mensaje={error} alReintentar={() => setFase('credenciales')} alCerrar={alCerrar} />
-          )}
-          {fase === 'sin_dato' && <SinDato mensaje={error} alCerrar={alCerrar} />}
-          {fase === 'listo' && <Exito />}
+          <CuerpoSegunFase
+            fase={fase}
+            etapa={etapa}
+            error={error}
+            titular={titular}
+            alcances={alcances}
+            recordar={recordar}
+            alCambiarRecordar={setRecordar}
+            alIrA={setFase}
+            alConectar={(c) => void conectar(c)}
+            alCerrar={alCerrar}
+          />
         </div>
       </div>
     </div>
   );
+}
+
+interface PropsCuerpo {
+  fase: Fase;
+  etapa: EtapaConexion;
+  error: string;
+  titular: string;
+  alcances: AlcanceAutorizacion[];
+  recordar: boolean;
+  alCambiarRecordar: (valor: boolean) => void;
+  alIrA: (fase: Fase) => void;
+  alConectar: (credenciales: Credenciales) => void;
+  alCerrar: () => void;
+}
+
+function CuerpoSegunFase(props: PropsCuerpo) {
+  const { fase, alIrA, alCerrar } = props;
+  if (fase === 'autorizar') {
+    return (
+      <PanelAutorizacion
+        titular={props.titular}
+        alcances={props.alcances}
+        recordar={props.recordar}
+        alCambiarRecordar={props.alCambiarRecordar}
+        alAceptar={() => alIrA('credenciales')}
+        alCancelar={alCerrar}
+      />
+    );
+  }
+  if (fase === 'credenciales') {
+    return (
+      <>
+        <AvisoTransparencia />
+        <FormularioCredenciales alEnviar={props.alConectar} alVolver={() => alIrA('autorizar')} />
+      </>
+    );
+  }
+  if (fase === 'progreso') {
+    return <Progreso etapa={props.etapa} />;
+  }
+  if (fase === 'error') {
+    return <ErrorConexion mensaje={props.error} alReintentar={() => alIrA('credenciales')} alCerrar={alCerrar} />;
+  }
+  if (fase === 'sin_dato') {
+    return <SinDato mensaje={props.error} alCerrar={alCerrar} />;
+  }
+  return <Exito />;
 }
 
 /** Un cuerpo ilegible dejaría el modal clavado en "progreso": se trata como fallo. */

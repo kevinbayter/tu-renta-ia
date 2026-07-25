@@ -25,7 +25,11 @@ export function FormularioCredenciales({
   alEnviar: (credenciales: Credenciales) => void;
   alVolver: () => void;
 }) {
-  const [datos, setDatos] = useState<Credenciales>({ tipoDocumento: 'CC', numeroDocumento: '', contrasena: '' });
+  const [datos, setDatos] = useState<Credenciales>({
+    tipoDocumento: 'CC',
+    numeroDocumento: '',
+    contrasena: '',
+  });
   const [verClave, setVerClave] = useState(false);
   const listo = datos.numeroDocumento.length >= 5 && datos.contrasena.length >= 4;
 
@@ -72,8 +76,7 @@ export function FormularioCredenciales({
 
       <p className="flex items-start gap-2 text-[11px] leading-relaxed text-texto-suave">
         <Lock size={12} className="mt-0.5 shrink-0 text-primario" aria-hidden />
-        Viajan cifradas por HTTPS, se usan solo para esta operación y se borran al terminar. No se escriben
-        en disco ni en registros.
+        Viajan cifradas por HTTPS y solo se usan para entrar al portal de la DIAN.
       </p>
 
       <div className="flex gap-3 pt-1">

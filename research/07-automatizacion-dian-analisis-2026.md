@@ -82,6 +82,34 @@ _Servidor DIAN_, **_Autorizaciones / Poderes_**, _Organización no obligada a RU
 cada login: si lo marca nuestro RPA, lo hace en nombre del usuario, lo que refuerza la
 necesidad de la autorización explícita previa.
 
+### 2.1.2 Flujo de la exógena, verificado de punta a punta (25-jul-2026)
+
+Mapeo asistido: el titular autenticó en pantalla y desde ahí se recorrió el flujo con
+Playwright. **No se almacenó ninguna credencial** y el archivo descargado se descartó.
+
+Tras el login se aterriza en `muisca.dian.gov.co/WebDashboard/DefDashboard.faces` — un
+dashboard JSF/RichFaces. El enlace _"Consultar información Exógena — Información Reportada
+por terceros"_ abre un `rich-modalpanel` (`…:aniosPanel`) con las condiciones de uso.
+
+| Paso                   | Selector (id JSF, anclado por sufijo) | Notas                                    |
+| ---------------------- | ------------------------------------- | ---------------------------------------- |
+| 1. Aceptar condiciones | `[id$="btnBuscar"]`                   | `input[type=image]`; revela lo que sigue |
+| 2. Año gravable        | `[id$="anioSel"]`                     | `<select>` con 2020–2025                 |
+| 3. Generar reporte     | `[id$="btnExogenaGenerar"]`           | `input[type=image]`; envía por A4J AJAX  |
+| 4. Descargar           | `[id$="lnkDescargarReporteExogena"]`  | `<a>` de 0×0 px → clic programático      |
+
+**Resultado**: `reporteExogena2025.xlsx`. Detalles que importan para el adaptador:
+
+- Los tres controles del paso 2 al 4 **existen en el DOM desde el inicio pero ocultos**;
+  solo se vuelven visibles al aceptar las condiciones. Verificar presencia no basta:
+  hay que verificar visibilidad.
+- El enlace de descarga **no tiene contenido y mide 0×0 px**. No admite clic por
+  coordenadas; su `onclick` arma el submit JSF (`_idcl`) que devuelve el archivo.
+- Los campos ocultos `hddAnioSel` y `hddFechaProcesamientoSel` **se vacían tras la
+  descarga** (el submit reinicia el panel): no sirven como señal de "reporte listo".
+- El dashboard también expone **"Presentar Declaración de Renta"** — punto de entrada de la
+  Fase 3.
+
 ### 2.2 Obstáculos técnicos reales
 
 - **Fragilidad estructural**: el MUISCA cambia sin aviso ni versionado. Un selector roto en

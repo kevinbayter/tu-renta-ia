@@ -52,7 +52,9 @@ autorización registra **ambas identidades**.
 y contraseña, ve el progreso paso a paso, y la exógena entra al flujo actual como si la
 hubiera subido a mano.
 
-- Adaptador Playwright: login, aceptar condiciones, seleccionar año, descargar Excel.
+- ✅ **Adaptador Playwright calibrado contra el portal real** (25-jul-2026): login, aceptar
+  condiciones, seleccionar año, generar y descargar el Excel. Selectores verificados en
+  [`research/07…`](research/07-automatizacion-dian-analisis-2026.md) §2.1.2.
 - Pantalla de consentimiento previo con registro de evidencia.
 - Manejo honesto de errores: credenciales inválidas, portal caído, cambio de estructura,
   captcha → mensaje claro + "descárgala manualmente" con la guía de siempre.

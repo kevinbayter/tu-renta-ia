@@ -127,6 +127,10 @@ export function registrarDocumentoDian(
   return registrarDocumento(new File([binario], nombreArchivo), tipoConocido);
 }
 
+/** Cada cuánto se pregunta por el resultado y cuánto se espera como máximo. */
+const MS_ENTRE_CONSULTAS = 2_000;
+const INTENTOS_MAXIMOS = 150;
+
 async function enviarArchivo(
   archivo: File,
   tipoConocido?: string,
@@ -141,5 +145,47 @@ async function enviarArchivo(
   if (!respuesta.ok) {
     return { error: String(cuerpo.error ?? 'No se pudo procesar') };
   }
-  return { id: crypto.randomUUID(), nombreArchivo: archivo.name, ...cuerpo } as DocumentoProcesado;
+  return esperarResultado(String(cuerpo.tareaId ?? ''), archivo.name);
+}
+
+/**
+ * La lectura corre en el servidor y aquí se pregunta por ella: mantener la
+ * petición abierta chocaba con el límite del proxy y el usuario veía un error
+ * de conexión cuando el documento ya se había leído bien.
+ */
+async function esperarResultado(
+  tareaId: string,
+  nombreArchivo: string,
+  intento = 0,
+): Promise<DocumentoProcesado | { error: string }> {
+  if (intento >= INTENTOS_MAXIMOS) {
+    return { error: 'La lectura está tardando demasiado. Intenta de nuevo.' };
+  }
+  const paso = await esperarYConsultar(tareaId, nombreArchivo);
+  return paso ?? esperarResultado(tareaId, nombreArchivo, intento + 1);
+}
+
+function esperarYConsultar(
+  tareaId: string,
+  nombreArchivo: string,
+): Promise<DocumentoProcesado | { error: string } | null> {
+  return new Promise((listo) => setTimeout(listo, MS_ENTRE_CONSULTAS)).then(() =>
+    consultarTarea(tareaId, nombreArchivo),
+  );
+}
+
+/** null mientras siga en curso. */
+async function consultarTarea(
+  tareaId: string,
+  nombreArchivo: string,
+): Promise<DocumentoProcesado | { error: string } | null> {
+  const respuesta = await fetch(`/api/documentos?tarea=${encodeURIComponent(tareaId)}`);
+  const cuerpo = (await respuesta.json()) as Record<string, unknown>;
+  if (!respuesta.ok) {
+    return { error: String(cuerpo.error ?? 'No se pudo procesar') };
+  }
+  if (cuerpo.estado === 'en_curso') {
+    return null;
+  }
+  return { id: crypto.randomUUID(), nombreArchivo, ...cuerpo } as DocumentoProcesado;
 }

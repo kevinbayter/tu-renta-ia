@@ -1,6 +1,6 @@
 'use client';
 
-import { Info, ShieldCheck, Zap } from 'lucide-react';
+import { Info, Loader2, ShieldCheck, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { ANIO_GRAVABLE, registrarDocumentoDian, useSubidas } from './pipeline-documentos';
@@ -41,6 +41,7 @@ export function OpcionConectarDian({
   const [aviso, setAviso] = useState<string | null>(null);
   const habilitada = useConexionHabilitada();
   const leyendo = useSubidas((s) => s.enCurso > 0);
+  const leyendoAparte = useSubidas((s) => s.enSegundoPlano > 0);
   const declarante = useDeclaracion((s) => s.declarante);
   const esPropia = useDeclaracion((s) => s.esPropia);
   // Mismos dígitos que enviará el servidor: si aquí se mostrara la cédula con
@@ -58,20 +59,37 @@ export function OpcionConectarDian({
     return null;
   }
 
-  const completar = async (resultado: ResultadoConexion) => {
-    const registrado = await registrarDocumentoDian(
+  // La declaración anterior es opcional y sus cifras no se necesitan hasta
+  // Revisión: se lee en segundo plano para no retener al usuario en el paso 1.
+  const enSegundoPlano = operacion === 'declaracion';
+
+  const completar = (resultado: ResultadoConexion) => {
+    setAbierto(false);
+    const lectura = registrarDocumentoDian(
       resultado.nombreArchivo,
       resultado.contenidoBase64,
-      operacion === 'declaracion' ? 'declaracion_anterior' : undefined,
-    );
-    setAbierto(false);
-    setAviso('error' in registrado ? registrado.error : null);
-    alTerminar?.('error' in registrado ? registrado.error : null);
+      enSegundoPlano ? 'declaracion_anterior' : undefined,
+      enSegundoPlano,
+    ).then((registrado) => {
+      const error = 'error' in registrado ? registrado.error : null;
+      setAviso(error);
+      alTerminar?.(error);
+    });
+    if (!enSegundoPlano) {
+      return lectura;
+    }
+    return Promise.resolve();
   };
 
   return (
     <>
-      <Tarjeta operacion={operacion} alAbrir={() => setAbierto(true)} ocupado={leyendo} />
+      <Tarjeta operacion={operacion} alAbrir={() => setAbierto(true)} ocupado={leyendo || leyendoAparte} />
+      {leyendoAparte && (
+        <p className="mt-2 flex items-center gap-2 text-xs text-texto-suave" role="status">
+          <Loader2 size={13} className="animate-spin text-primario" aria-hidden />
+          Estamos leyendo tu declaración. Puedes seguir con los siguientes pasos: los datos entrarán solos.
+        </p>
+      )}
       {aviso !== null && (
         <p role="alert" className="mt-2 text-xs text-alerta">
           Llegó el archivo pero no pudimos leerlo: {aviso}. Puedes subirlo tú mismo aquí abajo.

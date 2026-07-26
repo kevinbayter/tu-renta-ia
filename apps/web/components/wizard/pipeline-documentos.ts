@@ -24,29 +24,41 @@ export const NOMBRES_TIPO: Record<DocumentoProcesado['tipo'], string> = {
 };
 
 interface EstadoSubidas {
+  /** Lecturas que bloquean el avance: sin ellas el paso siguiente no tiene sentido. */
   enCurso: number;
+  /** Lecturas en segundo plano: el usuario sigue mientras tanto. */
+  enSegundoPlano: number;
   iniciar: () => void;
   terminar: () => void;
+  iniciarEnSegundoPlano: () => void;
+  terminarEnSegundoPlano: () => void;
 }
 
-/** Subidas en curso (efímero, NO persistido): bloquea "Continuar" mientras la IA lee. */
+/** Estado efímero (NO persistido) de las lecturas de documentos. */
 export const useSubidas = create<EstadoSubidas>((set) => ({
   enCurso: 0,
+  enSegundoPlano: 0,
   iniciar: () => set((s) => ({ enCurso: s.enCurso + 1 })),
   terminar: () => set((s) => ({ enCurso: Math.max(0, s.enCurso - 1) })),
+  iniciarEnSegundoPlano: () => set((s) => ({ enSegundoPlano: s.enSegundoPlano + 1 })),
+  terminarEnSegundoPlano: () => set((s) => ({ enSegundoPlano: Math.max(0, s.enSegundoPlano - 1) })),
 }));
 
 export async function subirArchivo(
   archivo: File,
   tipoConocido?: string,
+  enSegundoPlano = false,
 ): Promise<DocumentoProcesado | { error: string }> {
-  useSubidas.getState().iniciar();
+  const estado = useSubidas.getState();
+  const marcarInicio = enSegundoPlano ? estado.iniciarEnSegundoPlano : estado.iniciar;
+  const marcarFin = enSegundoPlano ? estado.terminarEnSegundoPlano : estado.terminar;
+  marcarInicio();
   try {
     return await enviarArchivo(archivo, tipoConocido);
   } catch {
     return { error: 'Error de conexión. Intenta de nuevo.' };
   } finally {
-    useSubidas.getState().terminar();
+    marcarFin();
   }
 }
 
@@ -103,8 +115,9 @@ function precargarMesesDesde220(doc: DocumentoProcesado): void {
 export async function registrarDocumento(
   archivo: File,
   tipoConocido?: string,
+  enSegundoPlano = false,
 ): Promise<DocumentoProcesado | { error: string }> {
-  const resultado = await subirArchivo(archivo, tipoConocido);
+  const resultado = await subirArchivo(archivo, tipoConocido, enSegundoPlano);
   if ('error' in resultado) {
     return resultado;
   }
@@ -122,9 +135,10 @@ export function registrarDocumentoDian(
   nombreArchivo: string,
   contenidoBase64: string,
   tipoConocido?: string,
+  enSegundoPlano = false,
 ): Promise<DocumentoProcesado | { error: string }> {
   const binario = Uint8Array.from(atob(contenidoBase64), (c) => c.charCodeAt(0));
-  return registrarDocumento(new File([binario], nombreArchivo), tipoConocido);
+  return registrarDocumento(new File([binario], nombreArchivo), tipoConocido, enSegundoPlano);
 }
 
 /** Cada cuánto se pregunta por el resultado y cuánto se espera como máximo. */

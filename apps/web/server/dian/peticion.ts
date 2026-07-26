@@ -12,12 +12,26 @@ import type { HuellaPeticion, ResultadoValidacion } from '@turenta/core';
 
 const ANIO_ACTUAL = new Date().getFullYear();
 
-export async function leerSolicitud(request: Request): Promise<ResultadoValidacion> {
+/** Cédula del titular tal como la validará después: para buscar su acceso. */
+export function titularDelCuerpo(cuerpo: unknown): string {
+  const datos = (cuerpo ?? {}) as { titular?: unknown; numeroDocumento?: unknown };
+  const valor = datos.titular ?? datos.numeroDocumento ?? '';
+  return typeof valor === 'string' || typeof valor === 'number' ? String(valor).replace(/\D/g, '') : '';
+}
+
+export async function leerCuerpo(request: Request): Promise<Record<string, unknown> | null> {
   const cuerpo = await request.json().catch(() => null);
-  if (cuerpo === null || typeof cuerpo !== 'object') {
+  return cuerpo !== null && typeof cuerpo === 'object' ? (cuerpo as Record<string, unknown>) : null;
+}
+
+export function validarSolicitud(
+  cuerpo: Record<string, unknown> | null,
+  hayAccesoGuardado: boolean,
+): ResultadoValidacion {
+  if (cuerpo === null) {
     return { valida: false, error: 'Petición inválida' };
   }
-  const validacion = validarSolicitudConexion(cuerpo as Record<string, unknown>, ANIO_ACTUAL);
+  const validacion = validarSolicitudConexion(cuerpo, ANIO_ACTUAL, hayAccesoGuardado);
   if (validacion.valida && validacion.solicitud.modoIngreso === 'tercero') {
     return { valida: false, error: 'Todavía no podemos conectar a nombre de otra persona' };
   }

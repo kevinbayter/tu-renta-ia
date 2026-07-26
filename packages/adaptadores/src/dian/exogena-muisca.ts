@@ -11,9 +11,17 @@ import { archivoDe } from './sesion-muisca';
 
 import type { Page } from 'playwright';
 
-/** Ids anchored by suffix: the JSF prefix varies between portal views. */
+/**
+ * Ids anchored by suffix: the JSF prefix varies between portal views.
+ *
+ * Everything is scoped to the exógena modal. The dashboard holds other panels
+ * —electronic invoices among them— whose controls end with the same suffixes,
+ * and an unscoped selector matched several at once: Playwright then fails
+ * instantly with a strict mode violation instead of clicking anything.
+ */
 const EXOGENA = {
   enlace: /Consultar informaci[oó]n Ex[oó]gena|Informaci[oó]n Reportada por terceros/i,
+  panel: '[id$="aniosPanelContentDiv"]',
   aceptarCondiciones: '[id$="btnBuscar"]',
   anio: '[id$="anioSel"]',
   generar: '[id$="btnExogenaGenerar"]',
@@ -61,12 +69,13 @@ async function irAConsultaExogena(
 ): Promise<void> {
   alIniciarPaso('abrir la consulta de exógena');
   await pagina.getByRole('link', { name: EXOGENA.enlace }).first().click({ timeout: esperaMs });
+  const panel = pagina.locator(EXOGENA.panel).first();
   alIniciarPaso('aceptar las condiciones');
-  await pagina.locator(EXOGENA.aceptarCondiciones).click({ timeout: esperaMs, force: true });
+  await panel.locator(EXOGENA.aceptarCondiciones).first().click({ timeout: esperaMs, force: true });
   alIniciarPaso(`elegir el año ${String(anioGravable)}`);
-  await pagina.locator(EXOGENA.anio).selectOption(String(anioGravable), { timeout: esperaMs });
+  await panel.locator(EXOGENA.anio).first().selectOption(String(anioGravable), { timeout: esperaMs });
   alIniciarPaso('generar el reporte');
-  await pagina.locator(EXOGENA.generar).click({ timeout: esperaMs, force: true });
+  await panel.locator(EXOGENA.generar).first().click({ timeout: esperaMs, force: true });
   await pagina.waitForLoadState('networkidle', { timeout: esperaMs }).catch(() => null);
   alIniciarPaso('descargar el archivo');
   await dispararDescarga(pagina);

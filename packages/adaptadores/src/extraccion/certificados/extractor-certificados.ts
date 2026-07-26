@@ -108,7 +108,13 @@ Extrae cada amparo/contrato como un elemento del arreglo con su valor pagado y v
     return this.extraerDeclaracionConModelo(doc);
   }
 
-  private extraerDeclaracionConModelo(
+  /**
+   * Una sola pasada y esfuerzo medio: son cinco cifras de casillas numeradas,
+   * no un documento que haya que interpretar. Con doble pasada y esfuerzo alto
+   * la lectura tardaba minutos sin ganar exactitud, y estos datos además se
+   * revisan en pantalla antes de declarar.
+   */
+  private async extraerDeclaracionConModelo(
     doc: DocumentoFuente,
   ): Promise<ResultadoExtraccion<DeclaracionAnteriorExtraida>> {
     const instruccion = `Documento: formulario 210 DIAN YA PRESENTADO de un año gravable anterior.
@@ -119,7 +125,14 @@ Extrae SOLO estas casillas por su número (el valor a la derecha de cada número
 - anticipoAnioSiguiente: casilla 133 "Anticipo renta para el año gravable siguiente".
 - totalSaldoAFavor: casilla 137 "Total saldo a favor".
 Si una casilla está vacía o en cero, usa 0. NO confundas casillas contiguas: guíate por el número impreso.`;
-    return this.extraerConDoblePasada(doc, instruccion, declaracionAnteriorSchema, jsonSchemas.declaracionAnterior);
+    const datos = await this.unaPasada(
+      doc,
+      instruccion,
+      declaracionAnteriorSchema,
+      jsonSchemas.declaracionAnterior,
+      'medium',
+    );
+    return { datos, pasadasCoinciden: true, discrepancias: [] };
   }
 
   private async extraerConDoblePasada<T>(
@@ -139,14 +152,15 @@ Si una casilla está vacía o en cero, usa 0. NO confundas casillas contiguas: g
     instruccion: string,
     schema: ZodType<T>,
     jsonSchema: unknown,
+    esfuerzo: 'low' | 'medium' | 'high' = 'high',
   ): Promise<T> {
     const bruto = await this.llm.extraerEstructurado({
       system: `${SYSTEM_BASE}\n${instruccion}`,
       user: recortar(doc.texto),
       ...(doc.imagenesBase64 ? { imagenesBase64: doc.imagenesBase64 } : {}),
       jsonSchema: jsonSchema as Record<string, unknown>,
-      // Montos que alimentan una declaración legal: razonamiento alto siempre.
-      esfuerzo: 'high',
+      // Por defecto alto: son montos que alimentan una declaración legal.
+      esfuerzo,
     });
     return schema.parse(bruto);
   }

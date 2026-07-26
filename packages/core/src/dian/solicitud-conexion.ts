@@ -111,11 +111,12 @@ function contrasenaValida(contrasena: string): boolean {
   return contrasena.length >= LARGO_MINIMO_CONTRASENA && contrasena.length <= LARGO_MAXIMO_CONTRASENA;
 }
 
-function primerError(datos: Normalizado): string | null {
+function primerError(datos: Normalizado, sinContrasena: boolean): string | null {
   if (!largoDocumentoValido(datos.numeroDocumento)) {
     return 'Revisa tu número de documento';
   }
-  if (!contrasenaValida(datos.contrasena)) {
+  // Con un acceso ya guardado la contraseña no viaja: la abre el worker.
+  if (!sinContrasena && !contrasenaValida(datos.contrasena)) {
     return 'Revisa tu contraseña';
   }
   if (!TIPOS.includes(datos.tipoDocumento as TipoDocumentoDian)) {
@@ -144,9 +145,10 @@ function aSolicitud(datos: Normalizado, anioActual: number): SolicitudConexionDi
 export function validarSolicitudConexion(
   cuerpo: CuerpoConexion,
   anioActual: number,
+  hayAccesoGuardado = false,
 ): ResultadoValidacion {
   const datos = normalizar(cuerpo, anioActual);
-  const error = primerError(datos);
+  const error = primerError(datos, hayAccesoGuardado);
   if (error !== null) {
     return { valida: false, error };
   }

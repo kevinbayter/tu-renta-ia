@@ -31,14 +31,15 @@ export async function descargarReporteExogena(
   alProgresar?: (p: ProgresoConexion) => void,
 ): Promise<ResultadoDescarga> {
   alProgresar?.({ etapa: 'descargando', mensaje: 'Descargando el reporte' });
+  let pasoFallido = 'iniciar la consulta';
   const descarga = await Promise.all([
     pagina.waitForEvent('download', { timeout: esperaMs }),
-    irAConsultaExogena(pagina, anioGravable, esperaMs),
+    irAConsultaExogena(pagina, anioGravable, esperaMs, (paso) => (pasoFallido = paso)),
   ])
     .then(([d]) => d)
     .catch(() => null);
   if (!descarga) {
-    return fallo('estructura_cambiada', 'No encontramos la opción de exógena en el portal');
+    return fallo('estructura_cambiada', `El portal cambió al ${pasoFallido}`);
   }
   return archivoDe(descarga);
 }
@@ -52,12 +53,22 @@ export async function descargarReporteExogena(
  * year `selectOption`: requiring visibility is the only net that catches
  * someone removing the accept-terms step.
  */
-async function irAConsultaExogena(pagina: Page, anioGravable: number, esperaMs: number): Promise<void> {
+async function irAConsultaExogena(
+  pagina: Page,
+  anioGravable: number,
+  esperaMs: number,
+  alIniciarPaso: (paso: string) => void,
+): Promise<void> {
+  alIniciarPaso('abrir la consulta de exógena');
   await pagina.getByRole('link', { name: EXOGENA.enlace }).first().click({ timeout: esperaMs });
+  alIniciarPaso('aceptar las condiciones');
   await pagina.locator(EXOGENA.aceptarCondiciones).click({ timeout: esperaMs, force: true });
+  alIniciarPaso(`elegir el año ${String(anioGravable)}`);
   await pagina.locator(EXOGENA.anio).selectOption(String(anioGravable), { timeout: esperaMs });
+  alIniciarPaso('generar el reporte');
   await pagina.locator(EXOGENA.generar).click({ timeout: esperaMs, force: true });
   await pagina.waitForLoadState('networkidle', { timeout: esperaMs }).catch(() => null);
+  alIniciarPaso('descargar el archivo');
   await dispararDescarga(pagina);
 }
 

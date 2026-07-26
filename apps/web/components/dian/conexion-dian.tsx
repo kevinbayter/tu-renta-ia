@@ -3,6 +3,8 @@
 import { CheckCircle2, Loader2, Lock, ShieldCheck, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import type { ReactNode } from 'react';
+
 import { AvisoTransparencia } from './aviso-transparencia';
 import { FormularioCredenciales } from './formulario-credenciales';
 import { PanelAutorizacion } from './panel-autorizacion';
@@ -37,6 +39,23 @@ const OPERACIONES: Record<
   },
 };
 
+/** Con acceso guardado no se vuelve a pedir la contraseña: ya la tiene el worker. */
+function useAccesoGuardado(titular: string): boolean {
+  const [guardado, setGuardado] = useState(false);
+  useEffect(() => {
+    consultarAccesos()
+      .then((accesos) => setGuardado(accesos.includes(titular)))
+      .catch(() => setGuardado(false));
+  }, [titular]);
+  return guardado;
+}
+
+async function consultarAccesos(): Promise<string[]> {
+  const respuesta = await fetch('/api/dian/acceso');
+  const cuerpo = (await respuesta.json()) as { accesos?: { titularIdentificacion: string }[] };
+  return (cuerpo.accesos ?? []).map((a) => a.titularIdentificacion);
+}
+
 interface RespuestaApi {
   nombreArchivo?: string;
   contenidoBase64?: string;
@@ -66,6 +85,7 @@ export function ConexionDian({
   const [etapa, setEtapa] = useState<EtapaConexion>('iniciando');
   const [error, setError] = useState('');
   const [recordar, setRecordar] = useState(false);
+  const yaGuardado = useAccesoGuardado(titular);
   const config = OPERACIONES[operacion];
   const alcances: AlcanceAutorizacion[] = recordar
     ? [config.alcance, 'recordar_acceso']
@@ -94,25 +114,25 @@ export function ConexionDian({
     setFase(cuerpo?.motivoFallo === 'sin_declaracion' ? 'sin_dato' : 'error');
   };
 
+  /** Con acceso guardado no se vuelve a pedir la contraseña: ya la tiene el worker. */
+  const autorizar = () => {
+    if (yaGuardado) {
+      void conectar({ tipoDocumento: 'CC', numeroDocumento: titular, contrasena: '' });
+      return;
+    }
+    setFase('credenciales');
+  };
+
   // Cerrar a media sesión dejaría un navegador abierto contra el portal.
   const cerrable = fase !== 'progreso';
 
   return (
-    <div
-      className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4"
-      role="dialog"
-      aria-modal
-      aria-labelledby="titulo-conexion-dian"
-      onKeyDown={(e) => {
-        if (e.key === 'Escape' && cerrable) {
-          alCerrar();
-        }
-      }}
-    >
+    <Dialogo cerrable={cerrable} alCerrar={alCerrar}>
       <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-card shadow-2xl">
         <Encabezado config={config} alCerrar={alCerrar} cerrable={cerrable} />
         <div className="px-6 pb-6">
           <CuerpoSegunFase
+            alAutorizar={autorizar}
             fase={fase}
             etapa={etapa}
             error={error}
@@ -126,6 +146,32 @@ export function ConexionDian({
           />
         </div>
       </div>
+    </Dialogo>
+  );
+}
+
+function Dialogo({
+  cerrable,
+  alCerrar,
+  children,
+}: {
+  cerrable: boolean;
+  alCerrar: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4"
+      role="dialog"
+      aria-modal
+      aria-labelledby="titulo-conexion-dian"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' && cerrable) {
+          alCerrar();
+        }
+      }}
+    >
+      {children}
     </div>
   );
 }
@@ -138,6 +184,7 @@ interface PropsCuerpo {
   alcances: AlcanceAutorizacion[];
   recordar: boolean;
   alCambiarRecordar: (valor: boolean) => void;
+  alAutorizar: () => void;
   alIrA: (fase: Fase) => void;
   alConectar: (credenciales: Credenciales) => void;
   alCerrar: () => void;
@@ -152,7 +199,7 @@ function CuerpoSegunFase(props: PropsCuerpo) {
         alcances={props.alcances}
         recordar={props.recordar}
         alCambiarRecordar={props.alCambiarRecordar}
-        alAceptar={() => alIrA('credenciales')}
+        alAceptar={props.alAutorizar}
         alCancelar={alCerrar}
       />
     );

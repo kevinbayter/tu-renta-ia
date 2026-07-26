@@ -2,7 +2,8 @@ import { estadoDeFallo, mensajeDeFallo } from '@turenta/core';
 import { NextResponse } from 'next/server';
 
 import { descargarDeLaDian } from './descarga';
-import { huellaDe, leerSolicitud } from './peticion';
+import { accesoDe } from './acceso-guardado';
+import { huellaDe, leerCuerpo, titularDelCuerpo, validarSolicitud } from './peticion';
 import { leerSesion } from '@/server/sesion';
 
 import type { Operacion } from './descarga';
@@ -20,7 +21,10 @@ export async function atenderDescarga(
   if (!sesion) {
     return respuesta({ mensaje: 'Debes iniciar sesión' }, 401);
   }
-  const validacion = await leerSolicitud(request);
+  const cuerpo = await leerCuerpo(request);
+  // Con un acceso ya guardado no hace falta que la contraseña viaje otra vez.
+  const acceso = await accesoDe(sesion.usuarioId, titularDelCuerpo(cuerpo));
+  const validacion = validarSolicitud(cuerpo, acceso.cifrado !== undefined);
   if (!validacion.valida) {
     return respuesta({ mensaje: validacion.error }, 400);
   }

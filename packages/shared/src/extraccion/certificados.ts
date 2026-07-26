@@ -74,6 +74,10 @@ export const declaracionAnteriorSchema = z.strictObject({
   tipoDocumento: z.literal('declaracion_anterior'),
   /** Año gravable de ESA declaración (no el que se está preparando). */
   anioGravable: z.number().int(),
+  /** Casilla 29: patrimonio bruto. Sirve para comprobar que la 31 se leyó bien. */
+  patrimonioBruto: z.number().int(),
+  /** Casilla 30: deudas. Con la 29 verifica la 31 sin creerle al modelo. */
+  deudas: z.number().int(),
   /** Casilla 31: patrimonio líquido (base de la comparación patrimonial, art. 236). */
   patrimonioLiquido: z.number().int(),
   /** Casilla 126: impuesto neto de renta. */

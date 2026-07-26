@@ -119,7 +119,12 @@ async function conVision(
     return { texto };
   }
   const imagenesBase64 = await renderizarPdf(contenido, totalPaginas).catch(() => []);
-  return imagenesBase64.length > 0 ? { texto, imagenesBase64 } : { texto };
+  if (imagenesBase64.length === 0) {
+    return { texto };
+  }
+  // Con la imagen delante, el texto plano de este formulario es ruido: llega
+  // aplanado y con las cifras fuera de sus casillas, y contamina la lectura.
+  return { texto: 'Formulario 210 adjunto como imagen.', imagenesBase64 };
 }
 
 async function extraerCertificado(

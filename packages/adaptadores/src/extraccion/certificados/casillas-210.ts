@@ -8,6 +8,8 @@
 
 /** Boxes we need, by number and by the label printed next to them. */
 const CASILLAS = {
+  patrimonioBruto: { numero: 29, etiqueta: /total patrimonio bruto/i },
+  deudas: { numero: 30, etiqueta: /^deudas/i },
   patrimonioLiquido: { numero: 31, etiqueta: /total patrimonio l[ií]quido/i },
   impuestoNetoRenta: { numero: 126, etiqueta: /impuesto neto de renta/i },
   anticipoAnioSiguiente: { numero: 133, etiqueta: /anticipo.*a[ñn]o gravable siguiente/i },
@@ -16,6 +18,8 @@ const CASILLAS = {
 
 export interface CasillasDeclaracion {
   anioGravable: number;
+  patrimonioBruto: number;
+  deudas: number;
   patrimonioLiquido: number;
   impuestoNetoRenta: number;
   anticipoAnioSiguiente: number;
@@ -73,6 +77,8 @@ export function extraerCasillas210(texto: string): CasillasDeclaracion | null {
   }
   return {
     anioGravable,
+    patrimonioBruto: valorDe(texto, CASILLAS.patrimonioBruto) ?? 0,
+    deudas: valorDe(texto, CASILLAS.deudas) ?? 0,
     patrimonioLiquido,
     impuestoNetoRenta: valorDe(texto, CASILLAS.impuestoNetoRenta) ?? 0,
     anticipoAnioSiguiente: valorDe(texto, CASILLAS.anticipoAnioSiguiente) ?? 0,

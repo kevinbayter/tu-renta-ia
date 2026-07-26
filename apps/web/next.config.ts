@@ -16,6 +16,9 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: monorepoRoot,
   // Servidor autocontenido para la imagen Docker (Dokploy): copia solo lo necesario.
   output: 'standalone',
+  // El canvas de napi trae un binario nativo que el empaquetador no puede
+  // meter en un chunk: se resuelve en tiempo de ejecución, no en el build.
+  serverExternalPackages: ['@napi-rs/canvas'],
   turbopack: {
     root: monorepoRoot,
   },

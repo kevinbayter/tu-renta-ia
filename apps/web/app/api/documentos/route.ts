@@ -1,4 +1,4 @@
-import { extraerTextoPdf, parsearExogena } from '@turenta/adaptadores';
+import { extraerTextoPdf, parsearExogena, renderizarPdf } from '@turenta/adaptadores';
 import { NextResponse } from 'next/server';
 
 import { completarTarea, consultarTarea, crearTarea, fallarTarea } from '@/server/documentos/tareas';
@@ -96,11 +96,30 @@ async function procesarArchivo(
   if (esExcel(nombre)) {
     return { tipo: 'exogena', exogena: parsearExogena(contenido) };
   }
-  const { texto, esEscaneado } = await extraerTextoPdf(contenido);
+  const { texto, esEscaneado, totalPaginas } = await extraerTextoPdf(contenido);
   if (esEscaneado) {
     throw new Error('Este PDF parece escaneado. Por ahora solo soportamos PDFs con texto (visión llega pronto).');
   }
-  return extraerCertificado(obtenerExtractor(), { texto }, tipoConocido);
+  const doc = await conVision(contenido, texto, totalPaginas, tipoConocido);
+  return extraerCertificado(obtenerExtractor(), doc, tipoConocido);
+}
+
+/**
+ * El 210 se lee muchísimo mejor viendo la página: su texto plano llega con las
+ * etiquetas separadas de las cifras y el modelo tenía que rehacer el formulario
+ * de cabeza. Medido contra una declaración real: de minutos a segundos.
+ */
+async function conVision(
+  contenido: Uint8Array,
+  texto: string,
+  totalPaginas: number,
+  tipoConocido: TipoConocido | null,
+): Promise<DocumentoFuente> {
+  if (tipoConocido !== 'declaracion_anterior') {
+    return { texto };
+  }
+  const imagenesBase64 = await renderizarPdf(contenido, totalPaginas).catch(() => []);
+  return imagenesBase64.length > 0 ? { texto, imagenesBase64 } : { texto };
 }
 
 async function extraerCertificado(

@@ -41,6 +41,11 @@ COPY --from=build --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
 # Plantilla oficial del formulario 210 que usa el generador de borradores.
 COPY --from=build --chown=nextjs:nodejs /app/packages/adaptadores/plantillas ./packages/adaptadores/plantillas
 
+# El canvas nativo se resuelve en ejecución (serverExternalPackages), así que el
+# trazado del standalone no lo copia. Se instala plano, como el resto de binarios.
+RUN npm install --no-save --omit=dev @napi-rs/canvas@1.0.2 \
+    && chown -R nextjs:nodejs /app/node_modules
+
 USER nextjs
 EXPOSE 3000
 CMD ["node", "apps/web/server.js"]

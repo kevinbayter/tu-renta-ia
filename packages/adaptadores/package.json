@@ -23,6 +23,7 @@
     "test:navegador": "vitest run --config vitest.navegador.config.ts"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^1.0.2",
     "@prisma/adapter-pg": "^7.9.0",
     "@prisma/client": "^7.9.0",
     "@turenta/core": "workspace:*",

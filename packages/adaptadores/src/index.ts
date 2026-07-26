@@ -3,6 +3,7 @@ export { OpenAiCompatibleLlmAdapter, type LlmProviderConfig } from './llm/openai
 export { crearLlmDesdeEnv } from './llm/crear-llm';
 export { parsearExogena } from './extraccion/exogena/parser-exogena';
 export { extraerTextoPdf, type TextoPdf } from './extraccion/pdf/extraer-texto';
+export { renderizarPdf } from './extraccion/pdf/renderizar-pdf';
 export { ExtractorCertificados } from './extraccion/certificados/extractor-certificados';
 export { generarResumenElegante, type DatosDeclarante } from './generacion/resumen/resumen-elegante';
 export { generarBorradorCompleto } from './generacion/borrador-completo';

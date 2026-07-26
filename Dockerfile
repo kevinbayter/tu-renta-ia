@@ -43,7 +43,12 @@ COPY --from=build --chown=nextjs:nodejs /app/packages/adaptadores/plantillas ./p
 
 # El canvas nativo se resuelve en ejecución (serverExternalPackages), así que el
 # trazado del standalone no lo copia. Se instala plano, como el resto de binarios.
-RUN npm install --no-save --omit=dev @napi-rs/canvas@1.0.2 \
+#
+# Y las fuentes NO son opcionales: sin ellas el canvas dibuja la página del PDF
+# pero sin una sola letra, así que el modelo recibía un formulario en blanco y
+# respondía ceros. Alpine no trae ninguna de serie.
+RUN apk add --no-cache fontconfig ttf-dejavu ttf-liberation \
+    && npm install --no-save --omit=dev @napi-rs/canvas@1.0.2 \
     && chown -R nextjs:nodejs /app/node_modules
 
 USER nextjs

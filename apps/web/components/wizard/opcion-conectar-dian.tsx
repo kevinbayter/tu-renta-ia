@@ -1,6 +1,6 @@
 'use client';
 
-import { Download, Info, Loader2, ShieldCheck, Zap } from 'lucide-react';
+import { Info, Loader2, ShieldCheck, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { ANIO_GRAVABLE, registrarDocumentoDian, useSubidas } from './pipeline-documentos';
@@ -39,7 +39,6 @@ export function OpcionConectarDian({
 }) {
   const [abierto, setAbierto] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
-  const [descargada, setDescargada] = useState(false);
   const habilitada = useConexionHabilitada();
   const leyendo = useSubidas((s) => s.enCurso > 0);
   const leyendoAparte = useSubidas((s) => s.enSegundoPlano > 0);
@@ -60,35 +59,35 @@ export function OpcionConectarDian({
     return null;
   }
 
-  // La declaración se entrega al usuario en vez de procesarse aquí: así el
-  // archivo queda en su equipo y entra por la misma vía que una subida a mano,
-  // sin depender de convertir el PDF a imagen en el servidor.
-  const soloDescargar = operacion === 'declaracion';
+  // La declaración anterior es opcional y sus cifras no se necesitan hasta
+  // Revisión: se lee en segundo plano para no retener al usuario en el paso 1.
+  const enSegundoPlano = operacion === 'declaracion';
 
   const completar = (resultado: ResultadoConexion) => {
     setAbierto(false);
-    if (soloDescargar) {
-      descargarAlEquipo(resultado);
-      setDescargada(true);
-      return Promise.resolve();
+    const lectura = registrarDocumentoDian(
+      resultado.nombreArchivo,
+      resultado.contenidoBase64,
+      enSegundoPlano ? 'declaracion_anterior' : undefined,
+      enSegundoPlano,
+    ).then((registrado) => {
+      const error = 'error' in registrado ? registrado.error : null;
+      setAviso(error);
+      alTerminar?.(error);
+    });
+    if (!enSegundoPlano) {
+      return lectura;
     }
-    return registrarDocumentoDian(resultado.nombreArchivo, resultado.contenidoBase64).then(
-      (registrado) => {
-        const error = 'error' in registrado ? registrado.error : null;
-        setAviso(error);
-        alTerminar?.(error);
-      },
-    );
+    return Promise.resolve();
   };
 
   return (
     <>
       <Tarjeta operacion={operacion} alAbrir={() => setAbierto(true)} ocupado={leyendo || leyendoAparte} />
-      {descargada && <ListaParaSubir />}
       {leyendoAparte && (
         <p className="mt-2 flex items-center gap-2 text-xs text-texto-suave" role="status">
           <Loader2 size={13} className="animate-spin text-primario" aria-hidden />
-          Estamos leyendo tu documento. Puedes seguir con los siguientes pasos.
+          Estamos leyendo tu declaración. Puedes seguir con los siguientes pasos: los datos entrarán solos.
         </p>
       )}
       {aviso !== null && (
@@ -116,10 +115,9 @@ const TEXTOS: Record<OperacionDian, { titulo: string; detalle: string; boton: st
     boton: 'Conectar con la DIAN',
   },
   declaracion: {
-    titulo: 'Descarga tu declaración del año pasado',
-    detalle:
-      'La bajamos de tu cuenta de la DIAN y te la guardamos en el equipo. Después la subes aquí abajo, como cualquier PDF.',
-    boton: 'Descargar mi última declaración',
+    titulo: 'Trae tu declaración del año pasado',
+    detalle: 'La bajamos directo de tu cuenta para cuadrar tu patrimonio y tu anticipo. No guardamos tu contraseña.',
+    boton: 'Traer mi última declaración',
   },
 };
 
@@ -165,26 +163,5 @@ function NoDisponibleParaTerceros() {
         sube los documentos aquí abajo: nunca te pediremos la contraseña de la DIAN de un tercero.
       </p>
     </div>
-  );
-}
-
-/** Entrega el PDF al equipo del usuario: queda suyo y lo sube cuando quiera. */
-function descargarAlEquipo(resultado: ResultadoConexion): void {
-  const binario = Uint8Array.from(atob(resultado.contenidoBase64), (c) => c.charCodeAt(0));
-  const url = URL.createObjectURL(new Blob([binario], { type: 'application/pdf' }));
-  const enlace = document.createElement('a');
-  enlace.href = url;
-  enlace.download = resultado.nombreArchivo;
-  enlace.click();
-  URL.revokeObjectURL(url);
-}
-
-function ListaParaSubir() {
-  return (
-    <p className="mt-2 flex items-start gap-2 rounded-xl bg-exito-suave px-3 py-2.5 text-xs leading-relaxed text-exito" role="status">
-      <Download size={13} className="mt-0.5 shrink-0" aria-hidden />
-      Descargada en tu equipo. Ahora súbela con el botón <strong>Subir PDF</strong> de aquí arriba y leemos
-      tus datos.
-    </p>
   );
 }

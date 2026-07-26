@@ -11,6 +11,35 @@ cargarEnvRaiz();
 // presión de memoria y caídas con exit 143 (SIGTERM). Fijar el monorepo real.
 const monorepoRoot = join(__dirname, '../..');
 
+/**
+ * No external origins are loaded (next/font self-hosts, all fetches are
+ * same-origin or server-side), so the CSP can stay tight. 'unsafe-inline' is
+ * kept for scripts/styles because Next injects inline hydration and Tailwind
+ * inline styles, and without middleware there is no nonce to replace it.
+ */
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  'upgrade-insecure-requests',
+].join('; ');
+
+const CABECERAS_SEGURIDAD = [
+  { key: 'Content-Security-Policy', value: CSP },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=()' },
+];
+
 const nextConfig: NextConfig = {
   transpilePackages: ['@turenta/motor-fiscal', '@turenta/core', '@turenta/adaptadores', '@turenta/shared'],
   outputFileTracingRoot: monorepoRoot,
@@ -21,6 +50,9 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['@napi-rs/canvas'],
   turbopack: {
     root: monorepoRoot,
+  },
+  async headers() {
+    return [{ source: '/:path*', headers: CABECERAS_SEGURIDAD }];
   },
 };
 

@@ -17,6 +17,11 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (!email || !EMAIL_REGEX.test(email)) {
     return NextResponse.json({ error: 'Correo inválido' }, { status: 400 });
   }
+  // Per-address cap so nobody can flood a victim's inbox (or burn the email
+  // quota) from rotating IPs. Answer 200 regardless to avoid leaking the limit.
+  if (!permitir(`otp-email:${email.trim().toLowerCase()}`, 4, 60 * 60 * 1000)) {
+    return NextResponse.json({ ok: true });
+  }
   const usuario = await obtenerRepositorio().upsertUsuario(email);
   const codigo = String(randomInt(100000, 1000000));
   const expiraEn = new Date(Date.now() + VIGENCIA_MINUTOS * 60 * 1000);

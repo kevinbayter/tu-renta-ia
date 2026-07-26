@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { completarTarea, consultarTarea, crearTarea, fallarTarea } from '@/server/documentos/tareas';
 
 import { obtenerExtractor, obtenerRepositorio } from '@/server/composicion';
+import { permitir } from '@/server/rate-limit';
 import { leerSesion } from '@/server/sesion';
 
 import type { ExtractorCertificados } from '@turenta/adaptadores';
@@ -11,30 +12,50 @@ import type { DocumentoFuente } from '@turenta/core';
 
 export const maxDuration = 300;
 
+/** A tax certificate or return PDF is comfortably under this; larger uploads
+ * only serve to exhaust memory since the file is read whole into a buffer. */
+const TAMANO_MAXIMO_BYTES = 15 * 1024 * 1024;
+
 /**
  * Recibe el archivo y responde de inmediato con un identificador: leerlo puede
  * tardar más de lo que el proxy aguanta con la petición abierta. El resultado
  * se consulta con GET.
  */
 export async function POST(request: Request): Promise<NextResponse> {
+  const sesion = await leerSesion();
+  if (!sesion) {
+    return NextResponse.json({ error: 'No has iniciado sesión' }, { status: 401 });
+  }
+  // Processing runs the model (vision for the 210): cap it per user so an
+  // account cannot be scripted to burn tokens or pin CPU/memory.
+  if (!permitir(`documentos:${sesion.usuarioId}`, 20, 60_000)) {
+    return NextResponse.json({ error: 'Vas muy rápido, espera un momento.' }, { status: 429 });
+  }
   const formData = await request.formData();
   const archivo = formData.get('archivo');
   if (!(archivo instanceof File)) {
     return NextResponse.json({ error: 'Falta el archivo' }, { status: 400 });
   }
+  if (archivo.size > TAMANO_MAXIMO_BYTES) {
+    return NextResponse.json({ error: 'El archivo supera el máximo de 15 MB' }, { status: 413 });
+  }
   const contenido = new Uint8Array(await archivo.arrayBuffer());
   // Lo traído de la DIAN ya viene identificado: clasificarlo otra vez con el
   // modelo duplicaba el tiempo sin aportar nada.
   const tipoConocido = tipoValido(formData.get('tipoConocido'));
-  const tareaId = crearTarea();
-  void procesarEnSegundoPlano(tareaId, archivo.name, contenido, tipoConocido);
+  const tareaId = crearTarea(sesion.usuarioId);
+  void procesarEnSegundoPlano(sesion.usuarioId, tareaId, archivo.name, contenido, tipoConocido);
   return NextResponse.json({ tareaId }, { status: 202 });
 }
 
 /** Consulta del resultado. El cliente pregunta hasta que deja de estar en curso. */
-export function GET(request: Request): NextResponse {
+export async function GET(request: Request): Promise<NextResponse> {
+  const sesion = await leerSesion();
+  if (!sesion) {
+    return NextResponse.json({ error: 'No has iniciado sesión' }, { status: 401 });
+  }
   const id = new URL(request.url).searchParams.get('tarea') ?? '';
-  const tarea = consultarTarea(id);
+  const tarea = consultarTarea(id, sesion.usuarioId);
   if (!tarea) {
     return NextResponse.json({ error: 'La lectura del documento caducó' }, { status: 404 });
   }
@@ -48,6 +69,7 @@ export function GET(request: Request): NextResponse {
 }
 
 async function procesarEnSegundoPlano(
+  usuarioId: string,
   tareaId: string,
   nombre: string,
   contenido: Uint8Array,
@@ -55,26 +77,22 @@ async function procesarEnSegundoPlano(
 ): Promise<void> {
   try {
     const cuerpo = await procesarArchivo(nombre, contenido, tipoConocido);
-    await registrarProcesado(nombre, cuerpo);
+    await registrarProcesado(usuarioId, nombre, cuerpo);
     completarTarea(tareaId, cuerpo);
   } catch (error) {
     fallarTarea(tareaId, error instanceof Error ? error.message : 'Error procesando el documento');
   }
 }
 
-/** Deja huella en la actividad del usuario (si hay sesión); nunca rompe el flujo. */
-async function registrarProcesado(nombreArchivo: string, cuerpo: unknown): Promise<void> {
-  const sesion = await leerSesion().catch(() => null);
-  if (!sesion) {
-    return;
-  }
+/** Deja huella en la actividad del usuario; nunca rompe el flujo. */
+async function registrarProcesado(usuarioId: string, nombreArchivo: string, cuerpo: unknown): Promise<void> {
   const tipo = (cuerpo as { tipo?: string }).tipo ?? 'otro';
   const evento =
     tipo === 'exogena'
       ? { tipo: 'exogena_importada', descripcion: `Información exógena importada — ${nombreArchivo}` }
       : { tipo: 'documento_procesado', descripcion: `Documento procesado (${tipo}) — ${nombreArchivo}` };
   await obtenerRepositorio()
-    .registrarActividad(sesion.usuarioId, evento)
+    .registrarActividad(usuarioId, evento)
     .catch(() => null);
 }
 

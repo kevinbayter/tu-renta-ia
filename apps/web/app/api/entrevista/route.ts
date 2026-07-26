@@ -2,6 +2,8 @@ import { jsonSchemaTurnoEntrevista, turnoEntrevistaSchema } from '@turenta/share
 import { NextResponse } from 'next/server';
 
 import { obtenerLlm } from '@/server/composicion';
+import { permitir } from '@/server/rate-limit';
+import { leerSesion } from '@/server/sesion';
 
 import type { RespuestasEntrevista } from '@turenta/core';
 import type { TurnoEntrevista } from '@turenta/shared';
@@ -16,7 +18,19 @@ interface CuerpoEntrevista {
 
 /** Un turno de la entrevista: el LLM conversa y captura datos estructurados a la vez. */
 export async function POST(request: Request): Promise<NextResponse> {
-  const cuerpo = (await request.json()) as CuerpoEntrevista;
+  const sesion = await leerSesion();
+  if (!sesion) {
+    return NextResponse.json({ error: 'No has iniciado sesión' }, { status: 401 });
+  }
+  // Each turn calls the model: without a per-user cap an authenticated account
+  // could still be scripted to burn tokens.
+  if (!permitir(`entrevista:${sesion.usuarioId}`, 40, 60_000)) {
+    return NextResponse.json({ error: 'Vas muy rápido, espera un momento.' }, { status: 429 });
+  }
+  const cuerpo = (await request.json().catch(() => null)) as CuerpoEntrevista | null;
+  if (!cuerpo) {
+    return NextResponse.json({ error: 'Petición inválida' }, { status: 400 });
+  }
   try {
     const turno = await ejecutarTurno(cuerpo);
     return NextResponse.json(turno);

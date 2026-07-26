@@ -44,7 +44,15 @@ export class RepositorioPrisma implements RepositorioPort {
   }
 
   async guardarOtp(usuarioId: string, codigoHash: string, expiraEn: Date): Promise<void> {
-    await this.prisma.codigoOtp.create({ data: { usuarioId, codigoHash, expiraEn } });
+    // Invalidate any prior unused code so at most one is ever live: otherwise a
+    // resend leaves several valid codes, widening a brute-force window.
+    await this.prisma.$transaction([
+      this.prisma.codigoOtp.updateMany({
+        where: { usuarioId, usadoEn: null },
+        data: { usadoEn: new Date() },
+      }),
+      this.prisma.codigoOtp.create({ data: { usuarioId, codigoHash, expiraEn } }),
+    ]);
   }
 
   async consumirOtp(usuarioId: string, codigoHash: string, ahora: Date): Promise<boolean> {

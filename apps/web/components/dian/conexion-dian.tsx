@@ -32,8 +32,8 @@ const OPERACIONES: Record<
   declaracion: {
     ruta: '/api/dian/declaracion',
     alcance: 'leer_declaraciones',
-    titulo: 'Traer mi última declaración',
-    subtitulo: 'La que ya presentaste, directo de la DIAN',
+    titulo: 'Descargar mi última declaración',
+    subtitulo: 'La que ya presentaste, directo de tu cuenta',
   },
 };
 
@@ -113,6 +113,7 @@ export function ConexionDian({
         <Encabezado config={config} alCerrar={alCerrar} cerrable={cerrable} />
         <div className="px-6 pb-6">
           <CuerpoSegunFase
+            operacion={operacion}
             fase={fase}
             etapa={etapa}
             error={error}
@@ -131,6 +132,7 @@ export function ConexionDian({
 }
 
 interface PropsCuerpo {
+  operacion: OperacionDian;
   fase: Fase;
   etapa: EtapaConexion;
   error: string;
@@ -174,7 +176,7 @@ function CuerpoSegunFase(props: PropsCuerpo) {
   if (fase === 'sin_dato') {
     return <SinDato mensaje={props.error} alCerrar={alCerrar} />;
   }
-  return <Exito />;
+  return <Exito operacion={props.operacion} />;
 }
 
 /** Un cuerpo ilegible dejaría el modal clavado en "progreso": se trata como fallo. */
@@ -276,14 +278,20 @@ function IconoEtapa({ hecha, actual }: { hecha: boolean; actual: boolean }) {
   return <span className="h-[17px] w-[17px] shrink-0 rounded-full border-2 border-borde" aria-hidden />;
 }
 
-function Exito() {
+function Exito({ operacion }: { operacion: OperacionDian }) {
+  const detalle =
+    operacion === 'declaracion'
+      ? 'Quedó guardada en tu equipo. Ahora súbela para leer tus datos.'
+      : 'Tus credenciales ya fueron borradas de nuestra memoria.';
   return (
     <div className="pt-6 text-center">
       <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-exito-suave text-exito" aria-hidden>
         <CheckCircle2 size={28} />
       </span>
-      <p className="mt-3 font-semibold">¡Listo! Tu información llegó</p>
-      <p className="mt-1 text-sm text-texto-suave">Tus credenciales ya fueron borradas de nuestra memoria.</p>
+      <p className="mt-3 font-semibold">
+        {operacion === 'declaracion' ? '¡Listo! Descargamos tu declaración' : '¡Listo! Tu información llegó'}
+      </p>
+      <p className="mt-1 text-sm text-texto-suave">{detalle}</p>
     </div>
   );
 }

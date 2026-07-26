@@ -118,9 +118,11 @@ async function conVision(
   if (tipoConocido !== 'declaracion_anterior') {
     return { texto };
   }
-  const imagenesBase64 = await renderizarPdf(contenido, totalPaginas).catch(() => []);
+  const imagenesBase64 = await renderizarPdf(contenido, totalPaginas);
   if (imagenesBase64.length === 0) {
-    return { texto };
+    // Sin imagen no se puede leer bien este formulario: mejor decirlo que
+    // devolver ceros que parecen datos.
+    throw new Error('No pudimos convertir tu declaración a imagen para leerla. Súbela como PDF de nuevo.');
   }
   // Con la imagen delante, el texto plano de este formulario es ruido: llega
   // aplanado y con las cifras fuera de sus casillas, y contamina la lectura.

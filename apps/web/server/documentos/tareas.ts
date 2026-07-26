@@ -11,6 +11,7 @@ const VIDA_MS = 15 * 60_000;
 export type EstadoTarea = 'en_curso' | 'listo' | 'error';
 
 export interface Tarea {
+  usuarioId: string;
   estado: EstadoTarea;
   resultado?: unknown;
   error?: string;
@@ -24,24 +25,34 @@ function limpiarCaducadas(ahora: number): void {
   caducadas.forEach(([id]) => tareas.delete(id));
 }
 
-export function crearTarea(ahora = Date.now()): string {
+function actualizar(id: string, cambio: Partial<Tarea>, ahora: number): void {
+  const previa = tareas.get(id);
+  if (!previa) {
+    return;
+  }
+  tareas.set(id, { ...previa, ...cambio, expiraEn: ahora + VIDA_MS });
+}
+
+export function crearTarea(usuarioId: string, ahora = Date.now()): string {
   limpiarCaducadas(ahora);
   const id = crypto.randomUUID();
-  tareas.set(id, { estado: 'en_curso', expiraEn: ahora + VIDA_MS });
+  tareas.set(id, { usuarioId, estado: 'en_curso', expiraEn: ahora + VIDA_MS });
   return id;
 }
 
 export function completarTarea(id: string, resultado: unknown, ahora = Date.now()): void {
-  tareas.set(id, { estado: 'listo', resultado, expiraEn: ahora + VIDA_MS });
+  actualizar(id, { estado: 'listo', resultado }, ahora);
 }
 
 export function fallarTarea(id: string, error: string, ahora = Date.now()): void {
-  tareas.set(id, { estado: 'error', error, expiraEn: ahora + VIDA_MS });
+  actualizar(id, { estado: 'error', error }, ahora);
 }
 
-export function consultarTarea(id: string, ahora = Date.now()): Tarea | null {
+/** Only the owner may read a task: the UUID alone must not grant access to
+ * someone else's extracted tax data if it ever leaks. */
+export function consultarTarea(id: string, usuarioId: string, ahora = Date.now()): Tarea | null {
   const tarea = tareas.get(id);
-  if (!tarea || tarea.expiraEn < ahora) {
+  if (!tarea || tarea.expiraEn < ahora || tarea.usuarioId !== usuarioId) {
     return null;
   }
   return tarea;

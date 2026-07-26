@@ -45,7 +45,8 @@ export async function leerSesion(): Promise<Sesion | null> {
 
 async function verificarToken(token: string): Promise<Sesion | null> {
   try {
-    const { payload } = await jwtVerify(token, clave());
+    // Pin the algorithm: never let a token's own header pick how it is verified.
+    const { payload } = await jwtVerify(token, clave(), { algorithms: ['HS256'] });
     return extraerSesion(payload);
   } catch {
     return null;

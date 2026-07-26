@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { esRaster, tipoImagen } from '@/lib/imagen';
 import { obtenerRepositorio } from '@/server/composicion';
 import { leerSesion } from '@/server/sesion';
 
@@ -26,13 +27,20 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: 'No has iniciado sesión' }, { status: 401 });
   }
   const archivo = (await request.formData()).get('foto');
-  if (!(archivo instanceof File) || !archivo.type.startsWith('image/')) {
+  if (!(archivo instanceof File)) {
     return NextResponse.json({ error: 'Sube una imagen (JPG, PNG o WebP)' }, { status: 400 });
   }
   if (archivo.size > TAMANO_MAXIMO_BYTES) {
     return NextResponse.json({ error: 'La foto debe pesar máximo 200 KB' }, { status: 413 });
   }
-  await obtenerRepositorio().guardarFotoAvatar(sesion.usuarioId, new Uint8Array(await archivo.arrayBuffer()));
+  const bytes = new Uint8Array(await archivo.arrayBuffer());
+  // Trust the bytes, not the client-sent MIME: this rejects an SVG (which can
+  // carry script) declared as image/svg+xml, and anything that is not a real
+  // raster image.
+  if (!esRaster(bytes)) {
+    return NextResponse.json({ error: 'Formato no soportado. Sube JPG, PNG o WebP.' }, { status: 400 });
+  }
+  await obtenerRepositorio().guardarFotoAvatar(sesion.usuarioId, bytes);
   return NextResponse.json({ ok: true });
 }
 
@@ -45,13 +53,3 @@ export async function DELETE(): Promise<NextResponse> {
   return NextResponse.json({ ok: true });
 }
 
-/** Detección por bytes mágicos: suficiente para JPG/PNG/WebP. */
-function tipoImagen(foto: Uint8Array): string {
-  if (foto[0] === 0x89 && foto[1] === 0x50) {
-    return 'image/png';
-  }
-  if (foto[0] === 0xff && foto[1] === 0xd8) {
-    return 'image/jpeg';
-  }
-  return 'image/webp';
-}

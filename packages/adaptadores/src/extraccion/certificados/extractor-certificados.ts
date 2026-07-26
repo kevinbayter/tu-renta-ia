@@ -117,22 +117,35 @@ Extrae cada amparo/contrato como un elemento del arreglo con su valor pagado y v
   private async extraerDeclaracionConModelo(
     doc: DocumentoFuente,
   ): Promise<ResultadoExtraccion<DeclaracionAnteriorExtraida>> {
-    const instruccion = `Documento: formulario 210 DIAN YA PRESENTADO de un año gravable anterior.
-Extrae SOLO estas casillas por su número (el valor a la derecha de cada número de casilla):
-- anioGravable: el año gravable de ESTA declaración (encabezado, "Año" — NO el año de presentación).
-- patrimonioLiquido: casilla 31 "Total patrimonio líquido".
-- impuestoNetoRenta: casilla 126 "Impuesto neto de renta".
-- anticipoAnioSiguiente: casilla 133 "Anticipo renta para el año gravable siguiente".
-- totalSaldoAFavor: casilla 137 "Total saldo a favor".
-Si una casilla está vacía o en cero, usa 0. NO confundas casillas contiguas: guíate por el número impreso.`;
     const datos = await this.unaPasada(
       doc,
-      instruccion,
+      INSTRUCCION_210,
       declaracionAnteriorSchema,
       jsonSchemas.declaracionAnterior,
       'medium',
     );
-    return { datos, pasadasCoinciden: true, discrepancias: [] };
+    if (patrimonioCuadra(datos)) {
+      return { datos, pasadasCoinciden: true, discrepancias: [] };
+    }
+    return this.reintentarDeclaracion(doc);
+  }
+
+  /**
+   * Confundir una casilla con su vecina es el fallo clásico en un formulario
+   * tan denso: si la aritmética no cuadra, se reintenta con más cuidado.
+   */
+  private async reintentarDeclaracion(
+    doc: DocumentoFuente,
+  ): Promise<ResultadoExtraccion<DeclaracionAnteriorExtraida>> {
+    const datos = await this.unaPasada(
+      doc,
+      INSTRUCCION_210,
+      declaracionAnteriorSchema,
+      jsonSchemas.declaracionAnterior,
+      'high',
+    );
+    const cuadra = patrimonioCuadra(datos);
+    return { datos, pasadasCoinciden: cuadra, discrepancias: cuadra ? [] : ['patrimonioLiquido'] };
   }
 
   private async extraerConDoblePasada<T>(
@@ -164,6 +177,36 @@ Si una casilla está vacía o en cero, usa 0. NO confundas casillas contiguas: g
     });
     return schema.parse(bruto);
   }
+}
+
+/**
+ * Leer el 210 por su imagen: el texto plano llega con las etiquetas separadas
+ * de las cifras. Se piden además las casillas 29 y 30 porque 31 = 29 - 30
+ * permite comprobar la lectura sin creerle al modelo.
+ */
+const INSTRUCCION_210 = `Documento: formulario 210 de la DIAN YA PRESENTADO (declaración de un año anterior).
+
+GUÍATE POR LA ETIQUETA IMPRESA, NO POR EL NÚMERO: la numeración cambia entre años
+(el impuesto neto es la 126 en unos años y la 127 en otros). Los números que se indican
+abajo son solo una pista. Devuelve el valor que aparece junto a cada etiqueta:
+- anioGravable: "Año" del encabezado (el año gravable, NO la fecha de presentación).
+- patrimonioBruto: "Total patrimonio bruto" (~29).
+- deudas: "Deudas" (~30), a la derecha del patrimonio bruto.
+- patrimonioLiquido: "Total patrimonio líquido" (~31), a la derecha de Deudas, MISMA fila.
+- impuestoNetoRenta: "Impuesto neto de renta" (~126/127), bloque "Liquidación privada".
+- anticipoAnioSiguiente: "Anticipo renta para el año gravable siguiente" (~133/134).
+  OJO: NO es "Anticipo renta liquidado año gravable anterior", que está justo encima.
+- totalSaldoAFavor: "Total saldo a favor" (~137/138), última fila. NO es "Total saldo a pagar".
+
+NO tomes el valor de una casilla vecina. Si una casilla está vacía, usa 0.`;
+
+/**
+ * El patrimonio líquido es el bruto menos las deudas, pero NUNCA negativo: con
+ * más deudas que bienes la casilla queda en cero. Comprobarlo detecta que se
+ * haya leído una fila equivocada sin castigar una declaración legítima.
+ */
+function patrimonioCuadra(datos: DeclaracionAnteriorExtraida): boolean {
+  return datos.patrimonioLiquido === Math.max(0, datos.patrimonioBruto - datos.deudas);
 }
 
 const MAXIMO_CARACTERES = 30_000;

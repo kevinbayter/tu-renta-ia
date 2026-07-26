@@ -10,6 +10,8 @@ import { anioGravableDe, extraerCasillas210 } from '../src/extraccion/certificad
 const CON_ETIQUETAS = `
 DIAN Declaración de Renta y Complementarios Personas Naturales
 Año 2024
+29 Total patrimonio bruto 120.000.000
+30 Deudas 8.889.000
 31 Total patrimonio líquido 111.111.000
 126 Impuesto neto de renta 2.222.000
 133 Anticipo renta para el año gravable siguiente 333.000
@@ -29,6 +31,8 @@ describe('lectura determinista del formulario 210', () => {
   it('lee las casillas cuando vienen con su etiqueta', () => {
     expect(extraerCasillas210(CON_ETIQUETAS)).toEqual({
       anioGravable: 2024,
+      patrimonioBruto: 120000000,
+      deudas: 8889000,
       patrimonioLiquido: 111111000,
       impuestoNetoRenta: 2222000,
       anticipoAnioSiguiente: 333000,
@@ -68,5 +72,11 @@ describe('lectura determinista del formulario 210', () => {
     const leido = extraerCasillas210(CON_ETIQUETAS);
     // 111.111.000 son ciento once millones, no ciento once.
     expect(leido?.patrimonioLiquido).toBeGreaterThan(100_000_000);
+  });
+
+  it('las casillas de patrimonio permiten verificar la lectura: 31 = 29 - 30', () => {
+    // Es la comprobación que destapó que el modelo tomaba casillas vecinas.
+    const leido = extraerCasillas210(CON_ETIQUETAS);
+    expect(leido?.patrimonioLiquido).toBe((leido?.patrimonioBruto ?? 0) - (leido?.deudas ?? 0));
   });
 });

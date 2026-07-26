@@ -15,8 +15,14 @@ const MAXIMO_PAGINAS = 3;
 
 const canvasImport = () => import('@napi-rs/canvas');
 
+/**
+ * A fresh copy per call: pdf.js transfers the buffer internally, so reusing the
+ * same bytes fails with "Cannot transfer object of unsupported type" — and that
+ * silently left the model with nothing but the noisy plain text.
+ */
 async function renderizarPagina(contenido: Uint8Array, pagina: number): Promise<string | null> {
-  const imagen = await renderPageAsImage(contenido, pagina, { scale: ESCALA, canvasImport }).catch(
+  const copia = Uint8Array.from(contenido);
+  const imagen = await renderPageAsImage(copia, pagina, { scale: ESCALA, canvasImport }).catch(
     () => null,
   );
   return imagen ? Buffer.from(imagen).toString('base64') : null;

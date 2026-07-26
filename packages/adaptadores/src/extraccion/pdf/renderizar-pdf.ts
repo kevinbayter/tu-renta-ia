@@ -36,5 +36,11 @@ export async function renderizarPdf(contenido: Uint8Array, totalPaginas: number)
   const cuantas = Math.min(totalPaginas, MAXIMO_PAGINAS);
   const paginas = Array.from({ length: cuantas }, (_, i) => i + 1);
   const imagenes = await Promise.all(paginas.map((n) => renderizarPagina(contenido, n)));
-  return imagenes.filter((i): i is string => i !== null);
+  const utiles = imagenes.filter((i): i is string => i !== null);
+  if (utiles.length === 0) {
+    // Tragarse el motivo aquí fue lo que dejó pasar un fallo silencioso: sin
+    // imagen el modelo devolvía ceros que parecían datos buenos.
+    await renderPageAsImage(Uint8Array.from(contenido), 1, { scale: ESCALA, canvasImport });
+  }
+  return utiles;
 }

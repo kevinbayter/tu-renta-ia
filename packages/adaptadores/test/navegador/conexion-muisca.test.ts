@@ -69,7 +69,24 @@ describe('exógena: flujo completo contra el MUISCA falso', () => {
     const indiceDe = (parte: string) => rutas.findIndex((r) => r.includes(parte));
     expect(indiceDe('WebArquitectura')).toBeGreaterThanOrEqual(0);
     expect(indiceDe('WebDashboard')).toBeGreaterThan(indiceDe('WebArquitectura'));
-    expect(indiceDe('/descargar/exogena/')).toBeGreaterThan(indiceDe('WebDashboard'));
+    expect(indiceDe('/descargar/exogena')).toBeGreaterThan(indiceDe('WebDashboard'));
+  });
+
+  it('espera a que el portal registre el año antes de generar el reporte', async () => {
+    // The year is registered by a RichFaces postback, not client-side. Racing
+    // it generated a report with no year: no file and no error either. A slow
+    // portal is the only way to tell waiting apart from getting lucky.
+    const conexion = await conectar('portal_lento');
+    const resultado = await conexion.descargarExogena(credenciales(), contexto(2023));
+    expect(resultado.exito).toBe(true);
+    expect(resultado.nombreArchivo).toBe('reporteExogena2023.xlsx');
+  });
+
+  it('descarga una sola vez: generar ya trae el archivo', async () => {
+    const conexion = await conectar();
+    await conexion.descargarExogena(credenciales(), contexto(2024));
+    const descargas = (servidor?.visitas ?? []).filter((r) => r === '/descargar/exogena');
+    expect(descargas).toHaveLength(1);
   });
 
   it('si la DIAN rechaza las credenciales, lo dice y no inventa otro motivo', async () => {

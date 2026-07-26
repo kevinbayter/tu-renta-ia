@@ -15,7 +15,12 @@ import { DECLARACIONES_FICTICIAS, TITULAR_FICTICIO } from './fixtures/datos-fict
 import type { Server } from 'node:http';
 
 /** Failures that can be forced to check the failure-reason mapping. */
-export type ModoServidor = 'normal' | 'credenciales_malas' | 'sin_declaraciones' | 'portal_cambiado';
+export type ModoServidor =
+  | 'normal'
+  | 'credenciales_malas'
+  | 'sin_declaraciones'
+  | 'portal_cambiado'
+  | 'portal_lento';
 
 export interface MuiscaFalso {
   urlBase: string;
@@ -65,10 +70,53 @@ function responderHtml(respuesta: import('node:http').ServerResponse, html: stri
   respuesta.end(html);
 }
 
+/**
+ * How long the fake portal takes to open its modal and to register the year.
+ * Anything that races these delays is a bug: production did, and downloaded
+ * nothing.
+ */
+const RETARDO_NORMAL_MS = 120;
+const RETARDO_LENTO_MS = 900;
+
+function retardoDe(modo: ModoServidor): number {
+  return modo === 'portal_lento' ? RETARDO_LENTO_MS : RETARDO_NORMAL_MS;
+}
+
 function dashboardSegun(modo: ModoServidor): string {
-  const html = leerFixture('dashboard.html');
+  const html = leerFixture('dashboard.html').replace('__RETARDO__', String(retardoDe(modo)));
   // 'portal_cambiado' simulates DIAN renaming controls: ids stop matching.
   return modo === 'portal_cambiado' ? html.replaceAll('btnExogenaGenerar', 'btnOtroNombre') : html;
+}
+
+/** The chosen year lives in the session, exactly as it does in MUISCA. */
+interface EstadoExogena {
+  anio: string;
+}
+
+/** RichFaces postback: the year only counts once the server has answered. */
+function registrarAnio(
+  estado: EstadoExogena,
+  anio: string,
+  respuesta: import('node:http').ServerResponse,
+  retardoMs: number,
+): void {
+  setTimeout(() => {
+    estado.anio = anio;
+    respuesta.writeHead(200, { 'content-type': 'text/xml' });
+    respuesta.end('<partial-response/>');
+  }, retardoMs);
+}
+
+/**
+ * With no year registered the portal answers with a page instead of a file:
+ * no download event, no error either. That silence is the failure mode this
+ * fixture exists to reproduce.
+ */
+function responderExogena(respuesta: import('node:http').ServerResponse, anio: string): void {
+  if (anio === '') {
+    return responderHtml(respuesta, '<p>Seleccione un año</p>');
+  }
+  responderArchivo(respuesta, `reporteExogena${anio}.xlsx`, `exogena-ficticia-${anio}`);
 }
 
 function declaracionesSegun(modo: ModoServidor): typeof DECLARACIONES_FICTICIAS | [] {
@@ -78,6 +126,7 @@ function declaracionesSegun(modo: ModoServidor): typeof DECLARACIONES_FICTICIAS 
  
 export async function levantarMuiscaFalso(modo: ModoServidor = 'normal'): Promise<MuiscaFalso> {
   const visitas: string[] = [];
+  const estado: EstadoExogena = { anio: '' };
 
   const servidor = createServer((peticion, respuesta) => {
     const ruta = (peticion.url ?? '').split('?')[0] ?? '';
@@ -94,6 +143,11 @@ export async function levantarMuiscaFalso(modo: ModoServidor = 'normal'): Promis
         respuesta.end(JSON.stringify({ ok, mensaje: ok ? '' : 'Las credenciales no coinciden' }));
       });
     }
+    if (ruta.startsWith('/WebDashboard') && peticion.method === 'POST') {
+      return void cuerpoDe(peticion).then((anio) =>
+        registrarAnio(estado, anio, respuesta, retardoDe(modo)),
+      );
+    }
     if (ruta.startsWith('/WebDashboard')) {
       return responderHtml(respuesta, dashboardSegun(modo));
     }
@@ -104,9 +158,8 @@ export async function levantarMuiscaFalso(modo: ModoServidor = 'normal'): Promis
       respuesta.writeHead(200, { 'content-type': 'application/json' });
       return respuesta.end(JSON.stringify(declaracionesSegun(modo)));
     }
-    if (ruta.startsWith('/descargar/exogena/')) {
-      const anio = ruta.split('/').pop() ?? '';
-      return responderArchivo(respuesta, `reporteExogena${anio}.xlsx`, `exogena-ficticia-${anio}`);
+    if (ruta === '/descargar/exogena') {
+      return responderExogena(respuesta, estado.anio);
     }
     if (ruta.startsWith('/descargar/declaracion/')) {
       const formulario = ruta.split('/').pop() ?? '';

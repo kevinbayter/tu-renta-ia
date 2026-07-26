@@ -19,18 +19,11 @@
         height: 600px;
         background: #ccc;
       }
-      /* Exógena panel controls: present in the DOM from the start but hidden
-         until the terms are accepted (research §2.1.2). */
+      /* Exógena controls are in the DOM from the very first paint, sized 0x0,
+         just like the live portal. Only the modal reveals them (research
+         §2.1.2), so clicking early hits something invisible. */
       .oculto {
         display: none;
-      }
-      /* The download link is empty and 0x0: no coordinate click is possible,
-         only firing its onclick programmatically. */
-      #vistaPrueba\:frmPrueba\:lnkDescargarReporteExogena {
-        display: inline-block;
-        width: 0;
-        height: 0;
-        overflow: hidden;
       }
     </style>
   </head>
@@ -53,15 +46,23 @@
                nobody hardcoded the real prefix. -->
           <a href="#" id="enlaceExogena">Consultar información Exógena Información Reportada por terceros</a>
 
-          <!-- Faithful to the live portal: another panel (electronic invoices)
-               carries controls whose ids end the same way. Without this, the
-               selectors look unique when they are not. -->
-          <div id="panelFacturas">
-            <input type="image" id="vistaFE:frmFE:btnBuscar" src="/img/aceptar.png" alt="Buscar facturas" />
-            <select id="vistaFE:frmFE:anioSel"><option value="">Seleccione</option></select>
+          <!-- Faithful to the live portal: the electronic invoices panel sits on
+               the same form with sibling controls named btnBuscarFE / anioSelFE.
+               They must NOT collide with the exógena suffixes, so the adapter
+               can drop `.first()` and let any real collision fail loudly. -->
+          <div id="vistaPrueba:frmPrueba:aniosFEPanelContentDiv">
+            <input
+              type="image"
+              id="vistaPrueba:frmPrueba:btnBuscarFE"
+              src="/img/aceptar.png"
+              alt="Buscar facturas"
+            />
+            <select id="vistaPrueba:frmPrueba:anioSelFE">
+              <option value="">Seleccione</option>
+            </select>
           </div>
 
-          <div id="vistaPrueba:frmPrueba:aniosPanelContentDiv">
+          <div id="vistaPrueba:frmPrueba:aniosPanelContentDiv" class="oculto">
             <p>CONDICIONES ACEPTACION INFORMACION REPORTADA POR TERCEROS</p>
             <input
               type="image"
@@ -85,37 +86,44 @@
               src="/img/generar.png"
               alt="Generar"
             />
-
-            <a href="#" id="vistaPrueba:frmPrueba:lnkDescargarReporteExogena" class="oculto"></a>
           </div>
         </td>
       </tr>
     </table>
 
     <script>
+      const RETARDO_MS = __RETARDO__;
       const id = (valor) => document.getElementById(valor);
+      const panel = id('vistaPrueba:frmPrueba:aniosPanelContentDiv');
       const anioSel = id('vistaPrueba:frmPrueba:anioSel');
       const generar = id('vistaPrueba:frmPrueba:btnExogenaGenerar');
-      const descargar = id('vistaPrueba:frmPrueba:lnkDescargarReporteExogena');
 
-      // Accepting the terms reveals year, generate and download - not before.
+      // The modal opens over AJAX. Clicking its buttons before it lands is what
+      // broke production, so this delay is the whole point of the fixture.
+      id('enlaceExogena').addEventListener('click', (evento) => {
+        evento.preventDefault();
+        setTimeout(() => panel.classList.remove('oculto'), RETARDO_MS);
+      });
+
+      // Accepting the terms is pure client-side jQuery on the real portal:
+      // consReporteExogena() just shows the selection panel, no round trip.
       id('vistaPrueba:frmPrueba:btnBuscar').addEventListener('click', (evento) => {
         evento.preventDefault();
-        [anioSel, generar, descargar].forEach((el) => el.classList.remove('oculto'));
+        [anioSel, generar].forEach((el) => el.classList.remove('oculto'));
       });
 
-      let generado = false;
+      // The year is registered SERVER-side through a RichFaces postback. Until
+      // that lands the report has no year, so generating early downloads
+      // nothing at all — no error, no file.
+      anioSel.addEventListener('change', () => {
+        fetch('/WebDashboard/DefDashboard.faces', { method: 'POST', body: anioSel.value });
+      });
+
+      // Generating downloads the file by itself; there is no separate link to
+      // click. The year travels in the session, never in this URL.
       generar.addEventListener('click', (evento) => {
         evento.preventDefault();
-        generado = true;
-      });
-
-      // The download carries the chosen year in its name, so tests can check
-      // selectOption really applied instead of merely not throwing.
-      descargar.addEventListener('click', (evento) => {
-        evento.preventDefault();
-        if (!generado || !anioSel.value) return;
-        window.location.href = `/descargar/exogena/${anioSel.value}`;
+        window.location.href = '/descargar/exogena';
       });
     </script>
   </body>

@@ -1,6 +1,6 @@
 /**
  * Downloading the third-party report (exógena) from the JSF dashboard.
- * Structure verified against the live portal on 2026-07-25:
+ * Flow verified against the live portal on 2026-07-26:
  * research/07-automatizacion-dian-analisis-2026.md §2.1.2
  */
 
@@ -9,24 +9,26 @@ import type { ProgresoConexion, ResultadoDescarga } from '@turenta/core';
 import { fallo } from './motivos-fallo';
 import { archivoDe } from './sesion-muisca';
 
-import type { Page } from 'playwright';
+import type { Locator, Page, Response } from 'playwright';
 
 /**
- * Ids anchored by suffix: the JSF prefix varies between portal views.
- *
- * Everything is scoped to the exógena modal. The dashboard holds other panels
- * —electronic invoices among them— whose controls end with the same suffixes,
- * and an unscoped selector matched several at once: Playwright then fails
- * instantly with a strict mode violation instead of clicking anything.
+ * Ids anchored by suffix: the JSF prefix varies between portal views. Each one
+ * matches a single control —the electronic invoices panel next to it uses
+ * `btnBuscarFE` and `anioSelFE`— so there is no `.first()` here: a future
+ * collision must fail loudly instead of driving the wrong panel.
  */
 const EXOGENA = {
   enlace: /Consultar informaci[oó]n Ex[oó]gena|Informaci[oó]n Reportada por terceros/i,
-  panel: '[id$="aniosPanelContentDiv"]',
   aceptarCondiciones: '[id$="btnBuscar"]',
   anio: '[id$="anioSel"]',
   generar: '[id$="btnExogenaGenerar"]',
-  descargar: '[id$="lnkDescargarReporteExogena"]',
 } as const;
+
+/** Where RichFaces (A4J) posts back; the chosen year is registered there. */
+const POSTBACK = /DefDashboard\.faces/i;
+
+/** Own budget: a portal that stops posting back must not eat the whole wait. */
+const ESPERA_POSTBACK_MS = 15_000;
 
 /**
  * MUISCA's internals change without notice, so any failure here reports
@@ -53,13 +55,10 @@ export async function descargarReporteExogena(
 }
 
 /**
- * Real portal flow: the dashboard link opens a modal with the terms of use;
- * "btnBuscar" accepts them and reveals the year selector, the generate button
- * and the download link. The file arrives as `reporteExogena<year>.xlsx`.
- *
- * Buttons are `input[type=image]`, hence the forced click. Do NOT force the
- * year `selectOption`: requiring visibility is the only net that catches
- * someone removing the accept-terms step.
+ * Real portal flow: the dashboard link opens a modal with the terms of use,
+ * "btnBuscar" reveals the year selector and the generate button, and generating
+ * downloads `reporteExogena<year>.xlsx` on its own. The panel's download link
+ * only repeats the same request, so it is deliberately left alone.
  */
 async function irAConsultaExogena(
   pagina: Page,
@@ -69,22 +68,46 @@ async function irAConsultaExogena(
 ): Promise<void> {
   alIniciarPaso('abrir la consulta de exógena');
   await pagina.getByRole('link', { name: EXOGENA.enlace }).first().click({ timeout: esperaMs });
-  const panel = pagina.locator(EXOGENA.panel).first();
   alIniciarPaso('aceptar las condiciones');
-  await panel.locator(EXOGENA.aceptarCondiciones).first().click({ timeout: esperaMs, force: true });
+  await pulsar(pagina, EXOGENA.aceptarCondiciones, esperaMs);
   alIniciarPaso(`elegir el año ${String(anioGravable)}`);
-  await panel.locator(EXOGENA.anio).first().selectOption(String(anioGravable), { timeout: esperaMs });
+  await elegirAnio(pagina, anioGravable, esperaMs);
   alIniciarPaso('generar el reporte');
-  await panel.locator(EXOGENA.generar).first().click({ timeout: esperaMs, force: true });
-  await pagina.waitForLoadState('networkidle', { timeout: esperaMs }).catch(() => null);
-  alIniciarPaso('descargar el archivo');
-  await dispararDescarga(pagina);
+  await pulsar(pagina, EXOGENA.generar, esperaMs);
 }
 
-/** The download link is empty and 0x0 px: no coordinate click, only its onclick. */
-function dispararDescarga(pagina: Page): Promise<void> {
-  return pagina.evaluate(
-    (selector) => document.querySelector<HTMLElement>(selector)?.click(),
-    EXOGENA.descargar as string,
-  );
+/**
+ * The modal opens asynchronously and its controls sit in the DOM, sized 0x0,
+ * before it lands. Clicking then fails with "Element is not visible", and
+ * `force` does not save it: Playwright still has to scroll the element into
+ * view. Waiting for each control is what makes every step reliable.
+ */
+async function enPantalla(pagina: Page, selector: string, esperaMs: number): Promise<Locator> {
+  const control = pagina.locator(selector);
+  await control.waitFor({ state: 'visible', timeout: esperaMs });
+  return control;
+}
+
+async function pulsar(pagina: Page, selector: string, esperaMs: number): Promise<void> {
+  const control = await enPantalla(pagina, selector, esperaMs);
+  await control.click({ timeout: esperaMs });
+}
+
+/**
+ * Picking the year fires an A4J postback that registers it server-side.
+ * Generating before that round trip lands produces no file at all: no error
+ * message, just an empty wait. That is how this failed in production.
+ */
+async function elegirAnio(pagina: Page, anioGravable: number, esperaMs: number): Promise<void> {
+  const control = await enPantalla(pagina, EXOGENA.anio, esperaMs);
+  await Promise.all([
+    esperarPostback(pagina, esperaMs),
+    control.selectOption(String(anioGravable), { timeout: esperaMs }),
+  ]);
+}
+
+function esperarPostback(pagina: Page, esperaMs: number): Promise<Response | null> {
+  const esPostback = (r: Response) => r.request().method() === 'POST' && POSTBACK.test(r.url());
+  const espera = Math.min(esperaMs, ESPERA_POSTBACK_MS);
+  return pagina.waitForResponse(esPostback, { timeout: espera }).catch(() => null);
 }

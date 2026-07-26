@@ -20,6 +20,8 @@ import type {
   DeclaracionAnteriorExtraida,
 } from '@turenta/shared';
 
+import { extraerCasillas210 } from './casillas-210';
+
 import type { ZodType } from 'zod';
 
 const SYSTEM_BASE = `Eres un extractor de datos de documentos tributarios colombianos.
@@ -92,7 +94,23 @@ Extrae cada amparo/contrato como un elemento del arreglo con su valor pagado y v
     );
   }
 
+  /**
+   * El 210 trae las cifras en casillas numeradas fijas, así que primero se
+   * intenta leerlas sin modelo: instantáneo, gratis y sin riesgo de que se
+   * invente un número. El modelo solo entra si el formato no se reconoce.
+   */
   extraerDeclaracionAnterior(doc: DocumentoFuente): Promise<ResultadoExtraccion<DeclaracionAnteriorExtraida>> {
+    const directas = extraerCasillas210(doc.texto);
+    if (directas) {
+      const datos: DeclaracionAnteriorExtraida = { tipoDocumento: 'declaracion_anterior', ...directas };
+      return Promise.resolve({ datos, pasadasCoinciden: true, discrepancias: [] });
+    }
+    return this.extraerDeclaracionConModelo(doc);
+  }
+
+  private extraerDeclaracionConModelo(
+    doc: DocumentoFuente,
+  ): Promise<ResultadoExtraccion<DeclaracionAnteriorExtraida>> {
     const instruccion = `Documento: formulario 210 DIAN YA PRESENTADO de un año gravable anterior.
 Extrae SOLO estas casillas por su número (el valor a la derecha de cada número de casilla):
 - anioGravable: el año gravable de ESTA declaración (encabezado, "Año" — NO el año de presentación).

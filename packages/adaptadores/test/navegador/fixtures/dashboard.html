@@ -53,7 +53,15 @@
                nobody hardcoded the real prefix. -->
           <a href="#" id="enlaceExogena">Consultar información Exógena Información Reportada por terceros</a>
 
-          <div id="panelExogena">
+          <!-- Faithful to the live portal: another panel (electronic invoices)
+               carries controls whose ids end the same way. Without this, the
+               selectors look unique when they are not. -->
+          <div id="panelFacturas">
+            <input type="image" id="vistaFE:frmFE:btnBuscar" src="/img/aceptar.png" alt="Buscar facturas" />
+            <select id="vistaFE:frmFE:anioSel"><option value="">Seleccione</option></select>
+          </div>
+
+          <div id="vistaPrueba:frmPrueba:aniosPanelContentDiv">
             <p>CONDICIONES ACEPTACION INFORMACION REPORTADA POR TERCEROS</p>
             <input
               type="image"

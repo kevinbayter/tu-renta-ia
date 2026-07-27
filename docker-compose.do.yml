@@ -40,6 +40,10 @@ services:
       WORKER_DIAN_TOKEN: ${WORKER_DIAN_TOKEN}
     expose:
       - '3000'
+    # Published only on loopback: the origin is reachable exclusively through the
+    # Cloudflare tunnel (cloudflared -> localhost:80), never from the public IP.
+    ports:
+      - '127.0.0.1:80:3000'
     depends_on:
       postgres:
         condition: service_healthy

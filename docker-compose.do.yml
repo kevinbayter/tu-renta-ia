@@ -1,0 +1,71 @@
+# Self-contained production stack for a single host (DigitalOcean via Dokploy):
+# Postgres + web + DIAN worker on one internal network. Unlike
+# docker-compose.prod.yml (which assumes an external database), this file also
+# runs Postgres with a persistent volume, so the whole platform lives on one VM.
+# Secrets come from the environment (Dokploy injects them); nothing is hardcoded.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - turenta_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [turenta]
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      AUTH_SECRET: ${AUTH_SECRET}
+      LLM_API_KEY: ${OPENCODE_API_KEY}
+      OPENCODE_API_KEY: ${OPENCODE_API_KEY}
+      LLM_BASE_URL: ${LLM_BASE_URL}
+      LLM_MODEL: ${LLM_MODEL}
+      LLM_REASONING_EFFORT: ${LLM_REASONING_EFFORT}
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS}
+      EMAIL_FROM_NOMBRE: ${EMAIL_FROM_NOMBRE}
+      WORKER_DIAN_URL: http://worker-dian:8080
+      WORKER_DIAN_TOKEN: ${WORKER_DIAN_TOKEN}
+    expose:
+      - '3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [turenta]
+
+  worker-dian:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker-dian
+    restart: unless-stopped
+    environment:
+      WORKER_DIAN_TOKEN: ${WORKER_DIAN_TOKEN}
+      WORKER_DIAN_CONCURRENCIA: '2'
+      DIAN_CRED_KEY: ${DIAN_CRED_KEY}
+    networks: [turenta]
+    # Chromium allocates in bursts; cap it so a spike cannot take the database
+    # on the same host down with it.
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    shm_size: 512mb
+
+networks:
+  turenta:
+    driver: bridge
+
+volumes:
+  turenta_pgdata:

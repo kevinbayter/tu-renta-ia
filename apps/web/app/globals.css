@@ -305,3 +305,28 @@ body {
     stroke-dashoffset: 0;
   }
 }
+
+/* Mascota TuRenta: flotación + giro sutil en Y para dar sensación 3D, con una
+   sombra que aporta profundidad. Es el mismo asset (/mascota.png) donde aparezca. */
+.mascota-3d {
+  transform-style: preserve-3d;
+  will-change: transform;
+  filter: drop-shadow(0 16px 18px rgba(15, 23, 42, 0.18));
+  animation: mascota-flotar 4.5s ease-in-out infinite;
+}
+
+@keyframes mascota-flotar {
+  0%,
+  100% {
+    transform: perspective(720px) translateY(0) rotateY(-7deg) rotateZ(-0.6deg);
+  }
+  50% {
+    transform: perspective(720px) translateY(-13px) rotateY(7deg) rotateZ(0.6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascota-3d {
+    animation: none;
+  }
+}

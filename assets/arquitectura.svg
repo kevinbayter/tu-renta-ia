@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 460" width="1280" height="460" role="img" aria-label="Arquitectura hexagonal: dominio puro, puertos y adaptadores">
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1020"/><stop offset="1" stop-color="#101030"/></linearGradient>
+    <radialGradient id="core" cx="0.5" cy="0.4" r="0.7"><stop offset="0" stop-color="#123"/><stop offset="1" stop-color="#0c1330"/></radialGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#818cf8"/></linearGradient>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L8 4.5 L0 9 z" fill="#5b6bb0"/></marker>
+  </defs>
+  <rect width="1280" height="460" rx="20" fill="url(#bg3)"/>
+  <rect x="1" y="1" width="1278" height="458" rx="19" fill="none" stroke="#2a3566" stroke-width="1.5" opacity="0.5"/>
+  <text x="40" y="46" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="20" font-weight="800" fill="#e5e7eb">Arquitectura hexagonal <tspan fill="#64748b" font-weight="400" font-size="15">· las dependencias apuntan al dominio</tspan></text>
+
+  <g transform="translate(640 250)">
+    <!-- pulse -->
+    <polygon points="0,-150 130,-75 130,75 0,150 -130,75 -130,-75" fill="none" stroke="#2dd4bf" stroke-width="1.5" opacity="0">
+      <animateTransform attributeName="transform" type="scale" values="0.9;1.25" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0" dur="4s" repeatCount="indefinite"/>
+    </polygon>
+    <!-- ports hexagon -->
+    <polygon points="0,-150 130,-75 130,75 0,150 -130,75 -130,-75" fill="url(#core)" stroke="url(#edge)" stroke-width="2.5"/>
+    <text x="0" y="-108" text-anchor="middle" font-family="'JetBrains Mono',Consolas,monospace" font-size="13" fill="#93c5fd">@turenta/core · puertos</text>
+    <!-- domain hexagon -->
+    <polygon points="0,-78 68,-39 68,39 0,78 -68,39 -68,-39" fill="#0e1a3a" stroke="#2dd4bf" stroke-width="2"/>
+    <text x="0" y="-6" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="15" font-weight="800" fill="#a7f3d0">motor-fiscal</text>
+    <text x="0" y="16" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" fill="#7f8fb8">dominio puro · 0 deps</text>
+    <text x="0" y="40" text-anchor="middle" font-family="'JetBrains Mono',Consolas,monospace" font-size="11" fill="#6b7bb0">Form. 210</text>
+  </g>
+
+  <!-- adapters (docked around) with inward arrows -->
+  <g font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="13" fill="#cbd5e1">
+    <!-- web (driver) left-top -->
+    <g transform="translate(150 120)">
+      <rect width="196" height="52" rx="10" fill="#131a30" stroke="#60a5fa" stroke-width="1.5"/>
+      <text x="16" y="22" font-weight="700" fill="#bfdbfe">apps/web</text>
+      <text x="16" y="40" font-size="11.5" fill="#8595bd">Next.js · API routes (entrada)</text>
+    </g>
+    <path d="M352 150 C 430 165, 470 185, 505 200" fill="none" stroke="#5b6bb0" stroke-width="1.8" marker-end="url(#arw)"/>
+
+    <!-- worker-dian left-bottom -->
+    <g transform="translate(150 300)">
+      <rect width="196" height="52" rx="10" fill="#131a30" stroke="#818cf8" stroke-width="1.5"/>
+      <text x="16" y="22" font-weight="700" fill="#c7d2fe">apps/worker-dian</text>
+      <text x="16" y="40" font-size="11.5" fill="#8595bd">Playwright · MUISCA</text>
+    </g>
+    <path d="M352 326 C 440 320, 480 320, 508 315" fill="none" stroke="#5b6bb0" stroke-width="1.8" marker-end="url(#arw)"/>
+
+    <!-- adaptadores right-top -->
+    <g transform="translate(934 120)">
+      <rect width="212" height="52" rx="10" fill="#131a30" stroke="#2dd4bf" stroke-width="1.5"/>
+      <text x="16" y="22" font-weight="700" fill="#a7f3d0">@turenta/adaptadores</text>
+      <text x="16" y="40" font-size="11.5" fill="#8595bd">LLM · parsers · Prisma · storage</text>
+    </g>
+    <path d="M932 150 C 850 168, 800 185, 772 200" fill="none" stroke="#5b6bb0" stroke-width="1.8" marker-end="url(#arw)"/>
+
+    <!-- shared right-bottom -->
+    <g transform="translate(934 300)">
+      <rect width="212" height="52" rx="10" fill="#131a30" stroke="#334166" stroke-width="1.5"/>
+      <text x="16" y="22" font-weight="700" fill="#cbd5e1">@turenta/shared</text>
+      <text x="16" y="40" font-size="11.5" fill="#8595bd">tipos · utilidades</text>
+    </g>
+    <path d="M932 326 C 850 322, 810 320, 772 315" fill="none" stroke="#5b6bb0" stroke-width="1.8" marker-end="url(#arw)"/>
+  </g>
+
+  <text x="640" y="440" text-anchor="middle" font-family="'JetBrains Mono',Consolas,monospace" font-size="12" fill="#64748b">fronteras impuestas por ESLint (import/no-restricted-paths) + tests de arquitectura</text>
+</svg>

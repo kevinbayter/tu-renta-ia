@@ -3,7 +3,7 @@ import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
 
 /**
- * Reglas estrictas del proyecto adaptadas a React (base: un proyecto interno).
+ * Reglas estrictas del proyecto adaptadas a React.
  * Nota: en React el JSX vive dentro de la función del componente (a diferencia
  * de Angular, donde el template es un archivo aparte), por eso el límite de
  * líneas por función es mayor en .tsx (80) manteniendo 25 para lógica pura .ts.

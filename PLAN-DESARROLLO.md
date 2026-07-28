@@ -1,6 +1,6 @@
 # Plan de Desarrollo — tu-renta-ai
 
-Plataforma de declaración de renta para personas naturales en Colombia (tipo referencia), con IA para extracción de documentos y entrevista conversacional, y motor de cálculo 100% determinista.
+Plataforma de declaración de renta para personas naturales en Colombia de nivel profesional, con IA para extracción de documentos y entrevista conversacional, y motor de cálculo 100% determinista.
 
 > Base de conocimiento: carpeta [`research/`](research/README.md) (normativa AG2025, exógena, legal, mercado, APIs de IA) y caso de prueba dorado en [`research/00-caso-dorado-ag2025.md`](research/00-caso-dorado-ag2025.md).
 
@@ -26,7 +26,7 @@ Alcance MVP: residentes fiscales, cédula general (trabajo + capital) + patrimon
 | Área                       | Decisión                                                                                   | Justificación                                                                    |
 | -------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
 | Lenguaje                   | **TypeScript estricto** en todo (front, back, motor)                                       | Un solo lenguaje, tipos compartidos con Zod                                      |
-| Framework web              | **Next.js 15 (App Router) + React 19**                                                     | UI moderna tipo referencia, SSR, API routes como adaptador de entrada               |
+| Framework web              | **Next.js 15 (App Router) + React 19**                                                     | UI moderna de nivel profesional, SSR, API routes como adaptador de entrada       |
 | UI                         | **Tailwind CSS 4 + shadcn/ui + Radix**                                                     | Design system moderno, accesible, responsive mobile-first                        |
 | IA                         | **Kimi K3 vía OpenCode Zen** (API compatible OpenAI)                                       | Decisión del usuario; ver §5                                                     |
 | SDK de IA                  | **Vercel AI SDK** (`createOpenAICompatible` + `generateObject`/`streamText` con Zod)       | Structured output validado, streaming de la entrevista, proveedor intercambiable |
@@ -35,7 +35,7 @@ Alcance MVP: residentes fiscales, cédula general (trabajo + capital) + patrimon
 | Monorepo                   | **pnpm workspaces + Turborepo**                                                            | Separa motor puro de la app                                                      |
 | Parsing PDF/Excel          | `pdf-parse`/`unpdf` (texto embebido) + visión Kimi K3 (escaneados); `exceljs` para exógena | Cascada barata→cara (ver research/05 §3)                                         |
 | Testing                    | **Vitest** (unit + golden tests) + Playwright (e2e)                                        | Golden test = caso dorado                                                        |
-| Calidad                    | ESLint flat config estricto (adaptado de un proyecto interno) + Prettier + Husky + lint-staged + CI | Ver §6                                                                           |
+| Calidad                    | ESLint flat config estricto + Prettier + Husky + lint-staged + CI                          | Ver §6                                                                           |
 
 ---
 
@@ -44,7 +44,7 @@ Alcance MVP: residentes fiscales, cédula general (trabajo + capital) + patrimon
 **Recomendación: hexagonal, no "Clean Architecture" completa.** Razones:
 
 - Comparten el principio esencial (dominio puro en el centro, dependencias apuntando hacia adentro), pero Clean agrega ceremonias (interactors, presenters, boundaries por caso de uso) que en un producto de este tamaño solo agregan fricción.
-- Hexagonal es exactamente lo que ya usa y hace cumplir `un proyecto interno` con ESLint (`domain / application / infrastructure` + `import/no-restricted-paths`) — reutilizamos reglas y disciplina ya probadas por ti.
+- Hexagonal con fronteras impuestas por ESLint (`import/no-restricted-paths` + `no-restricted-imports`) sobre `domain / application / infrastructure` — reutilizamos reglas y disciplina ya probadas.
 - El activo más valioso del proyecto es el **motor fiscal**: debe ser un paquete TypeScript **100% puro** (cero dependencias de framework, BD o IA), testeable con el caso dorado, auditable para la garantía legal, y portable (año gravable como parámetro). Hexagonal lo protege con la mínima burocracia.
 
 ### 3.1 Estructura del monorepo
@@ -97,18 +97,18 @@ apps/web  →  packages/core  →  packages/motor-fiscal
 
 ---
 
-## 4. UI/UX — al nivel de referencia o mejor
+## 4. UI/UX — de nivel profesional
 
-Principios (de research/04: qué hace bien referencia y dónde duele):
+Principios (de research/04: qué hacen bien los competidores y dónde duele):
 
 1. **Mobile-first responsive**: la mayoría declara desde el celular. Breakpoints Tailwind estándar; toda pantalla se diseña primero en 390px. Prohibido scroll horizontal; tablas → cards en móvil.
 2. **Un paso a la vez**: wizard con progreso visible (Documentos → Entrevista → Revisión → Borrador). El usuario nunca ve el formulario 210 crudo hasta el final.
 3. **Drag & drop + cámara**: zona de carga que acepta PDF/XLSX/imagen; en móvil, botón "tomar foto del certificado".
 4. **Transparencia que vende**: mostrar en vivo lo extraído de cada documento ("Encontré: salarios $52.926.000 de tu empleador ✓ confírmalo") — el usuario valida cada cifra extraída por IA (human-in-the-loop, además transfiere responsabilidad).
-5. **Resultado explicado**: pantalla final tipo referencia (impuesto/saldo a favor grande y claro) + desglose expandible por cédula + "por qué" en lenguaje simple generado por IA desde el JSON del motor.
+5. **Resultado explicado**: pantalla final de nivel profesional (impuesto/saldo a favor grande y claro) + desglose expandible por cédula + "por qué" en lenguaje simple generado por IA desde el JSON del motor.
 6. **Estados vacíos, carga y error diseñados** desde el día 1 (skeletons, reintentos de extracción, documento ilegible).
 7. Accesibilidad AA (Radix ya ayuda: focus, teclado, contraste).
-8. Design tokens propios (paleta, tipografía) definidos en Fase 0 para no parecer clon de referencia.
+8. Design tokens propios (paleta, tipografía) definidos en Fase 0 para tener identidad propia.
 
 ---
 
@@ -123,11 +123,11 @@ Principios (de research/04: qué hace bien referencia y dónde duele):
 
 ---
 
-## 6. Reglas de desarrollo estrictas (adaptadas de un proyecto interno)
+## 6. Reglas de desarrollo estrictas
 
-Se adopta el eslint de `un proyecto interno` (backend `.eslintrc.cjs` + frontend flat config) adaptado a React/Next:
+Se adopta un ESLint flat config estricto (backend + frontend) adaptado a React/Next:
 
-**Límites de código (idénticos a un proyecto interno):**
+**Límites de código:**
 
 - `max-lines`: 400 por archivo (500 en archivos de config/rutas).
 - `max-lines-per-function`: 25 (30 en componentes React; off en tests).
@@ -138,7 +138,7 @@ Se adopta el eslint de `un proyecto interno` (backend `.eslintrc.cjs` + frontend
 - `import/order` con grupos y alfabético; `eol-last`; `curly` siempre.
 - `@typescript-eslint` con type-checking (`recommendedTypeChecked`); `no-explicit-any` (error en dominio/aplicación, warn en adaptadores); `strict: true` + `noUncheckedIndexedAccess` en tsconfig.
 
-**Arquitectura enforced (patrón un proyecto interno con `import/no-restricted-paths` + `no-restricted-imports`):**
+**Arquitectura enforced (patrón hexagonal con `import/no-restricted-paths` + `no-restricted-imports`):**
 
 - `motor-fiscal` no puede importar de core/adaptadores/web ni libs de infraestructura (prisma, next, ai, exceljs...).
 - `core` no puede importar de adaptadores/web ni frameworks.
@@ -146,7 +146,7 @@ Se adopta el eslint de `un proyecto interno` (backend `.eslintrc.cjs` + frontend
 
 **Proceso:**
 
-- Husky + lint-staged: eslint + typecheck en pre-commit (mismo patrón `lint-staged.config.js` de un proyecto interno).
+- Husky + lint-staged: eslint + typecheck en pre-commit (patrón `lint-staged.config.js`).
 - CI (GitHub Actions): lint → typecheck → tests (golden tests bloqueantes) → build. Sin merge con CI en rojo.
 - Conventional Commits + CHANGELOG.
 - Cobertura mínima: **motor-fiscal 100% de ramas**; core ≥ 90%; adaptadores ≥ 70%.
@@ -174,7 +174,7 @@ Se adopta el eslint de `un proyecto interno` (backend `.eslintrc.cjs` + frontend
 - [ ] Límite global 40%/1.340 UVT + beneficios fuera del límite (72 UVT, 1% factura electrónica).
 - [ ] Tabla art. 241, anticipo (25/50/75%, dos procedimientos), saldo a favor, redondeo art. 577.
 - [ ] Mapeo a casillas del 210 (descargar PDF oficial + instructivo de la DIAN para numeración exacta).
-- [ ] **Golden test**: fixture con los datos del caso dorado → salida idéntica a referencia (los 4 valores del §1 y todas las casillas del borrador de la página 14 del resumen).
+- [ ] **Golden test**: fixture con los datos del caso dorado → salida idéntica al resultado de referencia (los 4 valores del §1 y todas las casillas del borrador de la página 14 del resumen).
 - [ ] Resolver las 6 preguntas abiertas de research/00 (prorrateo dependientes 11 meses, anticipo 75% con promedio, 2.º certificado Salud Prepagada...) documentando cada regla con test propio.
 - **Gate**: golden test verde casilla por casilla + 100% branch coverage del motor.
 
@@ -184,7 +184,7 @@ Se adopta el eslint de `un proyecto interno` (backend `.eslintrc.cjs` + frontend
 - [ ] Extractor 220 y certificados PDF: cascada texto-embebido → visión K3; schemas Zod por tipo de documento; `source_text` + `confidence` por campo; doble pasada en montos con discrepancia → revisión.
 - [ ] Validadores: subtotales suman, retención ≤ ingreso, DV del NIT, conciliación exógena ↔ certificados (2276 ≡ 220) con alertas de faltantes/duplicados.
 - [ ] Persistencia: modelo Prisma (Usuario, Declaracion, Documento, HechoFiscal con origen/trazabilidad).
-- **Gate**: los 6 documentos reales de `/docs` se ingieren y producen el `PerfilFiscal` que alimenta el golden test end-to-end (documentos → motor → resultado referencia).
+- **Gate**: los 6 documentos reales de `/docs` se ingieren y producen el `PerfilFiscal` que alimenta el golden test end-to-end (documentos → motor → resultado de referencia).
 
 ### Fase 3 — Entrevista IA + wizard UI (2-3 semanas)
 
@@ -206,7 +206,7 @@ Se adopta el eslint de `un proyecto interno` (backend `.eslintrc.cjs` + frontend
 - [ ] Auth (email + OTP), rate limiting, cifrado de documentos at-rest, borrado de datos a solicitud (habeas data).
 - [ ] Legal: T&C (checklist research/03 §8: obligación de medio, garantía acotada a error de cálculo, usuario declarante), política de datos Ley 1581, autorización de transmisión internacional, estudio de impacto de privacidad (Circular SIC 002/2024).
 - [ ] Observabilidad: logging estructurado, trazas de extracción (qué modelo, qué confidence), métricas de costo IA por declaración.
-- [ ] Beta cerrada: 5-10 declaraciones reales de conocidos comparadas contra referencia/contador.
+- [ ] Beta cerrada: 5-10 declaraciones reales de conocidos comparadas contra una plataforma de referencia/contador.
 - **Gate**: ≥ 3 declaraciones reales reproducidas correctamente además del caso dorado.
 
 ### Fase 6 — Monetización con Wompi (post-beta)
@@ -215,7 +215,7 @@ Se adopta el eslint de `un proyecto interno` (backend `.eslintrc.cjs` + frontend
 - [ ] Integración **Wompi** (checkout web / widget): crear transacción, redirect/webhook de confirmación, verificación de firma de eventos, estados (pendiente/aprobada/rechazada) persistidos.
 - [ ] Requiere primero Fase 5 (auth + persistencia Postgres) para asociar pagos a declaraciones.
 - [ ] Facturación electrónica de los cobros (obligación DIAN, research/03 §7) e IVA 19% en el precio.
-- [ ] Cupones/planes B2B (modelo referencia para empresas) como segunda ola.
+- [ ] Cupones/planes B2B (modelo de referencia para empresas) como segunda ola.
 
 **Post-MVP (backlog):** cédula de pensiones y dividendos, ganancias ocasionales, activos en el exterior (formato 160), independientes con costos, comparador "sugerida DIAN vs nosotros", conexión DIAN con mandato (research/03 §5 — alto riesgo, fase tardía), multi-año gravable, visión K3 para PDFs escaneados, streaming en el chat de entrevista.
 

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 260" width="1280" height="260" role="img" aria-label="Automatizacion DIAN: credencial cifrada, worker aislado, sesion efimera">
+  <defs>
+    <linearGradient id="bg4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1020"/><stop offset="1" stop-color="#0f1330"/></linearGradient>
+    <linearGradient id="w2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f59e0b"/><stop offset="1" stop-color="#2dd4bf"/></linearGradient>
+    <filter id="g4" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="1280" height="260" rx="20" fill="url(#bg4)"/>
+  <rect x="1" y="1" width="1278" height="258" rx="19" fill="none" stroke="#2a3566" stroke-width="1.5" opacity="0.5"/>
+  <text x="40" y="44" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" font-weight="800" fill="#e5e7eb">Automatización DIAN <tspan fill="#64748b" font-weight="400" font-size="14">· worker aislado, credencial cifrada, sesión efímera</tspan></text>
+
+  <line x1="230" y1="150" x2="1050" y2="150" stroke="#22305a" stroke-width="3"/>
+  <circle r="6" fill="#f59e0b" filter="url(#g4)"><animateMotion path="M230,150 L640,150" dur="2.4s" repeatCount="indefinite"/></circle>
+  <circle r="6" fill="#2dd4bf" filter="url(#g4)"><animateMotion path="M640,150 L1050,150" dur="2.4s" begin="1.2s" repeatCount="indefinite"/></circle>
+
+  <!-- app -->
+  <g transform="translate(150 150)">
+    <circle r="42" fill="#111a33" stroke="#60a5fa" stroke-width="2"/>
+    <g transform="translate(-15 -15)" fill="none" stroke="#bfdbfe" stroke-width="2.3" stroke-linejoin="round"><rect x="0" y="0" width="30" height="22" rx="2.5"/><line x1="0" y1="8" x2="30" y2="8"/></g>
+    <text x="0" y="70" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#e5e7eb">Plataforma</text>
+    <text x="0" y="90" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8595bd">cifra la credencial (AES-256-GCM)</text>
+  </g>
+
+  <!-- lock in transit -->
+  <g transform="translate(420 118)" opacity="0.95">
+    <rect x="-16" y="0" width="32" height="24" rx="4" fill="#1a1330" stroke="#f59e0b" stroke-width="2"/>
+    <path d="M-9 0 v-6 a9 9 0 0 1 18 0 v6" fill="none" stroke="#f59e0b" stroke-width="2"/>
+    <circle cx="0" cy="11" r="3" fill="#fbbf24"/>
+  </g>
+
+  <!-- worker (isolated) -->
+  <g transform="translate(640 150)">
+    <rect x="-58" y="-58" width="116" height="116" rx="14" fill="none" stroke="#334166" stroke-width="1.5" stroke-dasharray="5 5"/>
+    <circle r="42" fill="#111a33" stroke="#f59e0b" stroke-width="2"/>
+    <circle r="42" fill="none" stroke="#f59e0b" stroke-width="2" opacity="0"><animate attributeName="r" values="42;56" dur="2.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.7;0" dur="2.4s" repeatCount="indefinite"/></circle>
+    <g transform="translate(0 -2)" fill="none" stroke="#fcd34d" stroke-width="2.3"><rect x="-14" y="-10" width="28" height="20" rx="3"/><circle cx="-6" cy="0" r="2.4" fill="#fcd34d" stroke="none"/><circle cx="6" cy="0" r="2.4" fill="#fcd34d" stroke="none"/></g>
+    <text x="0" y="78" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#e5e7eb">Worker aislado</text>
+    <text x="0" y="98" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8595bd">Playwright · descifra en memoria</text>
+  </g>
+
+  <!-- MUISCA -->
+  <g transform="translate(1050 150)">
+    <circle r="42" fill="#111a33" stroke="#2dd4bf" stroke-width="2"/>
+    <g transform="translate(0 0)" fill="none" stroke="#a7f3d0" stroke-width="2.3"><circle r="15"/><line x1="-15" y1="0" x2="15" y2="0"/><path d="M0 -15 a20 20 0 0 1 0 30 a20 20 0 0 1 0 -30" /></g>
+    <text x="0" y="70" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#e5e7eb">MUISCA · DIAN</text>
+    <text x="0" y="90" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8595bd">sesión efímera → exógena</text>
+  </g>
+</svg>

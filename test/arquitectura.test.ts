@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Tests de arquitectura (patrón un proyecto interno): verifican con los imports REALES
+ * Tests de arquitectura (patrón hexagonal): verifican con los imports REALES
  * que las capas hexagonales no se mezclen. Complementan las reglas ESLint.
  *
  *   apps/web → core → motor-fiscal   |   adaptadores implementa puertos de core

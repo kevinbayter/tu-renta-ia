@@ -1,4 +1,4 @@
-// Reglas estrictas del proyecto (adaptadas de un proyecto interno).
+// Reglas estrictas del proyecto (ESLint flat config estricto).
 // Cubre packages/*. apps/web tiene su propia config (Next) que extiende estas reglas base.
 import js from '@eslint/js';
 import importPlugin from 'eslint-plugin-import';
@@ -125,7 +125,7 @@ const capaCore = {
   },
 };
 
-// Adaptadores que interactúan con librerías externas poco tipadas (patrón un proyecto interno).
+// Adaptadores que interactúan con librerías externas poco tipadas.
 const capaInfraestructura = {
   files: ['packages/adaptadores/src/**/*.ts'],
   rules: {

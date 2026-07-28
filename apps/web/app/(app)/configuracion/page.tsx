@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { SeccionApariencia } from '@/components/configuracion/seccion-apariencia';
 import { SeccionAvatar } from '@/components/configuracion/seccion-avatar';
 import { SeccionNotificaciones } from '@/components/configuracion/seccion-notificaciones';
 import { DialogoConfirmar } from '@/components/ui/dialogo-confirmar';
@@ -32,6 +33,7 @@ export default function PaginaConfiguracion() {
       <FormularioPerfil inicial={sesion.perfil ?? { nombres: '', apellidos: '', identificacion: '' }} />
       <SeccionAvatar nombre={`${sesion.perfil?.nombres ?? ''} ${sesion.perfil?.apellidos ?? ''}`.trim() || sesion.email} />
       <SeccionNotificaciones />
+      <SeccionApariencia />
       <ZonaPeligro />
     </main>
   );

@@ -28,7 +28,8 @@ jobs:
           ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes root@"$HOST" '
             set -e
             cd /root/turenta
-            git pull --ff-only
+            git fetch origin main
+            git reset --hard origin/main
             docker compose --env-file .env -f docker-compose.do.yml up -d --build
             docker image prune -f
           '

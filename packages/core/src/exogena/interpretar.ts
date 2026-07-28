@@ -3,7 +3,7 @@ import type { ExogenaParseada, FilaExogena, TopesExogena } from './tipos';
 /**
  * Interpretación semántica (pura) de la exógena. La exógena es un CHECKLIST
  * y fuente de topes/saldos históricos; la fuente de verdad de ingresos y
- * retenciones son los certificados que el usuario carga (mismo criterio referencia).
+ * retenciones son los certificados que el usuario carga (mismo criterio de referencia).
  */
 
 export function saldoAFavorAnterior(exogena: ExogenaParseada): number {

@@ -4,7 +4,7 @@
 > puede (a) conectarse a la cuenta DIAN del usuario para **descargar** su exógena y sus
 > declaraciones anteriores, y (b) **presentar** el formulario 210 automáticamente.
 >
-> Actualiza y profundiza [`06-integracion-dian-referencia.md`](06-integracion-dian-referencia.md).
+> Actualiza y profundiza [`06-integracion-dian.md`](06-integracion-dian.md).
 
 ---
 
@@ -28,7 +28,7 @@
    impuestos, anticipos, retenciones, sanciones e intereses" del contribuyente. Es decir:
    si nos constituimos formalmente en mandatarios, la DIAN nos puede cobrar a nosotros.
 
-5. **referencia SÍ automatiza la presentación en su plan self-service.** Verificado: en su
+5. **La plataforma de referencia SÍ automatiza la presentación en su plan self-service.** Verificado: en su
    plan "hazlo tú mismo" —el flujo equivalente al nuestro— _"recibes un borrador, lo revisas
    y si estás de acuerdo, **puedes presentar tu declaración a la DIAN con un clic**"_. En
    paralelo mantiene un plan asistido con 300+ contadores. Es decir: **existe precedente de
@@ -209,11 +209,11 @@ contingente inasumible sin respaldo asegurador.
 
 ## 4. Los tres riesgos que hay que aceptar o mitigar
 
-| Riesgo                                                | Probabilidad | Impacto     | Comentario                                                                                                                        |
-| ----------------------------------------------------- | ------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| **Custodia de credenciales**                          | Media        | **Crítico** | Una brecha expone cuentas DIAN completas: firma, RUT, historial                                                                   |
-| **Interpretación penal** ("por fuera de lo acordado") | Baja         | **Crítico** | Zona gris real, pero con precedente: referencia opera así desde hace años con respaldo de Bancolombia y sin sanción pública conocida |
-| **Rotura del RPA en temporada**                       | **Alta**     | Alto        | El MUISCA cambia sin aviso; falla justo cuando más se usa                                                                         |
+| Riesgo                                                | Probabilidad | Impacto     | Comentario                                                                                                                                             |
+| ----------------------------------------------------- | ------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Custodia de credenciales**                          | Media        | **Crítico** | Una brecha expone cuentas DIAN completas: firma, RUT, historial                                                                                        |
+| **Interpretación penal** ("por fuera de lo acordado") | Baja         | **Crítico** | Zona gris real, pero con precedente: una plataforma de referencia opera así desde hace años con respaldo de Bancolombia y sin sanción pública conocida |
+| **Rotura del RPA en temporada**                       | **Alta**     | Alto        | El MUISCA cambia sin aviso; falla justo cuando más se usa                                                                                              |
 
 ---
 
@@ -225,7 +225,7 @@ La plataforma guarda usuario/contraseña y opera cuando quiera.
 ❌ Máxima exposición: custodia permanente + zona gris penal + responsabilidad reputacional.
 **No recomendado** — y además innecesario: el Modelo B da el mismo resultado sin guardar nada.
 
-### Modelo B — Sesión efímera asistida ("el usuario conduce") ← **el de referencia**
+### Modelo B — Sesión efímera asistida ("el usuario conduce") ← **el de la plataforma de referencia**
 
 El usuario ingresa sus credenciales **en el momento**, en una sesión que vive en memoria y
 se destruye al terminar; ve en vivo lo que ocurre y aprueba cada paso; **nunca se persisten**.
@@ -239,7 +239,7 @@ los datos a diligenciar; las credenciales nunca tocan nuestros servidores.
 ✅ Riesgo de custodia ≈ 0 · ✅ Es _el propio usuario_ accediendo · ❌ Solo escritorio · ❌ Más
 esfuerzo de desarrollo y mantenimiento.
 
-### Modelo D — Asistencia humana con contador (el modelo referencia)
+### Modelo D — Asistencia humana con contador (el modelo de referencia)
 
 Un contador con mandato prepara y presenta.
 ✅ Modelo probado y aceptado · ❌ Responsabilidad solidaria (art. 572-1) · ❌ No escala sin
@@ -294,5 +294,5 @@ el 210 con nuestra guía): es el fallback que garantiza que el servicio nunca de
 - Resolución DIAN 000070 de 2016: https://crconsultorescolombia.com/resolucion-000070-dian-la-se-reglamenta-uso-firma-electronica-los-servicios-informaticos.php
 - Responsabilidad del titular de la firma: https://actualicese.com/archivo/obligaciones-del-representante-legal-frente-al-uso-de-su-firma-electronica-son-inalienables/
 - Circular SIC 2025 sobre fintech y datos personales: https://www.perezllorca.com/es-co/actualidad/boletin/la-sic-expide-nueva-reglamentacion-para-tratar-datos-personales-en-servicios-fintech/
-- Modelo de referencia (expertos humanos): https://www.plataforma de referencia
+- Modelo de la plataforma de referencia (expertos humanos):
 - Servicios digitales DIAN 2026: https://www.dian.gov.co/tramitesservicios/Paginas/declaracionsugerida.aspx

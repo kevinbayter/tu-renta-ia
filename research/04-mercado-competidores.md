@@ -1,32 +1,32 @@
 # Informe de mercado: plataformas de declaración de renta para personas naturales en Colombia
 
-### Foco: referencia (plataforma de referencia) de punta a punta — para replicar/mejorar su modelo
+### Foco: la plataforma líder del mercado de punta a punta — para replicar/mejorar su modelo
 
 ---
 
-## 1. referencia: cómo funciona de punta a punta
+## 1. La plataforma líder: cómo funciona de punta a punta
 
 ### 1.1 Flujo del usuario paso a paso
 
-Fuentes: [plataforma de referencia](https://www.plataforma de referencia), [Centro de ayuda](https://www.plataforma de referencia), [Cómo hacer tu declaración en referencia](https://www.plataforma de referencia), [Cómo redimir un cupón](https://www.plataforma de referencia)
+Fuentes: la plataforma de referencia Centro de ayuda, Cómo hacer tu declaración en la plataforma líder, Cómo redimir un cupón
 
 **Ruta A — "Hazlo tú mismo" (app):**
 
 1. **Crear cuenta** en la plataforma web (web-app, no app nativa).
 2. **Seleccionar y pagar el plan** — el pago ocurre **antes** de preparar la declaración ("Una vez comprado el plan, puedes comenzar el proceso de elaboración").
-3. **Conexión con la DIAN**: el usuario entrega usuario + contraseña Muisca y referencia **descarga automáticamente la exógena** y la precarga clasificada ([exógena en referencia](https://www.plataforma de referencia)).
+3. **Conexión con la DIAN**: el usuario entrega usuario + contraseña Muisca y la plataforma **descarga automáticamente la exógena** y la precarga clasificada (exógena en la plataforma líder).
 4. **Entrevista guiada**: preguntas dinámicas tipo TurboTax que se adaptan al perfil (asalariado, independiente, arrendador, pensionado, inversionista, exterior).
-5. **Carga de certificados**: 220, extractos, RUT, certificados bancarios, pensiones/cesantías, deducciones. Guías por cada tipo de certificado ([ayuda](https://www.plataforma de referencia)).
+5. **Carga de certificados**: 220, extractos, RUT, certificados bancarios, pensiones/cesantías, deducciones. Guías por cada tipo de certificado (ayuda).
 6. **Cálculo automático** con optimización: "mínimo impuesto a pagar legalmente". Listo en 10 min–2 horas.
-7. **Entrega del borrador del 210** + instrucciones; presentación "con un clic" o guías para transcribir en Muisca ([con saldo a pagar](https://www.plataforma de referencia), [sin saldo o a favor](https://www.plataforma de referencia), [extemporánea](https://www.plataforma de referencia)).
+7. **Entrega del borrador del 210** + instrucciones; presentación "con un clic" o guías para transcribir en Muisca (con saldo a pagar, sin saldo o a favor, extemporánea).
 8. **Pago del impuesto**: recibo 490 y guías para pagar en línea o banco.
 9. **Soporte**: chat en vivo y correo con expertos.
 
-**Ruta B — "Hazlo con un experto":** contador certificado por referencia contacta por WhatsApp/videollamada, pide certificados, elabora con el software de referencia, entrega borrador y presenta.
+**Ruta B — "Hazlo con un experto":** contador certificado por la plataforma líder contacta por WhatsApp/videollamada, pide certificados, elabora con el software de la plataforma, entrega borrador y presenta.
 
 ### 1.2 Precios 2025/2026
 
-Fuente: [plataforma de referencia](https://www.plataforma de referencia) (jul-2026). Segmenta por **canal + urgencia**, no por perfil:
+Fuente: la plataforma de referencia (jul-2026). Segmenta por **canal + urgencia**, no por perfil:
 
 | Plan                         | Precio (COP) | Entrega    |
 | ---------------------------- | ------------ | ---------- |
@@ -38,28 +38,28 @@ Fuente: [plataforma de referencia](https://www.plataforma de referencia) (jul-20
 | Experto "Exprés"             | $550.000     | hoy/mañana |
 | Experto telefónico mismo día | $499.000     | inmediato  |
 
-Histórico: antes $99.000/$199.000 (con 20% dcto Bancolombia: $79.200/$159.200) ([FAQ Bancolombia](https://www.grupobancolombia.com/wps/portal/preguntas-frecuentes/preguntas/beneficio-referencia-bancolombia)); prensa 2024: $159.000/$439.000 ([La República](https://www.larepublica.co/finanzas-personales/plataformas-que-lo-ayudan-a-realizar-gestiones-tributarias-4278313)). Subida ~70% en 2 años.
+Histórico: antes $99.000/$199.000 (con 20% dcto Bancolombia: $79.200/$159.200) (FAQ Bancolombia); prensa 2024: $159.000/$439.000 ([La República](https://www.larepublica.co/finanzas-personales/plataformas-que-lo-ayudan-a-realizar-gestiones-tributarias-4278313)). Subida ~70% en 2 años.
 
-Adicional: **recuperación de saldo a favor** — revisión inicial $60.000 no reembolsable + proceso ~1,5 meses ([plataforma de referencia](https://www.plataforma de referencia)).
+Adicional: **recuperación de saldo a favor** — revisión inicial $60.000 no reembolsable + proceso ~1,5 meses (la plataforma de referencia
 
 ### 1.3 Propuesta de valor y garantía
 
 - "Declara en hasta 2 horas, pagando el mínimo impuesto legal, con garantía y sin saber de impuestos". Todos los perfiles.
-- **Garantía**: si la DIAN sanciona por **error de cálculo de referencia**, referencia paga la sanción + acompañamiento ante requerimientos. Condición: información completa y veraz. B2B: "asumimos toda la responsabilidad por sanciones, excepto documentación tardía" ([Garantías referencia-Bancolombia](https://www.grupobancolombia.com/centro-de-ayuda/preguntas-frecuentes/garantia-referencia-en-alianza-con-bancolombia), [referencia para empresas](https://www.plataforma de referencia)).
+- **Garantía**: si la DIAN sanciona por **error de cálculo de la plataforma**, la plataforma paga la sanción + acompañamiento ante requerimientos. Condición: información completa y veraz. B2B: "asumimos toda la responsabilidad por sanciones, excepto documentación tardía" (Garantías de la plataforma líder con Bancolombia, La plataforma líder para empresas).
 
 ### 1.4 Historia, tracción y financiación
 
 - Fundada en **2017** por **Andrés Vélez y Simón González** (Medellín), inspirados en TurboTax ([Forbes Colombia](https://forbes.co/2024/08/23/emprendedores/elaborando-las-declaraciones-de-renta-de-mas-de-300-000-colombianos-esta-startup-genera-todos-sus-ingresos-del-ano-en-tres-meses)).
-- **Y Combinator 2018** ([ycombinator.com/companies/referencia](https://www.ycombinator.com/companies/referencia)); cuarta startup colombiana en YC.
-- Inversión: **~US$3M** de YC, K50 Ventures, brazo VC de **Grupo Bancolombia**, ángeles (Simón Borrero de Rappi, etc.) ([LatamList — US$800K seed](https://latamlist.com/referencia-the-turbotax-for-latin-america-receives-us800k-investment/)).
-- **Volumen**: +300.000 declaraciones/año, ~1,5M usuarios acumulados; meta 2025: 300–350 mil declaraciones, +40% usuarios ([El Colombiano](https://www.elcolombiano.com/negocios/declaracion-de-renta-2025-referencia-romper-record-300-mil-declaraciones-JF28699132), [entrevista COO](https://www.larepublica.co/finanzas/entrevista-a-simon-gonzalez-coo-de-referencia-sobre-la-temporada-de-declaracion-de-renta-4427864)).
+- **Y Combinator 2018** (Y Combinator); cuarta startup colombiana en YC.
+- Inversión: **~US$3M** de YC, K50 Ventures, brazo VC de **Grupo Bancolombia**, ángeles (Simón Borrero de Rappi, etc.) (LatamList — US$800K seed).
+- **Volumen**: +300.000 declaraciones/año, ~1,5M usuarios acumulados; meta 2025: 300–350 mil declaraciones, +40% usuarios (El Colombiano, entrevista COO).
 - **Rentable desde 2023, EBITDA ~35%**; ~50 personas base, ~300 asesores en temporada ([Forbes](https://forbes.co/2024/08/23/emprendedores/elaborando-las-declaraciones-de-renta-de-mas-de-300-000-colombianos-esta-startup-genera-todos-sus-ingresos-del-ano-en-tres-meses)).
 - Dato clave del COO: **~57% de declarantes termina con saldo a favor promedio de $1,8M**.
 
 ### 1.5 B2B y alianzas
 
-- **[referencia para empresas](https://www.plataforma de referencia)**: paquetes por empleados (target 10–200 empleados, salario > $3,56M/mes), cupones; clientes: Scotiabank Colpatria, Bancolombia, Grupo Éxito, Puma Energy, Bavaria, Protección, Uber, Holcim (+30).
-- **Fiduciaria Tres Bancolombia** ([página](https://www.bancolombia.com/pagos/impuestos/referencia)): en 2021 gratis para clientes; hoy cupones + 20% dcto. También **Banco Nacional** ([bbva.com.co](https://www.bbva.com.co/personas/productos/tarjetas/beneficios/referencia.html)), Banco de la ciudad, Comfama ([comfama.com](https://www.comfama.com/finanzas/referencia/)).
+- **La plataforma líder para empresas**: paquetes por empleados (target 10–200 empleados, salario > $3,56M/mes), cupones; clientes: Scotiabank Colpatria, Bancolombia, Grupo Éxito, Puma Energy, Bavaria, Protección, Uber, Holcim (+30).
+- **Fiduciaria Tres Bancolombia** (página): en 2021 gratis para clientes; hoy cupones + 20% dcto. También **Banco Nacional** (bbva.com.co), Banco de la ciudad, Comfama (comfama.com).
 
 ---
 
@@ -93,8 +93,8 @@ No hay evidencia relevante de "Taxia", "Ntábilo", "declarante.com.co" ni "DR Gr
 ## 3. Referentes internacionales y uso real de IA
 
 - **TurboTax / Intuit (USA)**: **Intuit Assist** (GenAI) — checklist personalizado, extracción de datos de documentos, deducciones proactivas explicadas, chequeos en tiempo real ([Intuit](https://investors.intuit.com/news-events/press-releases/detail/1205/intuit-turbotax-adds-new-full-service-and-generative-ai-powered-tax-prep-experiences-for-tax-filing-with-ease-and-complete-confidence), [intuit.com/intuitassist](https://www.intuit.com/intuitassist/)). Con Google Cloud (Doc AI + Gemini): autollenado desde fotos de W-2/1099 ([Google Cloud](https://www.googlecloudpresscorner.com/2025-04-09-Intuit-Further-Simplifies-Tax-Prep-for-Millions-of-TurboTax-Customers-this-Tax-Season-with-Google-Cloud-AI)). 2025-26: plataforma "agentic AI" TurboTax+Credit Karma ([Intuit](https://investors.intuit.com/news-events/press-releases/detail/1279/intuits-all-in-one-agentic-ai-driven-consumer-platform-powers-year-round-money-outcomes-for-those-who-need-it-most)). Escalera: DIY → Live → Full Service.
-- **Taxfix (Alemania)**: flujo chatbot, fotografías el certificado laboral, cuestionario adaptativo, **cálculo del reembolso gratis y pagas solo al presentar** (gratis si reembolso <€50; ~€34.99–39.99 si mayor). +10M declaraciones. "AI-native": reconocimiento de recibos, verificación de deducibilidad, chat IA con expertos ([cómo funciona](https://taxfix.de/en/how-it-works/), [precios](https://taxfix.de/en/costs/)). **Su modelo "paga al final tras ver tu reembolso" es lo contrario de referencia** — palanca de conversión enorme.
-- **april (USA)**: impuestos **embebidos** en fintechs/bancos (Chime, Gusto); IA para pre-llenar, estimación en tiempo real; US$78M, 50+ partners ([getapril.com](https://www.getapril.com/), [Series B $38M](https://fintech.global/2025/07/24/ai-tax-platform-april-raises-38m-to-expand-embedded-services/)). Análogo del modelo referencia-Bancolombia como API.
+- **Taxfix (Alemania)**: flujo chatbot, fotografías el certificado laboral, cuestionario adaptativo, **cálculo del reembolso gratis y pagas solo al presentar** (gratis si reembolso <€50; ~€34.99–39.99 si mayor). +10M declaraciones. "AI-native": reconocimiento de recibos, verificación de deducibilidad, chat IA con expertos ([cómo funciona](https://taxfix.de/en/how-it-works/), [precios](https://taxfix.de/en/costs/)). **Su modelo "paga al final tras ver tu reembolso" es lo contrario de la plataforma líder** — palanca de conversión enorme.
+- **april (USA)**: impuestos **embebidos** en fintechs/bancos (Chime, Gusto); IA para pre-llenar, estimación en tiempo real; US$78M, 50+ partners ([getapril.com](https://www.getapril.com/), [Series B $38M](https://fintech.global/2025/07/24/ai-tax-platform-april-raises-38m-to-expand-embedded-services/)). Análogo del modelo de la plataforma líder con Bancolombia como API.
 - **Column Tax (USA)**: API-first; plan de **automatizar el filing por completo con agentes IA** ([blog](https://www.columntax.com/blog/our-secret-master-plan-to-automate-tax-filing)).
 - **TaxGPT (USA)**: copiloto para **contadores**: agentes que leen W-2/1099/K-1, digitan la declaración, diagnósticos y agente revisor que concilia documentos vs. declaración ([taxgpt.com](https://www.taxgpt.com/), [Accounting Today](https://www.accountingtoday.com/news/taxgpt-touts-ai-that-automatically-completes-returns-from-start-to-finish)).
 - Panorama: [TIME — Can AI do your taxes](https://time.com/6960420/ai-tools-tax-help/).
@@ -105,17 +105,17 @@ No hay evidencia relevante de "Taxia", "Ntábilo", "declarante.com.co" ni "DR Gr
 
 ## 4. Modelo de negocio (síntesis)
 
-- **Pricing**: referencia precio plano por canal+urgencia; referentes cobran por complejidad (TurboTax) o por resultado (Taxfix). Contadores por complejidad ($150K–$3,5M).
-- **Momento de pago**: referencia **cobra antes de preparar y ver el resultado**. Taxfix demuestra que "calcula gratis, paga al presentar" convierte mejor.
+- **Pricing**: la plataforma líder cobra precio plano por canal+urgencia; referentes cobran por complejidad (TurboTax) o por resultado (Taxfix). Contadores por complejidad ($150K–$3,5M).
+- **Momento de pago**: la plataforma líder **cobra antes de preparar y ver el resultado**. Taxfix demuestra que "calcula gratis, paga al presentar" convierte mejor.
 - **Estacionalidad extrema**: 100% de ingresos en ~3 meses (2026: 12-ago→26-oct). Mitigaciones: B2B, saldo a favor, internacionalización.
-- **Adquisición**: (1) alianzas bancarias con cupones; (2) B2B beneficio RR.HH.; (3) SEO/contenido masivo (calculadora "[¿debo declarar?](https://www.plataforma de referencia)", guías); (4) cajas de compensación.
+- **Adquisición**: (1) alianzas bancarias con cupones; (2) B2B beneficio RR.HH.; (3) SEO/contenido masivo (calculadora "¿debo declarar?", guías); (4) cajas de compensación.
 - **Retención**: producto anual; retención por recordatorios y reutilización de datos del año anterior (fricción de cambio baja → oportunidad). Crecimiento: +20% (2024), proyección +40% (2025-26).
 
 ---
 
 ## 5. Puntos de dolor y oportunidades de diferenciación
 
-**Advertencia de honestidad**: poca queja pública indexada sobre referencia. Trustpilot inaccesible, no hay apps móviles con reviews, Reddit/X sin hilos sustantivos. Reseñas visibles (Facebook, [Platzi blog](https://platzi.com/blog/mi-experiencia-usando-referencia/)) mayormente positivas.
+**Advertencia de honestidad**: poca queja pública indexada sobre la plataforma líder. Trustpilot inaccesible, no hay apps móviles con reviews, Reddit/X sin hilos sustantivos. Reseñas visibles (Facebook, Platzi blog) mayormente positivas.
 
 Dolores identificables (inferidos + documentados):
 
@@ -129,4 +129,4 @@ Dolores identificables (inferidos + documentados):
 
 ### Síntesis competitiva para "tu-renta-ai"
 
-Playbook ganador sugerido por los datos: **cálculo gratis + pago al final** (Taxfix) + **extracción automática de documentos con LLM + entrevista conversacional** (Intuit Assist) + **precio de entrada agresivo** ($60–100K, bajo SaraDeclara y a un tercio de referencia) + **garantía anti-sanciones con revisión visible** (paridad referencia) + **canales B2B/bancos + API embebida** (referencia/april) para escapar del CAC estacional.
+Playbook ganador sugerido por los datos: **cálculo gratis + pago al final** (Taxfix) + **extracción automática de documentos con LLM + entrevista conversacional** (Intuit Assist) + **precio de entrada agresivo** ($60–100K, bajo SaraDeclara y a un tercio de la plataforma líder) + **garantía anti-sanciones con revisión visible** (paridad con la plataforma líder) + **canales B2B/bancos + API embebida** (la plataforma líder/april) para escapar del CAC estacional.

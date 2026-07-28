@@ -16,7 +16,7 @@ import type { DatosDeclarante } from './secciones';
 export type { DatosDeclarante } from './secciones';
 
 /**
- * Resumen elegante de marca (estilo TuRenta AI, inspirado en el resumen de referencia):
+ * Resumen elegante de marca (estilo TuRenta AI, con un resumen de nivel profesional):
  * portada navy, resultado con desglose, depuración por cédulas, guía DIAN y casillas.
  */
 export async function generarResumenElegante(

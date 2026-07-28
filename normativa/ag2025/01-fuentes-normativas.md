@@ -23,11 +23,11 @@ Marco: el año gravable 2025 (declarado en 2026) se liquida con el Estatuto Trib
 | Decreto 1390 de dic-2025 (emergencia económica)                                                              | **Inexequible** — Sentencia C-075 de 2026         |
 | Decreto legislativo 1474 de 29-dic-2025                                                                      | **Inexequible** — Corte Constitucional abr-2026   |
 
-## Reglas de interpretación adoptadas por el motor (calibradas contra caso real referencia)
+## Reglas de interpretación adoptadas por el motor (calibradas contra caso real de referencia)
 
 1. **Redondeo (art. 577 E.T.)**: valores del formulario al múltiplo de mil más cercano; el motor aplica redondeo por casilla al final, cálculo interno en pesos enteros sin redondear.
-2. **Límite 40%/1.340 UVT**: base = ingresos totales cédula general − INCRNGO totales (Res. 000120/2024); asignación del cupo secuencial: primero rentas de trabajo, remanente a capital, luego no laborales (comportamiento observado en referencia: límite de capital = 0 cuando trabajo agota el cupo).
-3. **Deducción dependientes 10% (art. 387)**: tope 32 UVT × **meses con relación laboral** (referencia prorratea por meses trabajados).
+2. **Límite 40%/1.340 UVT**: base = ingresos totales cédula general − INCRNGO totales (Res. 000120/2024); asignación del cupo secuencial: primero rentas de trabajo, remanente a capital, luego no laborales (comportamiento de referencia observado: límite de capital = 0 cuando trabajo agota el cupo).
+3. **Deducción dependientes 10% (art. 387)**: tope 32 UVT × **meses con relación laboral** (la referencia prorratea por meses trabajados).
 4. **Dependiente adicional 72 UVT (art. 336-3)**: valor fijo anual por dependiente (sin prorrateo mensual), hasta 4, fuera del límite del 40%.
 5. **Cesantías (art. 206-4)**: pagadas + consignadas al fondo son ingreso del año; % exento según ingreso mensual promedio últimos 6 meses (tabla 350→650 UVT). Se toma el promedio certificado por cada empleador (casilla 59 del 220) por separado.
 6. **Componente inflacionario**: aplica a rendimientos financieros bancarios y de FICs; **no** aplica a rendimientos de cesantías.

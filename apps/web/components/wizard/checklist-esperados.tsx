@@ -6,7 +6,7 @@ import { Lightbulb } from 'lucide-react';
 import type { DocumentoEsperado } from '@turenta/core';
 import type { DocumentoProcesado } from '@/lib/tipos';
 
-/** Checklist tipo referencia: las entidades que reportaron en la exógena, con su estado de carga. */
+/** Checklist guiada: las entidades que reportaron en la exógena, con su estado de carga. */
 export function ChecklistEsperados({
   esperados,
   documentos,

@@ -1,4 +1,4 @@
-# Informe: Aspectos legales y regulatorios de operar en Colombia una plataforma SaaS tipo referencia para declaración de renta de personas naturales
+# Informe: Aspectos legales y regulatorios de operar en Colombia una plataforma SaaS de nivel profesional para declaración de renta de personas naturales
 
 **Fecha del informe:** 23 de julio de 2026. Informe de investigación con fines informativos, no constituye asesoría legal; validar con abogado tributarista y de protección de datos antes de lanzar.
 
@@ -9,7 +9,7 @@
 **Conclusión: sí, es legal.** La elaboración de una declaración de renta NO es actividad reservada a contadores públicos. La Ley 43 de 1990 regula la profesión de contaduría y reserva al contador las actividades donde se requiere **dar fe pública** (certificaciones, dictámenes, firma con tarjeta profesional). Elaborar o "diligenciar" una declaración es distinto de **firmarla como contador**: la declaración la firma el contribuyente, quien es el declarante ante la DIAN.
 
 - Ley 43 de 1990 (texto oficial): https://www.suin-juriscol.gov.co/viewDocument.asp?ruta=Leyes/1598256 y https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=66148
-- El art. 2 de la Ley 43 define como "actividades relacionadas con la ciencia contable" la asesoría tributaria, pero la jurisprudencia y la práctica (referencia opera desde 2018 sin sanción por ejercicio ilegal) confirman que la asesoría/elaboración no exige tarjeta profesional; lo reservado es la **atestación** (dar fe pública, art. 10 Ley 43). Conceptos del CTCP: https://accounter.co/normatividad/conceptos/alcance-responsabilidades-del-contador-concepto-ctcp-291-de-2020 y https://incp.org.co/publicaciones/infoincp-publicaciones/2025/03/ctcp-aclara-la-responsabilidad-de-los-contadores-en-certificaciones-tributarias/
+- El art. 2 de la Ley 43 define como "actividades relacionadas con la ciencia contable" la asesoría tributaria, pero la jurisprudencia y la práctica (la plataforma de referencia opera desde 2018 sin sanción por ejercicio ilegal) confirman que la asesoría/elaboración no exige tarjeta profesional; lo reservado es la **atestación** (dar fe pública, art. 10 Ley 43). Conceptos del CTCP: https://accounter.co/normatividad/conceptos/alcance-responsabilidades-del-contador-concepto-ctcp-291-de-2020 y https://incp.org.co/publicaciones/infoincp-publicaciones/2025/03/ctcp-aclara-la-responsabilidad-de-los-contadores-en-certificaciones-tributarias/
 
 **¿Cuándo la declaración de persona natural requiere firma de contador? (art. 596 num. 6 E.T.)** Solo cuando se cumplen **ambas** condiciones:
 
@@ -21,7 +21,7 @@ Además, el art. 602 E.T. (IVA) exige firma de contador cuando la declaración a
 - Art. 596 E.T.: https://estatuto.co/596 y https://www.dian.gov.co/impuestos/personas/RentaNaturales/2015/Herramientas/Paginas/Articulo596.aspx
 - Análisis: https://www.gerencie.com/firmas-en-la-declaracion-de-renta-de-personas-naturales.html · https://www.gerencie.com/declaraciones-tributarias-que-deben-ser-firmadas-por-contador-publico.html · https://actualicese.com/archivo/declaracion-de-renta-de-persona-natural-que-debe-llevar-firma-del-contador/ · https://siemprealdia.co/colombia/impuestos/firma-del-contador-publico-en-declaraciones-tributarias/ · https://nietolawyers.com/noticias-legales/en-que-casos-necesitas-que-tu-contador-publico-firme-tu-declaracion-de-renta-en-colombia/
 
-**Implicación para el producto:** el segmento objetivo (asalariados, independientes no obligados a llevar contabilidad — la enorme mayoría de declarantes del 210) no requiere contador. Conviene un "gate" en el onboarding que detecte los casos del art. 596-6 (obligado a contabilidad + >100.000 UVT ≈ ~$5.000 millones COP en 2026) y los derive a un contador aliado, como hace referencia con "referencia Pro".
+**Implicación para el producto:** el segmento objetivo (asalariados, independientes no obligados a llevar contabilidad — la enorme mayoría de declarantes del 210) no requiere contador. Conviene un "gate" en el onboarding que detecte los casos del art. 596-6 (obligado a contabilidad + >100.000 UVT ≈ ~$5.000 millones COP en 2026) y los derive a un contador aliado, como hace la plataforma de referencia con su plan Pro.
 
 ---
 
@@ -52,18 +52,18 @@ Además, el art. 602 E.T. (IVA) exige firma de contador cuando la declaración a
 
 ---
 
-## 3. Responsabilidad civil por errores de cálculo — cómo lo maneja referencia
+## 3. Responsabilidad civil por errores de cálculo — cómo lo maneja la referencia
 
 **Marco base:** ante la DIAN, el responsable es **siempre el contribuyente**. Errores → sanción por inexactitud (arts. 647-648 E.T., 100%-200% de la diferencia), sanción por corrección (art. 644) e intereses moratorios (arts. 634-635). Solo cabe acción civil contractual del usuario contra la plataforma.
 
-**Modelo referencia (IC TECNOLOGÍA S.A.S.)** — de sus T&C (PDF vigente 01-ago-2025: https://cdn.prod.website-files.com/5c4ba48132b5c622a3e9c186/68914971db718cf17b6ea4f1_TyC%20Ptd%20Tributi%2001%20Agos%202025.pdf, desde https://www.plataforma de referencia):
+**Modelo de referencia (IC TECNOLOGÍA S.A.S.)** — de sus T&C (PDF vigente 01-ago-2025:):
 
 - **Obligaciones de medio, no de resultado**.
 - **Garantía de exactitud, acotada**: 36 meses desde el pago; si "debido a un error de cálculo atribuible exclusivamente al software... se generen sanciones o intereses por parte de la DIAN, IC TECNOLOGÍA S.A.S. asumirá el valor de dichas sanciones o intereses, previa verificación y confirmación del error por parte de IC TECNOLOGÍA S.A.S.".
 - **Definición estrecha de "error de cálculo"**: "un desacuerdo matemático entre los resultados del software y la normativa tributaria vigente"; **excluye** "las diferencias que surjan de la interpretación de la normativa tributaria o de la falta de información por parte del usuario".
 - **Condiciones**: información completa y veraz del usuario, notificar requerimientos DIAN en máximo 5 días hábiles, colaborar. "La única garantía... y no existe ninguna otra garantía expresa ni implícita".
 - **Deslinde total por información del usuario**.
-- En marketing la venden como garantía "sin límites" (entrevista CEO: https://www.larepublica.co/internet-economy/referencia-es-la-firma-que-ofrece-garantia-sobre-la-elaboracion-de-la-declaracion-de-renta-3029955), pero contractualmente está limitada a error matemático del software.
+- En marketing la venden como garantía "sin límites" (entrevista CEO:), pero contractualmente está limitada a error matemático del software.
 
 **Recomendación replicable:** (i) contribuyente responsable ante la DIAN; (ii) garantía voluntaria acotada a error de software con verificación propia; (iii) exclusión de interpretación normativa e información del usuario; (iv) póliza de responsabilidad civil profesional/E&O tecnológico. Con IA generativa en el pipeline, la garantía debe cubrir alucinaciones de cálculo igual que bugs → pasar el cálculo por un motor determinístico auditable.
 
@@ -79,11 +79,11 @@ Además, el art. 602 E.T. (IVA) exige firma de contador cuando la declaración a
 
 ## 5. Uso de credenciales del usuario en el portal DIAN (MUISCA)
 
-**Cómo lo hace referencia (T&C ago-2025):**
+**Cómo lo hace la referencia (T&C ago-2025):**
 
-- **Consulta gratuita de exógena**: "El usuario autoriza a referencia a ingresar a su cuenta del portal de la DIAN utilizando las credenciales que él mismo proporciona, única y exclusivamente para consultar su información exógena", con compromiso de **no conservación** de credenciales. Servicio **excluido de la garantía**.
+- **Consulta gratuita de exógena**: "El usuario autoriza a la plataforma a ingresar a su cuenta del portal de la DIAN utilizando las credenciales que él mismo proporciona, única y exclusivamente para consultar su información exógena", con compromiso de **no conservación** de credenciales. Servicio **excluido de la garantía**.
 - **Presentación digital**: el usuario otorga "de manera previa, expresa e irrevocable... un mandato" para firmar la declaración a su nombre usando las credenciales proporcionadas, con el único fin de la presentación. El usuario sigue siendo responsable de la custodia de sus credenciales.
-- Ruta manual documentada en paralelo: https://www.plataforma de referencia
+- Ruta manual documentada en paralelo:
 
 **Análisis de riesgo:**
 
@@ -108,14 +108,14 @@ Además, el art. 602 E.T. (IVA) exige firma de contador cuando la declaración a
 
 ## 7. Estructura societaria e impuestos de la startup
 
-- **Vehículo: S.A.S.** (Ley 1258 de 2008) — lo que usa referencia (IC TECNOLOGÍA S.A.S.). Guía: https://gestionlegalcolombia.com/crear-empresa-de-software/
+- **Vehículo: S.A.S.** (Ley 1258 de 2008) — lo que usa la plataforma de referencia (IC TECNOLOGÍA S.A.S.). Guía: https://gestionlegalcolombia.com/crear-empresa-de-software/
 - **IVA:** servicio gravado a la **tarifa general 19%** (no aplica la exclusión del art. 476-21 para "computación en la nube" — criterios estrictos DIAN; un SaaS B2C de preparación de renta difícilmente encaja). Análisis: https://phylo.co/blog/iva-para-saas-en-colombia-lo-que-nadie-te-explica/ — Mientras la SAS no supere topes de responsable de IVA puede operar como no responsable; al facturar B2C masivo debe cobrar 19%.
 - **Facturación electrónica de los cobros:** obligatoria como facturador electrónico (Res. 000165 de 2023) — con software habilitado o el servicio gratuito DIAN; no requiere ser "proveedor tecnológico": https://micrositios.dian.gov.co/sistema-de-facturacion-electronica/requerimientos-para-ser-facturador-electronico/
 - Otros: renta corporativa 35%, ICA municipal, retenciones. Exportación de servicios exenta de IVA (art. 481 E.T.).
 
 ---
 
-## 8. Checklist replicable de T&C (modelo referencia)
+## 8. Checklist replicable de T&C (modelo de referencia)
 
 1. **Obligaciones de medio, no de resultado**.
 2. **El contribuyente es el declarante**; presentación opcional bajo mandato expreso con sus credenciales; la responsabilidad del contenido sigue siendo del contribuyente.

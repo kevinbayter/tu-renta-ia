@@ -25,14 +25,21 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+// Aplica el tema guardado antes de pintar, para evitar el parpadeo. Por defecto, claro.
+const TEMA_INICIAL =
+  "try{var t=localStorage.getItem('tema');document.documentElement.dataset.theme=t==='dark'||t==='auto'?t:'light';}catch(e){}";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es-CO" className={`${inter.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+    <html lang="es-CO" data-theme="light" className={`${inter.variable} ${geistMono.variable} h-full antialiased`}>
+      <body className="flex min-h-full flex-col">
+        <script dangerouslySetInnerHTML={{ __html: TEMA_INICIAL }} />
+        {children}
+      </body>
     </html>
   );
 }

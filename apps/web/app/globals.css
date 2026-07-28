@@ -23,8 +23,32 @@
   --texto-suave: #64748b;
 }
 
+/* Tema oscuro: explícito (data-theme='dark') o automático (data-theme='auto' con
+   el sistema en oscuro). El tema POR DEFECTO es claro: sin data-theme o con
+   data-theme='light' se usan los tokens de :root de arriba. */
+:root[data-theme='dark'] {
+  --background: #0a1524;
+  --foreground: #f1f5f9;
+  --card: #10203a;
+  --primario: #22c55e;
+  --primario-oscuro: #16a34a;
+  --primario-suave: #10241d;
+  --acento: #4ade80;
+  --marino: #060f1c;
+  --marino-suave: #10203a;
+  --marino-borde: #24374f;
+  --marino-texto: #a9bacf;
+  --exito: #34d399;
+  --exito-suave: #10241d;
+  --alerta: #fbbf24;
+  --alerta-suave: #3a2c07;
+  --error: #f87171;
+  --borde: #1f3252;
+  --texto-suave: #94a3b8;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root[data-theme='auto'] {
     --background: #0a1524;
     --foreground: #f1f5f9;
     --card: #10203a;

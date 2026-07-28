@@ -2,7 +2,7 @@ import type { ExogenaParseada, FilaExogena } from './tipos';
 
 /**
  * Checklist de documentos que el usuario debería subir, derivada de lo que los
- * terceros reportaron en su exógena (así funciona la guía tipo referencia): los
+ * terceros reportaron en su exógena (así funciona la guía de nivel profesional): los
  * empleadores reportan con concepto 2276 (→ 220), las entidades financieras con
  * saldos/rendimientos (→ certificado del banco), los municipios con avalúos
  * (→ recibo de predial), los bancos acreedores con cuentas por pagar

@@ -1,8 +1,8 @@
 # Plan de desarrollo — Conexión con la DIAN
 
 > Basado en [`research/07-automatizacion-dian-analisis-2026.md`](research/07-automatizacion-dian-analisis-2026.md).
-> **Modelo elegido: B — sesión efímera asistida** (el mismo que opera referencia en su plan
-> self-service). Las credenciales del usuario **nunca se almacenan**: viven en memoria
+> **Modelo elegido: B — sesión efímera asistida** (un modelo de sesión efímera asistida usado
+> en el mercado). Las credenciales del usuario **nunca se almacenan**: viven en memoria
 > durante la operación y se destruyen al terminar.
 
 ## 1. Principios innegociables

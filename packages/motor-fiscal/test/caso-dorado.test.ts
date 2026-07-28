@@ -6,7 +6,7 @@ import type { PerfilFiscal } from '../src/index';
 
 /**
  * GOLDEN TEST — Caso dorado: declaración real AG2025 de Ana Ramírez elaborada con
- * referencia (2026-07-18). Fuente: docs/ y research/00-caso-dorado-ag2025.md.
+ * una plataforma de referencia (2026-07-18). Fuente: docs/ y research/00-caso-dorado-ag2025.md.
  * Este test es SAGRADO: si un cambio del motor lo rompe, el motor está mal (o hay
  * una decisión normativa nueva que debe documentarse en normativa/ag2025/ primero).
  */

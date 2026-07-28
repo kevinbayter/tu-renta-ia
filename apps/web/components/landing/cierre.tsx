@@ -1,4 +1,5 @@
 import { CheckCircle2 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { LogoMarca } from './iconos';
@@ -74,9 +75,13 @@ export function CtaFinal() {
             ))}
           </ul>
         </div>
-        <span className="hidden text-8xl lg:block" aria-hidden>
-          🤖
-        </span>
+        <Image
+          src="/mascota.png"
+          alt="Asistente virtual de TuRenta"
+          width={400}
+          height={600}
+          className="mascota-3d hidden h-auto w-32 shrink-0 lg:block"
+        />
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertTriangle, CheckCircle2, ChevronDown, Lightbulb } from 'lucide-react';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 import type { DeclaracionResumen, EvaluacionDeclaracion, Recomendacion } from '@turenta/core';
@@ -22,7 +23,8 @@ export function RecomendacionesBanda({ declaracion }: { declaracion: Declaracion
     <section className="rounded-3xl border border-primario/25 bg-primario-suave/60 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 font-bold">
-          <span aria-hidden>🤖</span> Recomendaciones de tu IA Fiscal
+          <Image src="/mascota.png" alt="" width={400} height={600} className="inline-block h-8 w-auto" /> Recomendaciones
+          de tu IA Fiscal
         </h2>
         <span className="rounded-lg bg-card px-2.5 py-1 text-xs font-semibold">
           Confiabilidad: <strong className="text-primario">{evaluacion.confiabilidad}%</strong>

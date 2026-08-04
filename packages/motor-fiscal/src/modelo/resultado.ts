@@ -72,10 +72,31 @@ export interface ResultadoComparacionPatrimonial {
   diferenciaSinJustificar: number;
 }
 
+export interface ResultadoGananciasOcasionales {
+  /** Casilla 112: precios de venta GO + valores de herencias/donaciones + premios. */
+  ingresos: number;
+  /** Casilla 113: costo fiscal de los activos vendidos (≥2 años). */
+  costos: number;
+  /** Casilla 114: exenciones 307 y 311-1. */
+  exentas: number;
+  /** Casilla 115. */
+  gravables: number;
+  baseTarifaGeneral: number;
+  basePremios: number;
+  /** Casilla 127: 15% general + 20% premios. */
+  impuesto: number;
+  retenciones: number;
+  /** Ventas <2 años (art. 300): van a rentas no laborales como renta ordinaria. */
+  ventasARentaOrdinaria: { ingresos: number; costos: number };
+  /** Ingresos − costos: capacidad de justificación patrimonial (art. 237). */
+  netaParaComparacion: number;
+}
+
 export interface ResultadoLiquidacion {
   impuestoSobreRentaLiquida: number;
   descuentos: ResultadoDescuentos;
   impuestoNetoRenta: number;
+  impuestoGananciasOcasionales: number;
   totalImpuestoACargo: number;
   anticipoAnioSiguiente: number;
   retenciones: number;
@@ -92,6 +113,7 @@ export interface ResultadoDeclaracion {
   patrimonioLiquido: number;
   cedulaGeneral: ResultadoCedulaGeneral;
   cedulaPensiones: ResultadoRentasPensiones;
+  gananciasOcasionales: ResultadoGananciasOcasionales;
   comparacionPatrimonial: ResultadoComparacionPatrimonial;
   liquidacion: ResultadoLiquidacion;
   /** Casillas del formulario 210 (clave = número de casilla). */

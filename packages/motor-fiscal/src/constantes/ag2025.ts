@@ -59,6 +59,19 @@ export const AG2025: ConstantesAnio = {
   // Art. 55 (mod. Ley 2010/2019): INCRNGO, mismo doc de respaldo.
   aporteVoluntarioRais: { porcentaje: 0.25, topeAnualUvt: 2_500 },
 
+  // Arts. 307/311-1 (mod. Ley 2277/2022), 314 (15%) y 317 (20%)
+  // (normativa/ag2025/09-ganancias-ocasionales.md)
+  gananciaOcasional: {
+    tarifaGeneral: 0.15,
+    tarifaPremios: 0.2,
+    exencionViviendaCausanteUvt: 13_000,
+    exencionOtroInmuebleCausanteUvt: 6_500,
+    exencionPorBeneficiarioUvt: 3_250,
+    exencionNoLegitimarioPorcentaje: 0.2,
+    exencionNoLegitimarioTopeUvt: 1_625,
+    exencionVentaViviendaUvt: 5_000,
+  },
+
   facturaElectronica: {
     porcentaje: 0.01,
     topeAnualUvt: 240,

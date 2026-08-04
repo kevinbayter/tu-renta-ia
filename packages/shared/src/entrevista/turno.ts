@@ -52,6 +52,34 @@ export const turnoEntrevistaSchema = z.strictObject({
       valor: z.number(),
     }),
   ),
+  /** Ventas de activos del año, con TODOS sus datos (fechas ISO YYYY-MM-DD). */
+  ventasActivosCapturadas: z.array(
+    z.strictObject({
+      descripcion: z.string(),
+      fechaAdquisicion: z.string(),
+      fechaVenta: z.string(),
+      precioVenta: z.number(),
+      costoFiscal: z.number(),
+      esViviendaHabitacion: z.number(),
+      destinoAfcOHipoteca: z.number(),
+      retencionFuente: z.number(),
+    }),
+  ),
+  herenciasCapturadas: z.array(
+    z.strictObject({
+      descripcion: z.string(),
+      tipo: z.enum(['vivienda_causante', 'otro_inmueble_causante', 'otros_bienes']),
+      esLegitimarioOConyuge: z.number(),
+      valor: z.number(),
+    }),
+  ),
+  premiosCapturados: z.array(
+    z.strictObject({
+      descripcion: z.string(),
+      valor: z.number(),
+      retencionFuente: z.number(),
+    }),
+  ),
   entrevistaCompleta: z.boolean(),
 });
 

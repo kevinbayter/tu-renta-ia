@@ -49,7 +49,9 @@ Texto vigente (mod. art. 31, Ley 2277):
 - Exenciones se restan ANTES de la tarifa; la exención 311-1 exige confirmar la
   destinación AFC/hipoteca — sin esa confirmación NO se aplica.
 - `gananciaOcasionalNeta` alimenta la comparación patrimonial (hoy va 0).
-- Casillas del bloque GO del 210 (estructura sin cambios desde AG2023).
+- Casillas del bloque GO del 210 (estructura sin cambios desde AG2023): 112 ingresos,
+  113 costos, 114 no gravadas y exentas, 115 gravables; 127 "Impuesto de ganancias
+  ocasionales" (etiqueta verificada en el 210 de referencia del repo).
 
 Fuentes: http://www.secretariasenado.gov.co/senado/basedoc/estatuto_tributario_pr012.html
 (300, 302, 303) · …_pr013.html (307, 311-1, 313-317) ·

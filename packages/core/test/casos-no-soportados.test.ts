@@ -37,8 +37,9 @@ describe('detección de casos que el motor no liquida', () => {
       eventoActivosExterior: 1,
       eventoIngresosExterior: 1,
       eventoDividendos: 1,
+      eventoRetirosAfcSinRequisitos: 1,
     });
-    expect(casos).toHaveLength(7);
+    expect(casos).toHaveLength(8);
     expect(casos.map((c) => c.clave)).toContain('eventoHerenciaODonacion');
     for (const caso of casos) {
       expect(caso.etiqueta.length).toBeGreaterThan(0);
@@ -48,5 +49,37 @@ describe('detección de casos que el motor no liquida', () => {
 
   it('solo el valor 1 cuenta como marcado', () => {
     expect(detectarCasosNoSoportados({ ...BASE, eventoCripto: 2 })).toEqual([]);
+  });
+
+  it('venta, herencia y premios dejan de ser casos cuando sus datos ya están capturados', () => {
+    const conDatos = detectarCasosNoSoportados({
+      ...BASE,
+      eventoVentaActivos: 1,
+      ventasActivos: [
+        {
+          descripcion: 'Carro',
+          fechaAdquisicion: '2020-01-15',
+          fechaVenta: '2025-03-01',
+          precioVenta: 40_000_000,
+          costoFiscal: 50_000_000,
+          esViviendaHabitacion: false,
+          destinoAfcOHipoteca: false,
+          retencionFuente: 0,
+        },
+      ],
+      eventoPremiosOApuestas: 1,
+      premiosRecibidos: [{ descripcion: 'Lotería', valor: 5_000_000, retencionFuente: 1_000_000 }],
+      eventoHerenciaODonacion: 1,
+      herenciasRecibidas: [
+        { descripcion: 'Casa', tipo: 'vivienda_causante', esLegitimarioOConyuge: true, valor: 300_000_000 },
+      ],
+    });
+    expect(conDatos).toEqual([]);
+  });
+
+  it('el evento marcado SIN datos capturados sigue dejando la declaración incompleta', () => {
+    const casos = detectarCasosNoSoportados({ ...BASE, eventoVentaActivos: 1 });
+    expect(casos).toHaveLength(1);
+    expect(casos[0]?.etiqueta).toContain('sin datos');
   });
 });

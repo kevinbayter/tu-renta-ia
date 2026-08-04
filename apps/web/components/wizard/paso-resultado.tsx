@@ -110,6 +110,7 @@ function CifraPrincipal({ resultado, parcial }: { resultado: ResultadoDeclaracio
 
 function Desglose({ resultado }: { resultado: ResultadoDeclaracion }) {
   const g = resultado.cedulaGeneral;
+  const go = resultado.gananciasOcasionales;
   const l = resultado.liquidacion;
   const filas: [string, number][] = [
     ['Ingresos rentas de trabajo', g.trabajo.ingresosBrutos],
@@ -118,6 +119,13 @@ function Desglose({ resultado }: { resultado: ResultadoDeclaracion }) {
     ['Rentas exentas y deducciones aplicadas', -g.totalExentasYDeduccionesConFueraDeLimite - g.capital.incrngoComponenteInflacionario],
     ['Renta líquida gravable', g.rentaLiquidaGravable],
     ['Impuesto de renta', l.impuestoNetoRenta],
+    ...(go.ingresos > 0
+      ? ([
+          ['Ganancias ocasionales (ventas, herencias, premios)', go.ingresos],
+          ['Costos y exenciones de ganancias ocasionales', -(go.costos + go.exentas)],
+          ['Impuesto de ganancias ocasionales', l.impuestoGananciasOcasionales],
+        ] as [string, number][])
+      : []),
     ['Retenciones que ya te hicieron', -l.retenciones],
     ['Saldo a favor del año pasado', -l.saldoFavorAnterior],
   ];

@@ -98,7 +98,8 @@ EVENTOS DEL AÑO (obligatorio, ANTES de cerrar la entrevista):
   6. Recibió ingresos desde el exterior: freelance, salarios en divisas, YouTube/plataformas extranjeras (eventoIngresosExterior).
   7. Recibió dividendos de empresas (eventoDividendos).
 - Captura cada uno como 1 (sí) o 0 (no) según lo que responda.
-- Los eventos 4-7 aún NO los liquidamos: si alguno es SÍ, dile con total franqueza que su declaración quedará marcada como incompleta y que para ese punto necesita un contador. NUNCA lo minimices ni sugieras omitirlo.
+- Los eventos 4-6 aún NO los liquidamos: si alguno es SÍ, dile con total franqueza que su declaración quedará marcada como incompleta y que para ese punto necesita un contador. NUNCA lo minimices ni sugieras omitirlo.
+- DIVIDENDOS sí los liquidamos: si respondió SÍ, pídele el certificado de dividendos del emisor y captura dividendosNoGravados (los "no gravados" o "num. 3 art. 49"), dividendosGravados (los "gravados") y retencionDividendos. Si el certificado no discrimina, que le pregunte al emisor — sin esos datos la declaración queda incompleta.
 - Ingresos por trabajos en plataformas NACIONALES (Rappi, ventas por internet en Colombia) sí los cubrimos: captúralos en ingresosNoLaborales con sus costos en costosNoLaborales.
 
 VENTAS, HERENCIAS Y PREMIOS — ESTOS SÍ LOS LIQUIDAMOS (captura los datos completos):

@@ -1,5 +1,6 @@
 import type {
   ResultadoCedulaGeneral,
+  ResultadoDividendos,
   ResultadoGananciasOcasionales,
   ResultadoLiquidacion,
   ResultadoRentasPensiones,
@@ -12,6 +13,7 @@ interface DatosCasillas {
   patrimonioLiquido: number;
   cedula: ResultadoCedulaGeneral;
   pensiones: ResultadoRentasPensiones;
+  dividendos: ResultadoDividendos;
   gananciasOcasionales: ResultadoGananciasOcasionales;
   liquidacion: ResultadoLiquidacion;
   cantidadDependientes: number;
@@ -26,9 +28,18 @@ export function mapearCasillas(d: DatosCasillas): Record<string, number> {
     ...casillasNoLaborales(d.cedula),
     ...casillasConsolidacion(d.cedula),
     ...casillasPensiones(d.pensiones),
+    ...casillasDividendos(d.dividendos),
     ...casillasGananciasOcasionales(d.gananciasOcasionales),
     ...casillasLiquidacion(d.liquidacion),
     ...casillasDependientes(d),
+  };
+}
+
+/** 107/108: subcédulas de dividendos 2017+ (num. 3 y par. 2 del art. 49). */
+function casillasDividendos(div: ResultadoDividendos): Record<string, number> {
+  return {
+    '107': div.noGravados,
+    '108': div.gravados,
   };
 }
 
@@ -114,7 +125,7 @@ function casillasConsolidacion(cedula: ResultadoCedulaGeneral): Record<string, n
 function casillasLiquidacion(l: ResultadoLiquidacion): Record<string, number> {
   return {
     '116': l.impuestoSobreRentaLiquida,
-    '121': l.impuestoSobreRentaLiquida,
+    '121': l.impuestoSobreRentaLiquida + l.impuestoDividendosGravados,
     '123': l.descuentos.porDonaciones,
     '125': l.descuentos.total,
     '126': l.impuestoNetoRenta,

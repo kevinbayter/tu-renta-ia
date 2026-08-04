@@ -61,6 +61,12 @@ export interface ConstantesAnio {
   afcFvp: { porcentaje: number; topeAnualUvt: number };
   /** Art. 55: cotización voluntaria al RAIS como INCRNGO (25% del ingreso, 2.500 UVT). */
   aporteVoluntarioRais: { porcentaje: number; topeAnualUvt: number };
+  /** Arts. 242 y 254-1: dividendos de residentes (2ª subcédula al 35%; descuento 19% > umbral). */
+  dividendos: {
+    tarifaGravados: number;
+    descuentoPorcentaje: number;
+    descuentoUmbralUvt: number;
+  };
   /** Arts. 307, 311-1, 314, 317: tarifas y exenciones de ganancias ocasionales. */
   gananciaOcasional: {
     tarifaGeneral: number;

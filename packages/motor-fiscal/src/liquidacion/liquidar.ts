@@ -3,7 +3,7 @@ import { calcularDescuentos } from './descuentos';
 import { impuestoTabla241 } from './tabla-241';
 
 import type { ConstantesAnio } from '../constantes/tipos';
-import type { ResultadoLiquidacion } from '../modelo/resultado';
+import type { ResultadoDividendos, ResultadoLiquidacion } from '../modelo/resultado';
 import type { DescuentosInput, HistorialInput } from '../modelo/tipos';
 
 /**
@@ -19,15 +19,17 @@ export function liquidar(
   c: ConstantesAnio,
   descuentosInput?: DescuentosInput,
   impuestoGananciasOcasionales = 0,
+  dividendos?: ResultadoDividendos,
 ): ResultadoLiquidacion {
   const impuestoSobreRentaLiquida = impuestoTabla241(rentaLiquidaGravable, c);
-  const descuentos = calcularDescuentos(descuentosInput, impuestoSobreRentaLiquida, c);
-  const impuestoNetoRenta = Math.max(0, impuestoSobreRentaLiquida - descuentos.total);
+  const impuestoDividendosGravados = dividendos?.impuestoGravados35 ?? 0;
+  const descuentos = calcularDescuentos(descuentosInput, impuestoSobreRentaLiquida, c, dividendos?.descuento ?? 0);
+  const impuestoNetoRenta = Math.max(0, impuestoSobreRentaLiquida + impuestoDividendosGravados - descuentos.total);
   const totalImpuestoACargo = impuestoNetoRenta + impuestoGananciasOcasionales;
   const anticipoAnioSiguiente = calcularAnticipo(impuestoNetoRenta, retenciones, historial, c);
   const neto = calcularNeto(totalImpuestoACargo, anticipoAnioSiguiente, retenciones, historial);
   return conSaldos(
-    { impuestoSobreRentaLiquida, descuentos, impuestoNetoRenta, impuestoGananciasOcasionales, totalImpuestoACargo, anticipoAnioSiguiente, retenciones },
+    { impuestoSobreRentaLiquida, impuestoDividendosGravados, descuentos, impuestoNetoRenta, impuestoGananciasOcasionales, totalImpuestoACargo, anticipoAnioSiguiente, retenciones },
     neto,
     historial,
   );

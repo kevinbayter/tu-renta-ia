@@ -12,28 +12,42 @@ export interface CasoNoSoportado {
   detalle: string;
 }
 
+interface PendienteDeDatos {
+  evento: keyof RespuestasEntrevista;
+  etiqueta: string;
+  detalle: string;
+  tieneDatos: (r: RespuestasEntrevista) => boolean;
+}
+
 /** Eventos que el motor SÍ liquida, pero solo cuando la entrevista capturó sus datos. */
-const PENDIENTES_DE_DATOS: { evento: keyof RespuestasEntrevista; datos: keyof RespuestasEntrevista; etiqueta: string; detalle: string }[] = [
+const PENDIENTES_DE_DATOS: PendienteDeDatos[] = [
   {
     evento: 'eventoVentaActivos',
-    datos: 'ventasActivos',
     etiqueta: 'Venta de activos sin datos completos',
     detalle:
       'Nos contaste que vendiste un activo pero faltan sus datos (fechas, precio, costo): vuelve a la entrevista y regístralos para liquidarla.',
+    tieneDatos: (r) => (r.ventasActivos ?? []).length > 0,
   },
   {
     evento: 'eventoHerenciaODonacion',
-    datos: 'herenciasRecibidas',
     etiqueta: 'Herencia o donación sin datos completos',
     detalle:
       'Nos contaste que recibiste una herencia o donación pero faltan sus datos (tipo de bien, valor): vuelve a la entrevista y regístralos.',
+    tieneDatos: (r) => (r.herenciasRecibidas ?? []).length > 0,
   },
   {
     evento: 'eventoPremiosOApuestas',
-    datos: 'premiosRecibidos',
     etiqueta: 'Premios sin datos completos',
     detalle:
       'Nos contaste que ganaste premios pero falta su valor y retención: vuelve a la entrevista y regístralos.',
+    tieneDatos: (r) => (r.premiosRecibidos ?? []).length > 0,
+  },
+  {
+    evento: 'eventoDividendos',
+    etiqueta: 'Dividendos sin datos completos',
+    detalle:
+      'Nos contaste que recibiste dividendos pero falta el certificado del emisor (gravados, no gravados y retención): vuelve a la entrevista y regístralos.',
+    tieneDatos: (r) => (r.dividendosNoGravados ?? 0) > 0 || (r.dividendosGravados ?? 0) > 0,
   },
 ];
 
@@ -57,11 +71,6 @@ const CASOS: CasoNoSoportado[] = [
       'Requieren conversión a TRM y análisis de fuente y de impuestos pagados afuera (art. 254 E.T.), que aún no cubrimos.',
   },
   {
-    clave: 'eventoDividendos',
-    etiqueta: 'Dividendos recibidos',
-    detalle: 'Tienen cédula y descuento propios (arts. 242 y 254-1 E.T.) que aún no liquidamos.',
-  },
-  {
     clave: 'eventoRetirosAfcSinRequisitos',
     etiqueta: 'Retiros de AFC o pensión voluntaria sin cumplir requisitos',
     detalle:
@@ -71,9 +80,7 @@ const CASOS: CasoNoSoportado[] = [
 
 export function detectarCasosNoSoportados(respuestas: RespuestasEntrevista): CasoNoSoportado[] {
   const pendientes = PENDIENTES_DE_DATOS.filter(
-    (caso) =>
-      respuestas[caso.evento] === 1 &&
-      (respuestas[caso.datos] as unknown[] | undefined ?? []).length === 0,
+    (caso) => respuestas[caso.evento] === 1 && !caso.tieneDatos(respuestas),
   ).map(({ evento, etiqueta, detalle }) => ({ clave: evento, etiqueta, detalle }));
   return [...pendientes, ...CASOS.filter((caso) => respuestas[caso.clave] === 1)];
 }

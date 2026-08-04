@@ -18,6 +18,14 @@ el descuento 254-1 se hundió con la reforma de dic-2025).
 - 0% hasta 1.090 UVT de renta líquida cedular de dividendos.
 - **19% marginal sobre el exceso**: (renta cedular de dividendos en UVT − 1.090) × 19%.
 
+## Decisiones de implementación
+
+- Casillas verificadas: **107** = 1ª subcédula 2017+ (num. 3 art. 49, no gravados) y
+  **108** = 2ª subcédula (par. 2 art. 49, gravados). La 121 suma tabla + 35%.
+- El descuento 254-1 se calcula SOLO sobre la 1ª subcédula (lectura conservadora del
+  texto, que remite a los dividendos gravados vía tabla del inciso 1 del 242); no está
+  sujeto al tope del art. 258 (este cubre 255/256/257).
+
 ## Reglas para el motor
 
 - Insumo: certificado del emisor discriminando no gravados / gravados + retención.

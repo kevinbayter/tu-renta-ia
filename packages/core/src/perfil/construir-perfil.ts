@@ -3,6 +3,7 @@ import type {
   AportesVoluntariosInput,
   CertificadoLaboral,
   ComparacionPatrimonialInput,
+  DividendosInput,
   GananciasOcasionalesInput,
   PerfilFiscal,
   RentasCapitalInput,
@@ -56,6 +57,7 @@ export function construirPerfilFiscal(insumos: InsumosPerfil): PerfilFiscal {
     patrimonio: armarPatrimonio(insumos.exogena, insumos.certificadosBancarios, respuestas),
     descuentos: { donacionesEsal: respuestas.donacionesEsal ?? 0 },
     gananciasOcasionales: armarGananciasOcasionales(respuestas),
+    dividendos: armarDividendos(respuestas),
     comparacionPatrimonial: armarComparacion(respuestas),
     historial: armarHistorial(insumos.exogena, respuestas),
   };
@@ -73,6 +75,14 @@ function armarGananciasOcasionales(r: RespuestasEntrevista): GananciasOcasionale
     ventas: r.ventasActivos ?? [],
     herencias: r.herenciasRecibidas ?? [],
     premios: r.premiosRecibidos ?? [],
+  };
+}
+
+function armarDividendos(r: RespuestasEntrevista): DividendosInput {
+  return {
+    noGravados: r.dividendosNoGravados ?? 0,
+    gravados: r.dividendosGravados ?? 0,
+    retencionFuente: r.retencionDividendos ?? 0,
   };
 }
 

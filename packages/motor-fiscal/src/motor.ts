@@ -1,5 +1,6 @@
 import { obtenerConstantes } from './constantes/registro';
 import { depurarCedulaGeneral } from './depuracion/cedula-general';
+import { depurarDividendos } from './depuracion/dividendos';
 import { depurarPensiones } from './depuracion/pensiones';
 import { mapearCasillas } from './formulario210/casillas';
 import { liquidarGananciasOcasionales } from './liquidacion/ganancias-ocasionales';
@@ -7,7 +8,7 @@ import { liquidar } from './liquidacion/liquidar';
 import { compararPatrimonio } from './patrimonio/comparacion';
 import { redondearMil } from './redondeo';
 
-import type { ResultadoDeclaracion, ResultadoGananciasOcasionales } from './modelo/resultado';
+import type { ResultadoDeclaracion, ResultadoDividendos, ResultadoGananciasOcasionales } from './modelo/resultado';
 import type { PerfilFiscal } from './modelo/tipos';
 
 /**
@@ -17,23 +18,27 @@ import type { PerfilFiscal } from './modelo/tipos';
 export function liquidarDeclaracion(perfil: PerfilFiscal): ResultadoDeclaracion {
   const c = obtenerConstantes(perfil.anioGravable);
   const gananciasOcasionales = liquidarGananciasOcasionales(perfil.gananciasOcasionales, c);
+  const dividendos = depurarDividendos(perfil.dividendos, c);
   const cedulaGeneral = depurarCedulaGeneral(conVentasCortoPlazo(perfil, gananciasOcasionales), c);
   const cedulaPensiones = depurarPensiones(perfil.rentasPensiones, c);
   // Art. 331 E.T. (Ley 2277/2022): la tarifa del 241 se aplica a la SUMA de cédulas.
-  const rentaLiquidaGravable = cedulaGeneral.rentaLiquidaGravable + cedulaPensiones.rentaLiquidaGravable;
+  const rentaLiquidaGravable =
+    cedulaGeneral.rentaLiquidaGravable + cedulaPensiones.rentaLiquidaGravable + dividendos.baseParaTabla;
   const liquidacion = liquidar(
     rentaLiquidaGravable,
-    calcularRetenciones(perfil) + gananciasOcasionales.retenciones,
+    calcularRetenciones(perfil) + gananciasOcasionales.retenciones + dividendos.retencionFuente,
     perfil.historial,
     c,
     perfil.descuentos,
     gananciasOcasionales.impuesto,
+    dividendos,
   );
-  return armarResultado(perfil, { gananciasOcasionales, cedulaGeneral, cedulaPensiones, rentaLiquidaGravable, liquidacion });
+  return armarResultado(perfil, { gananciasOcasionales, dividendos, cedulaGeneral, cedulaPensiones, rentaLiquidaGravable, liquidacion });
 }
 
 interface PiezasResultado {
   gananciasOcasionales: ResultadoGananciasOcasionales;
+  dividendos: ResultadoDividendos;
   cedulaGeneral: ResultadoDeclaracion['cedulaGeneral'];
   cedulaPensiones: ResultadoDeclaracion['cedulaPensiones'];
   rentaLiquidaGravable: number;
@@ -41,13 +46,14 @@ interface PiezasResultado {
 }
 
 function armarResultado(perfil: PerfilFiscal, piezas: PiezasResultado): ResultadoDeclaracion {
-  const { gananciasOcasionales, cedulaGeneral, cedulaPensiones, rentaLiquidaGravable, liquidacion } = piezas;
+  const { gananciasOcasionales, dividendos, cedulaGeneral, cedulaPensiones, rentaLiquidaGravable, liquidacion } = piezas;
   const patrimonio = calcularPatrimonio(perfil);
   return {
     anioGravable: perfil.anioGravable,
     ...patrimonio,
     cedulaGeneral,
     cedulaPensiones,
+    dividendos,
     gananciasOcasionales,
     comparacionPatrimonial: compararPatrimonio(
       conGananciaOcasionalNeta(perfil, gananciasOcasionales),
@@ -57,7 +63,7 @@ function armarResultado(perfil: PerfilFiscal, piezas: PiezasResultado): Resultad
       cedulaGeneral.totalExentasYDeduccionesConFueraDeLimite + cedulaPensiones.rentaExenta,
     ),
     liquidacion,
-    casillas: construirCasillas(perfil, cedulaGeneral, cedulaPensiones, gananciasOcasionales, liquidacion, patrimonio),
+    casillas: construirCasillas(perfil, cedulaGeneral, cedulaPensiones, dividendos, gananciasOcasionales, liquidacion, patrimonio),
   };
 }
 
@@ -111,6 +117,7 @@ function construirCasillas(
   perfil: PerfilFiscal,
   cedula: ResultadoDeclaracion['cedulaGeneral'],
   pensiones: ResultadoDeclaracion['cedulaPensiones'],
+  dividendos: ResultadoDividendos,
   gananciasOcasionales: ResultadoGananciasOcasionales,
   liquidacion: ResultadoDeclaracion['liquidacion'],
   patrimonio: { patrimonioBruto: number; deudas: number; patrimonioLiquido: number },
@@ -120,6 +127,7 @@ function construirCasillas(
     ...patrimonio,
     cedula,
     pensiones,
+    dividendos,
     gananciasOcasionales,
     liquidacion,
     cantidadDependientes: perfil.deducciones.dependientesAdicionales336,

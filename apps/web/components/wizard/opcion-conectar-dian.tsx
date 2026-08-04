@@ -42,6 +42,7 @@ export function OpcionConectarDian({
   const habilitada = useConexionHabilitada();
   const leyendo = useSubidas((s) => s.enCurso > 0);
   const leyendoAparte = useSubidas((s) => s.enSegundoPlano > 0);
+  const avisoPersistido = useSubidas((s) => s.avisoSegundoPlano);
   const declarante = useDeclaracion((s) => s.declarante);
   const esPropia = useDeclaracion((s) => s.esPropia);
   // Mismos dígitos que enviará el servidor: si aquí se mostrara la cédula con
@@ -62,6 +63,7 @@ export function OpcionConectarDian({
   // La declaración anterior es opcional y sus cifras no se necesitan hasta
   // Revisión: se lee en segundo plano para no retener al usuario en el paso 1.
   const enSegundoPlano = operacion === 'declaracion';
+  const avisoMostrado = aviso ?? (enSegundoPlano ? avisoPersistido : null);
 
   const completar = (resultado: ResultadoConexion) => {
     setAbierto(false);
@@ -90,9 +92,9 @@ export function OpcionConectarDian({
           Estamos leyendo tu declaración. Puedes seguir con los siguientes pasos: los datos entrarán solos.
         </p>
       )}
-      {aviso !== null && (
+      {avisoMostrado !== null && (
         <p role="alert" className="mt-2 text-xs text-alerta">
-          Llegó el archivo pero no pudimos leerlo: {aviso}. Puedes subirlo tú mismo aquí abajo.
+          Llegó el archivo pero no pudimos leerlo: {avisoMostrado}. Puedes subirlo tú mismo aquí abajo.
         </p>
       )}
       {abierto && (

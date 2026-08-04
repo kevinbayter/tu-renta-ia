@@ -28,20 +28,26 @@ interface EstadoSubidas {
   enCurso: number;
   /** Lecturas en segundo plano: el usuario sigue mientras tanto. */
   enSegundoPlano: number;
+  /** Fallo de una lectura en segundo plano; sobrevive a navegar entre pasos. */
+  avisoSegundoPlano: string | null;
   iniciar: () => void;
   terminar: () => void;
   iniciarEnSegundoPlano: () => void;
   terminarEnSegundoPlano: () => void;
+  fallarEnSegundoPlano: (aviso: string) => void;
 }
 
 /** Estado efímero (NO persistido) de las lecturas de documentos. */
 export const useSubidas = create<EstadoSubidas>((set) => ({
   enCurso: 0,
   enSegundoPlano: 0,
+  avisoSegundoPlano: null,
   iniciar: () => set((s) => ({ enCurso: s.enCurso + 1 })),
   terminar: () => set((s) => ({ enCurso: Math.max(0, s.enCurso - 1) })),
-  iniciarEnSegundoPlano: () => set((s) => ({ enSegundoPlano: s.enSegundoPlano + 1 })),
+  iniciarEnSegundoPlano: () =>
+    set((s) => ({ enSegundoPlano: s.enSegundoPlano + 1, avisoSegundoPlano: null })),
   terminarEnSegundoPlano: () => set((s) => ({ enSegundoPlano: Math.max(0, s.enSegundoPlano - 1) })),
+  fallarEnSegundoPlano: (aviso) => set({ avisoSegundoPlano: aviso }),
 }));
 
 /** 401 en pleno wizard = sesión expirada: al login con retorno. */
@@ -124,6 +130,10 @@ export async function registrarDocumento(
   enSegundoPlano = false,
 ): Promise<DocumentoProcesado | { error: string }> {
   const resultado = await subirArchivo(archivo, tipoConocido, enSegundoPlano);
+  if ('error' in resultado && enSegundoPlano) {
+    useSubidas.getState().fallarEnSegundoPlano(resultado.error);
+    return resultado;
+  }
   if ('error' in resultado) {
     return resultado;
   }

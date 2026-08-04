@@ -2,17 +2,20 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { generarBorradorCompleto } from '@turenta/adaptadores';
+import { detectarCasosNoSoportados } from '@turenta/core';
 import { fechaVencimiento, obtenerConstantes } from '@turenta/motor-fiscal';
 import { NextResponse } from 'next/server';
 
 import { obtenerRepositorio } from '@/server/composicion';
 import { leerSesion } from '@/server/sesion';
 
+import type { RespuestasEntrevista } from '@turenta/core';
 import type { ResultadoDeclaracion } from '@turenta/motor-fiscal';
 
 interface CuerpoBorrador {
   declarante: { nombres: string; apellidos: string; identificacion: string };
   resultado: ResultadoDeclaracion;
+  respuestas?: RespuestasEntrevista;
 }
 
 const RUTAS_PLANTILLA = [
@@ -45,6 +48,14 @@ function cargarPlantilla(): Uint8Array {
 /** Genera y descarga el borrador: formulario 210 oficial diligenciado + resumen. */
 export async function POST(request: Request): Promise<Response> {
   const cuerpo = (await request.json()) as CuerpoBorrador;
+  // Una declaración incompleta no produce PDF: un borrador a medias termina presentado.
+  const casos = cuerpo.respuestas ? detectarCasosNoSoportados(cuerpo.respuestas) : [];
+  if (casos.length > 0) {
+    return NextResponse.json(
+      { error: `Declaración incompleta: ${casos.map((c) => c.etiqueta).join('; ')}` },
+      { status: 422 },
+    );
+  }
   try {
     const constantes = obtenerConstantes(cuerpo.resultado.anioGravable);
     const vencimiento = fechaVencimiento(cuerpo.declarante.identificacion, constantes);

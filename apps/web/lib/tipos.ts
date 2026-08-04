@@ -50,6 +50,13 @@ export const RESPUESTAS_INICIALES: RespuestasEntrevista = {
   donacionesEsal: 0,
   patrimonioLiquidoAnterior: 0,
   justificacionesPatrimoniales: 0,
+  eventoVentaActivos: 0,
+  eventoHerenciaODonacion: 0,
+  eventoPremiosOApuestas: 0,
+  eventoCripto: 0,
+  eventoActivosExterior: 0,
+  eventoIngresosExterior: 0,
+  eventoDividendos: 0,
 };
 
 export function formatearPesos(valor: number): string {

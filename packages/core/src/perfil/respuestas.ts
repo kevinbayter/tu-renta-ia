@@ -35,4 +35,16 @@ export interface RespuestasEntrevista {
   patrimonioLiquidoAnterior?: number;
   /** Causas justificativas del incremento patrimonial (art. 239): herencias, préstamos, valorizaciones. */
   justificacionesPatrimoniales?: number;
+
+  /**
+   * Eventos del año que el motor AÚN no liquida (0/1). Solo detección: con
+   * cualquiera en 1 la declaración queda incompleta y el borrador no se genera.
+   */
+  eventoVentaActivos?: number;
+  eventoHerenciaODonacion?: number;
+  eventoPremiosOApuestas?: number;
+  eventoCripto?: number;
+  eventoActivosExterior?: number;
+  eventoIngresosExterior?: number;
+  eventoDividendos?: number;
 }

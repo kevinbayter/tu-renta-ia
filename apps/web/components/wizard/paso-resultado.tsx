@@ -1,13 +1,18 @@
 'use client';
 
+import { detectarCasosNoSoportados } from '@turenta/core';
+import { TriangleAlert } from 'lucide-react';
+
 import { BotonDescargarBorrador, GuiaPresentacion } from './guia-presentacion';
 import { useDeclaracion } from '@/lib/store';
 import { formatearPesos } from '@/lib/tipos';
 
+import type { CasoNoSoportado } from '@turenta/core';
 import type { ResultadoDeclaracion } from '@/lib/tipos';
 
 export function PasoResultado() {
   const resultado = useDeclaracion((s) => s.resultado);
+  const respuestas = useDeclaracion((s) => s.respuestas);
   const irAPaso = useDeclaracion((s) => s.irAPaso);
   if (!resultado) {
     return (
@@ -19,12 +24,15 @@ export function PasoResultado() {
       </section>
     );
   }
+  const casos = detectarCasosNoSoportados(respuestas);
+  const incompleta = casos.length > 0;
   return (
     <section aria-label="Resultado">
-      <CifraPrincipal resultado={resultado} />
-      <BotonDescargarBorrador resultado={resultado} />
+      {incompleta && <AvisoIncompleta casos={casos} />}
+      <CifraPrincipal resultado={resultado} parcial={incompleta} />
+      {!incompleta && <BotonDescargarBorrador resultado={resultado} />}
       <Desglose resultado={resultado} />
-      <GuiaPresentacion resultado={resultado} />
+      {!incompleta && <GuiaPresentacion resultado={resultado} />}
       <Casillas resultado={resultado} />
       <button
         type="button"
@@ -33,17 +41,58 @@ export function PasoResultado() {
       >
         ← Ajustar datos y recalcular
       </button>
-      <p className="mt-4 rounded-xl bg-primario-suave p-3 text-xs text-texto-suave">
-        Este borrador es informativo: la declaración oficial la diligencias, firmas y presentas tú en el
-        portal MUISCA de la DIAN siguiendo la guía de arriba.
-      </p>
+      {!incompleta && (
+        <p className="mt-4 rounded-xl bg-primario-suave p-3 text-xs text-texto-suave">
+          Este borrador es informativo: la declaración oficial la diligencias, firmas y presentas tú en el
+          portal MUISCA de la DIAN siguiendo la guía de arriba.
+        </p>
+      )}
     </section>
   );
 }
 
-function CifraPrincipal({ resultado }: { resultado: ResultadoDeclaracion }) {
+/** Sin borrador ni guía: entregar un PDF a medias es invitar a presentarlo así. */
+function AvisoIncompleta({ casos }: { casos: CasoNoSoportado[] }) {
+  return (
+    <div role="alert" className="mb-4 rounded-3xl border border-alerta/40 bg-alerta-suave p-5">
+      <p className="flex items-center gap-2 font-bold text-alerta">
+        <TriangleAlert size={18} aria-hidden /> Tu declaración está incompleta
+      </p>
+      <p className="mt-2 text-sm leading-relaxed">
+        Nos contaste sobre situaciones que TuRenta todavía no sabe liquidar. El cálculo de abajo NO las
+        incluye, así que no es tu declaración completa y por eso no habilitamos la descarga del borrador
+        ni la guía de presentación:
+      </p>
+      <ul className="mt-3 space-y-2">
+        {casos.map((caso) => (
+          <li key={caso.clave} className="text-sm leading-relaxed">
+            <span className="font-semibold">{caso.etiqueta}.</span>{' '}
+            <span className="text-texto-suave">{caso.detalle}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 text-sm leading-relaxed">
+        Para presentar tu declaración con estos casos necesitas un contador. Presentarla sin incluirlos
+        puede costarte la sanción por inexactitud de la DIAN.
+      </p>
+    </div>
+  );
+}
+
+function CifraPrincipal({ resultado, parcial }: { resultado: ResultadoDeclaracion; parcial?: boolean }) {
   const esSaldoAFavor = resultado.liquidacion.totalSaldoAFavor > 0;
   const cifra = esSaldoAFavor ? resultado.liquidacion.totalSaldoAFavor : resultado.liquidacion.saldoAPagar;
+  if (parcial) {
+    return (
+      <div className="rounded-3xl border border-borde bg-card p-6 text-center">
+        <p className="text-sm font-medium text-texto-suave">Cálculo parcial (no incluye todos tus casos)</p>
+        <p className="mt-1 text-4xl font-bold tracking-tight text-texto-suave">{formatearPesos(cifra)}</p>
+        <p className="mt-2 text-xs text-texto-suave">
+          {esSaldoAFavor ? 'Saldo a favor parcial' : 'Saldo a pagar parcial'} · Año gravable 2025
+        </p>
+      </div>
+    );
+  }
   return (
     <div
       className={`rounded-3xl p-6 text-center ${esSaldoAFavor ? 'bg-exito-suave' : 'bg-alerta-suave'}`}

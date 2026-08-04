@@ -55,10 +55,10 @@ tributaria nueva, solo detección y honestidad; por eso puede ir antes del gate.
 - El motor NO los liquida en esta fase: `construirPerfilFiscal` los traduce a
   `casosNoSoportados: CasoNoSoportado[]` en el resultado.
 - UI: si hay casos no soportados, el paso Resultado muestra advertencia prominente
-  ("Tu declaración incluye X, que TuRenta aún no liquida — este borrador está
-  incompleto; consulta un contador antes de presentar"), el PDF del borrador lleva la
-  misma marca de agua/nota, y el estado de la declaración queda "incompleta", no
-  "completada".
+  ("Tu declaración incluye X, que TuRenta aún no liquida — está incompleta; consulta
+  un contador antes de presentar"), **el PDF del borrador NO se genera** (ni el botón
+  ni el endpoint lo permiten: un borrador a medias termina presentado), y el estado
+  de la declaración queda "incompleta", no "completada".
 - Tests: captura de campos, generación del flag, presencia del aviso en el borrador.
 
 Criterio de aceptación: un usuario con herencia/venta/premio/cripto NUNCA recibe un

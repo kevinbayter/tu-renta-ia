@@ -48,6 +48,7 @@ export {
 } from './exogena/no-laborales';
 export { mesesTrabajadosSegunCertificados } from './perfil/meses-trabajados';
 export { type RespuestasEntrevista } from './perfil/respuestas';
+export { detectarCasosNoSoportados, type CasoNoSoportado } from './perfil/casos-no-soportados';
 export {
   normalizarPreferencias,
   PREFERENCIAS_POR_DEFECTO,

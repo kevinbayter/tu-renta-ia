@@ -1,5 +1,6 @@
 'use client';
 
+import { detectarCasosNoSoportados } from '@turenta/core';
 import { ChevronRight, FileText, MoreVertical, RotateCcw, Save } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -54,6 +55,14 @@ function Migas({ titular }: { titular: string }) {
 function InsigniaProgreso() {
   const paso = useDeclaracion((s) => s.paso);
   const resultado = useDeclaracion((s) => s.resultado);
+  const respuestas = useDeclaracion((s) => s.respuestas);
+  if (paso === 'resultado' && resultado !== null && detectarCasosNoSoportados(respuestas).length > 0) {
+    return (
+      <span className="rounded-lg bg-alerta-suave px-2.5 py-1 text-xs font-semibold text-alerta">
+        Incompleta — requiere contador
+      </span>
+    );
+  }
   const completada = paso === 'resultado' && resultado !== null;
   return (
     <span

@@ -122,7 +122,7 @@ async function pedirYDescargar(
   const respuesta = await fetch('/api/borrador', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ declarante, resultado }),
+    body: JSON.stringify({ declarante, resultado, respuestas: useDeclaracion.getState().respuestas }),
   });
   if (!respuesta.ok) {
     return 'No se pudo generar el PDF. Verifica tus datos.';

@@ -87,6 +87,19 @@ CAMPOS DELICADOS (errores que NO puedes cometer):
 - PATRIMONIO DEL AÑO ANTERIOR (patrimonioLiquidoAnterior): si YA viene precargado desde su declaración anterior (verás "DECLARACIÓN ANTERIOR YA LEÍDA" en los documentos), NO lo preguntes — ya está resuelto. Solo si NO está: menciónale de forma tranquila que si tiene a mano el PDF de su declaración del año pasado puede subirlo y tomamos los datos de ahí (es opcional); si no la tiene, pregúntale el patrimonio líquido (casilla 31) SIN alarmarlo — explica que sirve para que su declaración cuadre con la anterior, nunca hables de sanciones ni requerimientos. Si su patrimonio creció mucho más que sus ingresos, pregunta por herencias, préstamos recibidos, gananciales o valorizaciones y captúralos en justificacionesPatrimoniales.
 - Al preguntar por bienes al 31 de diciembre, menciona ejemplos que la gente olvida: bienes personales (muebles, enseres, electrodomésticos), vehículos, y cuentas por cobrar (dinero que le deban).
 
+EVENTOS DEL AÑO (obligatorio, ANTES de cerrar la entrevista):
+- Pregunta UNA sola vez, agrupado y en lenguaje simple, si durante el año gravable el usuario:
+  1. Vendió casa, apartamento, carro u otro activo (eventoVentaActivos).
+  2. Recibió herencia, legado o donación (eventoHerenciaODonacion).
+  3. Ganó premios de lotería, rifas o apuestas, incluidas apps como BetPlay (eventoPremiosOApuestas).
+  4. Tiene o vendió criptomonedas (eventoCripto).
+  5. Tiene cuentas o bienes fuera de Colombia: Wise, Payoneer, PayPal, brokers, inmuebles (eventoActivosExterior).
+  6. Recibió ingresos desde el exterior: freelance, salarios en divisas, YouTube/plataformas extranjeras (eventoIngresosExterior).
+  7. Recibió dividendos de empresas (eventoDividendos).
+- Captura cada uno como 1 (sí) o 0 (no) según lo que responda. No pidas montos ni detalles: solo el sí/no.
+- Si alguno es SÍ, dile con total franqueza: "TuRenta todavía no liquida ese caso; tu declaración quedará marcada como incompleta y no podrás descargar el borrador — para ese punto necesitas un contador". NUNCA minimices esto ni sugieras omitirlo.
+- Ingresos por trabajos en plataformas NACIONALES (Rappi, ventas por internet en Colombia) sí los cubrimos: captúralos en ingresosNoLaborales con sus costos en costosNoLaborales.
+
 DOCUMENTOS YA PROCESADOS Y DATOS PRECARGADOS:
 ${resumenDocumentos || '(ninguno aún)'}
 

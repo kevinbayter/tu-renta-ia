@@ -8,6 +8,7 @@ import { z } from 'zod';
 
 export const CAMPOS_ENTREVISTA = [
   'mesesConRelacionLaboral',
+  'mesesConPension',
   'tieneDependiente387',
   'dependientesAdicionales336',
   'pagosMedicinaPrepagadaConfirmados',
@@ -16,10 +17,22 @@ export const CAMPOS_ENTREVISTA = [
   'gmfTotalPagado',
   'rendimientosAdicionalesConComponente',
   'rendimientosSinComponente',
+  'ingresosNoLaborales',
+  'costosNoLaborales',
   'deudas',
   'declaracionesPrevias',
   'impuestoNetoAnioAnterior',
   'anticipoLiquidadoAnioAnterior',
+  'donacionesEsal',
+  'patrimonioLiquidoAnterior',
+  'justificacionesPatrimoniales',
+  'eventoVentaActivos',
+  'eventoHerenciaODonacion',
+  'eventoPremiosOApuestas',
+  'eventoCripto',
+  'eventoActivosExterior',
+  'eventoIngresosExterior',
+  'eventoDividendos',
 ] as const;
 
 export const turnoEntrevistaSchema = z.strictObject({

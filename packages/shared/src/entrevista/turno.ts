@@ -24,6 +24,8 @@ export const CAMPOS_ENTREVISTA = [
   'impuestoNetoAnioAnterior',
   'anticipoLiquidadoAnioAnterior',
   'donacionesEsal',
+  'aportesAfcPensionVoluntaria',
+  'aporteVoluntarioPensionObligatoria',
   'patrimonioLiquidoAnterior',
   'justificacionesPatrimoniales',
   'eventoVentaActivos',
@@ -33,6 +35,7 @@ export const CAMPOS_ENTREVISTA = [
   'eventoActivosExterior',
   'eventoIngresosExterior',
   'eventoDividendos',
+  'eventoRetirosAfcSinRequisitos',
 ] as const;
 
 export const turnoEntrevistaSchema = z.strictObject({

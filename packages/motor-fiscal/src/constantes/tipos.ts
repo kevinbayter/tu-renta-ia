@@ -59,6 +59,8 @@ export interface ConstantesAnio {
   };
   gmf: { porcentajeDeducible: number };
   afcFvp: { porcentaje: number; topeAnualUvt: number };
+  /** Art. 55: cotización voluntaria al RAIS como INCRNGO (25% del ingreso, 2.500 UVT). */
+  aporteVoluntarioRais: { porcentaje: number; topeAnualUvt: number };
 
   facturaElectronica: {
     porcentaje: number;

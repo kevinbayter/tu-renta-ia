@@ -12,7 +12,12 @@ import type { PerfilFiscal } from '../modelo/tipos';
 type DepuracionNoLaborales = ReturnType<typeof depurarNoLaborales>;
 
 export function depurarCedulaGeneral(perfil: PerfilFiscal, c: ConstantesAnio): ResultadoCedulaGeneral {
-  const trabajo = depurarRentasTrabajo(perfil.certificadosLaborales, perfil.deducciones, c);
+  const trabajo = depurarRentasTrabajo(
+    perfil.certificadosLaborales,
+    perfil.deducciones,
+    c,
+    perfil.aportesVoluntarios,
+  );
   const capital = depurarRentasCapital(perfil.rentasCapital, c);
   const noLaborales = depurarNoLaborales(perfil.rentasNoLaborales);
   // Base del 40% (art. 336-4): ingresos − INCRNGO − costos y gastos procedentes.

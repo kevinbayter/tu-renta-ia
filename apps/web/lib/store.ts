@@ -3,9 +3,17 @@ import { persist } from 'zustand/middleware';
 
 import { RESPUESTAS_INICIALES } from './tipos';
 
+import type { AlcanceAutorizacion } from '@turenta/core';
 import type { Declarante, DocumentoProcesado, MensajeChat, RespuestasEntrevista, ResultadoDeclaracion } from './tipos';
 
 export type PasoWizard = 'exogena' | 'documentos' | 'entrevista' | 'revision' | 'resultado';
+
+/** Consentimiento DIAN otorgado en este wizard; su texto promete vigencia de 15 minutos. */
+export interface ConsentimientoDian {
+  titular: string;
+  alcances: AlcanceAutorizacion[];
+  otorgadoEn: number;
+}
 
 interface EstadoDeclaracion {
   paso: PasoWizard;
@@ -18,8 +26,10 @@ interface EstadoDeclaracion {
   /** true = a nombre propio; false = de un tercero; null = flujo anónimo sin titular definido. */
   esPropia: boolean | null;
   declaracionId: string | null;
+  consentimientoDian: ConsentimientoDian | null;
 
   irAPaso: (paso: PasoWizard) => void;
+  registrarConsentimientoDian: (consentimiento: ConsentimientoDian) => void;
   actualizarDeclarante: (parcial: Partial<Declarante>) => void;
   establecerTitular: (declarante: Declarante, esPropia: boolean, declaracionId: string | null) => void;
   establecerDeclaracionId: (id: string) => void;
@@ -45,6 +55,7 @@ const ESTADO_INICIAL = {
   declarante: { nombres: '', apellidos: '', identificacion: '' } as Declarante,
   esPropia: null as boolean | null,
   declaracionId: null as string | null,
+  consentimientoDian: null as ConsentimientoDian | null,
 };
 
 type SetEstado = (
@@ -62,6 +73,7 @@ function agregarConExogenaUnica(existentes: DocumentoProcesado[], nuevo: Documen
 function accionesGenerales(set: SetEstado): Partial<EstadoDeclaracion> {
   return {
     irAPaso: (paso) => set({ paso }),
+    registrarConsentimientoDian: (consentimiento) => set({ consentimientoDian: consentimiento }),
     actualizarDeclarante: (parcial) => set((s) => ({ declarante: { ...s.declarante, ...parcial } })),
     establecerTitular: (declarante, esPropia, declaracionId) => set({ declarante, esPropia, declaracionId }),
     establecerDeclaracionId: (id) => set({ declaracionId: id }),

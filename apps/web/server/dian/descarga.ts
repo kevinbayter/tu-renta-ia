@@ -66,14 +66,23 @@ export async function descargarDeLaDian(
   return { resultado, esperarSegundos: null };
 }
 
-function autorizacionPara(operacion: Operacion, solicitud: SolicitudConexionDian, usuarioId: string) {
+/** Scopes of the consent text the user actually read; empty = older client whose screen showed only the operation's scope. */
+function alcancesAceptados(operacion: Operacion, solicitud: SolicitudConexionDian): AlcanceAutorizacion[] {
+  if (solicitud.alcancesAceptados.length > 0) {
+    return solicitud.alcancesAceptados;
+  }
   const alcance = ALCANCES[operacion];
+  return solicitud.recordarAcceso ? [alcance, 'recordar_acceso'] : [alcance];
+}
+
+function autorizacionPara(operacion: Operacion, solicitud: SolicitudConexionDian, usuarioId: string) {
+  const alcances = alcancesAceptados(operacion, solicitud);
   return crearAutorizacion(
     {
       titularIdentificacion: solicitud.titular,
       operadorUsuarioId: usuarioId,
-      alcances: [alcance],
-      textoAceptado: serializarAutorizacion(textoAutorizacion(solicitud.titular, [alcance])),
+      alcances,
+      textoAceptado: serializarAutorizacion(textoAutorizacion(solicitud.titular, alcances)),
     },
     new Date(),
   );

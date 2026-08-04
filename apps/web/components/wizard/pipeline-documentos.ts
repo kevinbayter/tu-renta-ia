@@ -44,6 +44,12 @@ export const useSubidas = create<EstadoSubidas>((set) => ({
   terminarEnSegundoPlano: () => set((s) => ({ enSegundoPlano: Math.max(0, s.enSegundoPlano - 1) })),
 }));
 
+/** 401 en pleno wizard = sesión expirada: al login con retorno. */
+export function irAIngresar(): { error: string } {
+  window.location.assign('/ingresar?siguiente=/declaracion');
+  return { error: 'Tu sesión expiró. Ingresa de nuevo para continuar.' };
+}
+
 export async function subirArchivo(
   archivo: File,
   tipoConocido?: string,
@@ -121,9 +127,19 @@ export async function registrarDocumento(
   if ('error' in resultado) {
     return resultado;
   }
+  if (resultado.tipo === 'exogena') {
+    archivosExogena.set(resultado.id, archivo);
+  }
   useDeclaracion.getState().agregarDocumento(resultado);
   aplicarPrecarga(resultado);
   return resultado;
+}
+
+/** El store persiste solo el parseo: el .xlsx original vive aquí mientras dure la pestaña. */
+const archivosExogena = new Map<string, File>();
+
+export function archivoExogenaDe(id: string): File | null {
+  return archivosExogena.get(id) ?? null;
 }
 
 /**
@@ -155,6 +171,9 @@ async function enviarArchivo(
     formData.append('tipoConocido', tipoConocido);
   }
   const respuesta = await fetch('/api/documentos', { method: 'POST', body: formData });
+  if (respuesta.status === 401) {
+    return irAIngresar();
+  }
   const cuerpo = (await respuesta.json()) as Record<string, unknown>;
   if (!respuesta.ok) {
     return { error: String(cuerpo.error ?? 'No se pudo procesar') };
@@ -194,6 +213,9 @@ async function consultarTarea(
   nombreArchivo: string,
 ): Promise<DocumentoProcesado | { error: string } | null> {
   const respuesta = await fetch(`/api/documentos?tarea=${encodeURIComponent(tareaId)}`);
+  if (respuesta.status === 401) {
+    return irAIngresar();
+  }
   const cuerpo = (await respuesta.json()) as Record<string, unknown>;
   if (!respuesta.ok) {
     return { error: String(cuerpo.error ?? 'No se pudo procesar') };

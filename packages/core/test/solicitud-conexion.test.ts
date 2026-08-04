@@ -74,6 +74,33 @@ describe('validación de la solicitud de conexión', () => {
     expect(sinAnio.valida && sinAnio.solicitud.anioGravable).toBe(ANIO_ACTUAL - 1);
   });
 
+  it('normaliza los alcances aceptados: solo conocidos y sin repetir', () => {
+    const resultado = validar({
+      alcancesAceptados: ['leer_exogena', 'leer_exogena', 'presentar_declaracion', 'hackear', 42],
+    });
+    expect(resultado.valida && resultado.solicitud.alcancesAceptados).toEqual(['leer_exogena']);
+  });
+
+  it('sin alcances en el cuerpo la solicitud queda con lista vacía', () => {
+    const resultado = validar();
+    expect(resultado.valida && resultado.solicitud.alcancesAceptados).toEqual([]);
+  });
+
+  it('no guarda el acceso si el texto aceptado no incluía recordar_acceso', () => {
+    const resultado = validar({ recordarAcceso: true, alcancesAceptados: ['leer_exogena'] });
+    expect(resultado.valida && resultado.solicitud.recordarAcceso).toBe(false);
+  });
+
+  it('guarda el acceso cuando el texto aceptado sí lo incluía', () => {
+    const conAlcances = validar({
+      recordarAcceso: true,
+      alcancesAceptados: ['leer_exogena', 'recordar_acceso'],
+    });
+    expect(conAlcances.valida && conAlcances.solicitud.recordarAcceso).toBe(true);
+    const clienteViejo = validar({ recordarAcceso: true });
+    expect(clienteViejo.valida && clienteViejo.solicitud.recordarAcceso).toBe(true);
+  });
+
   it('no revienta con un cuerpo basura', () => {
     expect(validarSolicitudConexion({}, ANIO_ACTUAL).valida).toBe(false);
     expect(

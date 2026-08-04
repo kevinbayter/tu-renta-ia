@@ -1,9 +1,26 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
 
 export default function PaginaIngresar() {
+  return (
+    <Suspense>
+      <Ingreso />
+    </Suspense>
+  );
+}
+
+/** Solo rutas internas: un `siguiente` externo sería un open redirect. */
+function destinoSeguro(siguiente: string | null): string {
+  if (siguiente && siguiente.startsWith('/') && !siguiente.startsWith('//')) {
+    return siguiente;
+  }
+  return '/panel';
+}
+
+function Ingreso() {
+  const destino = destinoSeguro(useSearchParams().get('siguiente'));
   const [fase, setFase] = useState<'email' | 'codigo' | 'perfil'>('email');
   const [email, setEmail] = useState('');
   return (
@@ -18,14 +35,19 @@ export default function PaginaIngresar() {
         <FormularioEmail email={email} setEmail={setEmail} alEnviar={() => setFase('codigo')} />
       )}
       {fase === 'codigo' && (
-        <FormularioCodigo email={email} alVolver={() => setFase('email')} alFaltarPerfil={() => setFase('perfil')} />
+        <FormularioCodigo
+          email={email}
+          destino={destino}
+          alVolver={() => setFase('email')}
+          alFaltarPerfil={() => setFase('perfil')}
+        />
       )}
-      {fase === 'perfil' && <FormularioPerfil />}
+      {fase === 'perfil' && <FormularioPerfil destino={destino} />}
     </main>
   );
 }
 
-function FormularioPerfil() {
+function FormularioPerfil({ destino }: { destino: string }) {
   const router = useRouter();
   const [datos, setDatos] = useState({ nombres: '', apellidos: '', identificacion: '' });
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +66,7 @@ function FormularioPerfil() {
       setError('Revisa los datos: nombres, apellidos y una cédula válida.');
       return;
     }
-    router.push('/panel');
+    router.push(destino);
   };
 
   return (
@@ -151,10 +173,12 @@ function FormularioEmail({
 
 function FormularioCodigo({
   email,
+  destino,
   alVolver,
   alFaltarPerfil,
 }: {
   email: string;
+  destino: string;
   alVolver: () => void;
   alFaltarPerfil: () => void;
 }) {
@@ -181,7 +205,7 @@ function FormularioCodigo({
       alFaltarPerfil();
       return;
     }
-    router.push('/panel');
+    router.push(destino);
   };
 
   return (

@@ -49,6 +49,10 @@ export function construirPerfilFiscal(insumos: InsumosPerfil): PerfilFiscal {
     },
     rentasPensiones: armarPensiones(insumos.exogena, insumos.certificados220, respuestas),
     deducciones: armarDeducciones(respuestas),
+    aportesVoluntarios: {
+      afcYPensionVoluntaria: respuestas.aportesAfcPensionVoluntaria ?? 0,
+      voluntarioPensionObligatoria: respuestas.aporteVoluntarioPensionObligatoria ?? 0,
+    },
     comprasFacturaElectronica: comprasFacturaElectronicaConBeneficio(insumos.exogena),
     patrimonio: armarPatrimonio(insumos.exogena, insumos.certificadosBancarios, respuestas),
     descuentos: { donacionesEsal: respuestas.donacionesEsal ?? 0 },

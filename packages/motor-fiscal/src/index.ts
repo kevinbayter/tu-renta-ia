@@ -10,6 +10,7 @@ export type { ConstantesAnio, RangoTarifa, TramoCesantias } from './constantes/t
 export type {
   PerfilFiscal,
   CertificadoLaboral,
+  AportesVoluntariosInput,
   RentasCapitalInput,
   RentasNoLaboralesInput,
   RentasPensionesInput,

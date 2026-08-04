@@ -53,6 +53,12 @@ const CASOS: CasoNoSoportado[] = [
     etiqueta: 'Dividendos recibidos',
     detalle: 'Tienen cédula y descuento propios (arts. 242 y 254-1 E.T.) que aún no liquidamos.',
   },
+  {
+    clave: 'eventoRetirosAfcSinRequisitos',
+    etiqueta: 'Retiros de AFC o pensión voluntaria sin cumplir requisitos',
+    detalle:
+      'Generan pérdida del beneficio y retención contingente (arts. 126-1/126-4 E.T.), tratamiento que aún no liquidamos.',
+  },
 ];
 
 export function detectarCasosNoSoportados(respuestas: RespuestasEntrevista): CasoNoSoportado[] {

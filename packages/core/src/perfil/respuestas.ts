@@ -31,6 +31,10 @@ export interface RespuestasEntrevista {
   anticipoLiquidadoAnioAnterior: number;
   /** Donaciones a ESAL con certificación del donatario (descuento del 25%, art. 257). */
   donacionesEsal?: number;
+  /** Aportes del año a AFC + pensiones voluntarias (arts. 126-1/126-4), según certificados. */
+  aportesAfcPensionVoluntaria?: number;
+  /** Cotización VOLUNTARIA al fondo de pensión obligatoria/RAIS (art. 55), según certificado. */
+  aporteVoluntarioPensionObligatoria?: number;
   /** Casilla 31 de la declaración anterior; habilita la comparación patrimonial (art. 236). */
   patrimonioLiquidoAnterior?: number;
   /** Causas justificativas del incremento patrimonial (art. 239): herencias, préstamos, valorizaciones. */
@@ -47,4 +51,5 @@ export interface RespuestasEntrevista {
   eventoActivosExterior?: number;
   eventoIngresosExterior?: number;
   eventoDividendos?: number;
+  eventoRetirosAfcSinRequisitos?: number;
 }

@@ -1,17 +1,20 @@
 import { redondearMil } from '../redondeo';
 
 import type { ConstantesAnio } from '../constantes/tipos';
-import type { CertificadoLaboral, DeduccionesInput } from '../modelo/tipos';
+import type { AportesVoluntariosInput, CertificadoLaboral, DeduccionesInput } from '../modelo/tipos';
 
 export interface DepuracionTrabajo {
   ingresosBrutos: number;
   incrngo: number;
+  /** Parte del INCRNGO que viene de la cotización voluntaria al RAIS (art. 55). */
+  incrngoAporteVoluntarioRais: number;
   rentaLiquida: number;
   deduccionDependientes: number;
   deduccionPrepagada: number;
   deduccionIntereses: number;
   totalDeduccionesImputables: number;
   cesantiasExentas: number;
+  afcExenta: number;
   exenta25: number;
   totalRentasExentas: number;
   solicitadoExentasYDeducciones: number;
@@ -21,21 +24,49 @@ export function depurarRentasTrabajo(
   certificados: CertificadoLaboral[],
   deducciones: DeduccionesInput,
   c: ConstantesAnio,
+  aportes?: AportesVoluntariosInput,
 ): DepuracionTrabajo {
   const ingresosBrutos = redondearMil(sumarIngresos(certificados));
-  const incrngo = redondearMil(sumarAportesObligatorios(certificados));
+  const incrngoAporteVoluntarioRais = calcularIncrngoVoluntarioRais(ingresosBrutos, aportes, c);
+  const incrngo = redondearMil(sumarAportesObligatorios(certificados)) + incrngoAporteVoluntarioRais;
   const rentaLiquida = ingresosBrutos - incrngo;
   const imputables = calcularDeduccionesImputables(ingresosBrutos, deducciones, c);
   const baseExentas = rentaLiquida - imputables.totalDeduccionesImputables;
-  const exentas = calcularRentasExentas(certificados, baseExentas, c);
+  const exentas = calcularRentasExentas(certificados, baseExentas, ingresosBrutos, aportes, c);
   return {
     ingresosBrutos,
     incrngo,
+    incrngoAporteVoluntarioRais,
     rentaLiquida,
     ...imputables,
     ...exentas,
     solicitadoExentasYDeducciones: imputables.totalDeduccionesImputables + exentas.totalRentasExentas,
   };
+}
+
+/** Art. 55: cotización voluntaria al RAIS como INCRNGO — min(aporte, 25% del ingreso, 2.500 UVT). */
+function calcularIncrngoVoluntarioRais(
+  ingresosBrutos: number,
+  aportes: AportesVoluntariosInput | undefined,
+  c: ConstantesAnio,
+): number {
+  const aporte = Math.max(0, aportes?.voluntarioPensionObligatoria ?? 0);
+  const tope = Math.min(
+    ingresosBrutos * c.aporteVoluntarioRais.porcentaje,
+    c.aporteVoluntarioRais.topeAnualUvt * c.uvt,
+  );
+  return redondearMil(Math.min(aporte, tope));
+}
+
+/** Arts. 126-1/126-4: AFC + pensión voluntaria — min(aportes, 30% del ingreso, 3.800 UVT). */
+function calcularAfcExenta(
+  ingresosBrutos: number,
+  aportes: AportesVoluntariosInput | undefined,
+  c: ConstantesAnio,
+): number {
+  const aporte = Math.max(0, aportes?.afcYPensionVoluntaria ?? 0);
+  const tope = Math.min(ingresosBrutos * c.afcFvp.porcentaje, c.afcFvp.topeAnualUvt * c.uvt);
+  return redondearMil(Math.min(aporte, tope));
 }
 
 interface DeduccionesImputables {
@@ -63,21 +94,27 @@ function calcularDeduccionesImputables(
 
 interface RentasExentas {
   cesantiasExentas: number;
+  afcExenta: number;
   exenta25: number;
   totalRentasExentas: number;
 }
 
+/** El 25% (206-10) se calcula después de restar INCRNGO, deducciones y las DEMÁS exentas. */
 function calcularRentasExentas(
   certificados: CertificadoLaboral[],
   baseDisponible: number,
+  ingresosBrutos: number,
+  aportes: AportesVoluntariosInput | undefined,
   c: ConstantesAnio,
 ): RentasExentas {
   const cesantiasExentas = calcularCesantiasExentas(certificados, c);
-  const exenta25 = calcularExenta25(baseDisponible - cesantiasExentas, c);
+  const afcExenta = calcularAfcExenta(ingresosBrutos, aportes, c);
+  const exenta25 = calcularExenta25(baseDisponible - cesantiasExentas - afcExenta, c);
   return {
     cesantiasExentas,
+    afcExenta,
     exenta25,
-    totalRentasExentas: cesantiasExentas + exenta25,
+    totalRentasExentas: cesantiasExentas + afcExenta + exenta25,
   };
 }
 

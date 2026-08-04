@@ -53,7 +53,11 @@ export const AG2025: ConstantesAnio = {
     limiteSobreImpuesto: 0.25,
   },
   gmf: { porcentajeDeducible: 0.5 },
+  // Arts. 126-1/126-4: límite CONJUNTO de AFC + pensión voluntaria
+  // (normativa/ag2025/08-afc-pension-voluntaria-salud.md)
   afcFvp: { porcentaje: 0.3, topeAnualUvt: 3_800 },
+  // Art. 55 (mod. Ley 2010/2019): INCRNGO, mismo doc de respaldo.
+  aporteVoluntarioRais: { porcentaje: 0.25, topeAnualUvt: 2_500 },
 
   facturaElectronica: {
     porcentaje: 0.01,

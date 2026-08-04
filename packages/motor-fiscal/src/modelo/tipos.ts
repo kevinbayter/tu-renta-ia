@@ -36,6 +36,13 @@ export interface DeduccionesInput {
   interesesIcetex: number;
 }
 
+export interface AportesVoluntariosInput {
+  /** AFC (126-4) + pensiones voluntarias (126-1): renta exenta con límite conjunto 30%/3.800 UVT. */
+  afcYPensionVoluntaria: number;
+  /** Cotización voluntaria al fondo de pensión OBLIGATORIA (art. 55): INCRNGO 25%/2.500 UVT. */
+  voluntarioPensionObligatoria: number;
+}
+
 export interface RentasNoLaboralesInput {
   /** Arriendos vía mandato, honorarios sin vínculo y demás del art. 335 (ya deduplicados). */
   ingresosBrutos: number;
@@ -96,6 +103,8 @@ export interface PerfilFiscal {
   /** Cédula de pensiones (art. 337); ausente = sin ingresos pensionales. */
   rentasPensiones?: RentasPensionesInput;
   deducciones: DeduccionesInput;
+  /** Aportes voluntarios a AFC/pensión (arts. 55, 126-1, 126-4); ausente = sin aportes. */
+  aportesVoluntarios?: AportesVoluntariosInput;
   /** Monto de compras con factura electrónica susceptible del beneficio del 1%. */
   comprasFacturaElectronica: number;
   patrimonio: PatrimonioInput;

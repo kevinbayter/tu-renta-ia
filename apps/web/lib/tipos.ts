@@ -48,6 +48,8 @@ export const RESPUESTAS_INICIALES: RespuestasEntrevista = {
   impuestoNetoAnioAnterior: 0,
   anticipoLiquidadoAnioAnterior: 0,
   donacionesEsal: 0,
+  aportesAfcPensionVoluntaria: 0,
+  aporteVoluntarioPensionObligatoria: 0,
   patrimonioLiquidoAnterior: 0,
   justificacionesPatrimoniales: 0,
   eventoVentaActivos: 0,
@@ -57,6 +59,7 @@ export const RESPUESTAS_INICIALES: RespuestasEntrevista = {
   eventoActivosExterior: 0,
   eventoIngresosExterior: 0,
   eventoDividendos: 0,
+  eventoRetirosAfcSinRequisitos: 0,
 };
 
 export function formatearPesos(valor: number): string {

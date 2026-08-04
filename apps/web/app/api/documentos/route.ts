@@ -80,7 +80,9 @@ async function procesarEnSegundoPlano(
     await registrarProcesado(usuarioId, nombre, cuerpo);
     completarTarea(tareaId, cuerpo);
   } catch (error) {
-    fallarTarea(tareaId, error instanceof Error ? error.message : 'Error procesando el documento');
+    const mensaje = error instanceof Error ? error.message : 'Error procesando el documento';
+    console.error(`[documentos] fallo leyendo "${nombre}" (tarea ${tareaId}): ${mensaje}`);
+    fallarTarea(tareaId, mensaje);
   }
 }
 

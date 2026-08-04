@@ -112,6 +112,14 @@ export interface DescuentosInput {
   donacionesEsal: number;
 }
 
+export interface DividendosInput {
+  /** 1ª subcédula: utilidades 2017+ NO gravadas en cabeza de la sociedad (num. 3 art. 49). */
+  noGravados: number;
+  /** 2ª subcédula: utilidades gravadas (par. 2 art. 49) — 35% y el neto a la tabla. */
+  gravados: number;
+  retencionFuente: number;
+}
+
 export interface ComparacionPatrimonialInput {
   /** Casilla 31 de la declaración del año anterior; 0 = no se compara. */
   patrimonioLiquidoAnterior: number;
@@ -148,6 +156,8 @@ export interface PerfilFiscal {
   descuentos?: DescuentosInput;
   /** Ganancias ocasionales (arts. 300-317); ausente = sin GO. */
   gananciasOcasionales?: GananciasOcasionalesInput;
+  /** Cédula de dividendos (arts. 242, 254-1); ausente = sin dividendos. */
+  dividendos?: DividendosInput;
   /** Datos para la comparación patrimonial (arts. 236-239); ausente = no se evalúa. */
   comparacionPatrimonial?: ComparacionPatrimonialInput;
   historial: HistorialInput;

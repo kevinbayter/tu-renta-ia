@@ -71,6 +71,11 @@ export interface RespuestasEntrevista {
   herenciasRecibidas?: HerenciaCapturada[];
   premiosRecibidos?: PremioCapturado[];
 
+  /** Dividendos según certificado del emisor (1ª subcédula no gravados / 2ª gravados). */
+  dividendosNoGravados?: number;
+  dividendosGravados?: number;
+  retencionDividendos?: number;
+
   /**
    * Eventos del año (0/1). Venta/herencia/premios marcan que HAY datos por
    * capturar (incompleta hasta que sus listas tengan elementos); el resto son

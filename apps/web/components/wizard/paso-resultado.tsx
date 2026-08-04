@@ -118,6 +118,9 @@ function Desglose({ resultado }: { resultado: ResultadoDeclaracion }) {
     ['Aportes salud y pensión (no gravados)', -g.trabajo.incrngo],
     ['Rentas exentas y deducciones aplicadas', -g.totalExentasYDeduccionesConFueraDeLimite - g.capital.incrngoComponenteInflacionario],
     ['Renta líquida gravable', g.rentaLiquidaGravable],
+    ...(resultado.dividendos.baseParaTabla > 0
+      ? ([['Dividendos que entran a la base', resultado.dividendos.baseParaTabla]] as [string, number][])
+      : []),
     ['Impuesto de renta', l.impuestoNetoRenta],
     ...(go.ingresos > 0
       ? ([

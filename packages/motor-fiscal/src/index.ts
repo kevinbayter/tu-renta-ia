@@ -11,6 +11,7 @@ export type {
   PerfilFiscal,
   CertificadoLaboral,
   AportesVoluntariosInput,
+  DividendosInput,
   GananciasOcasionalesInput,
   VentaActivoInput,
   HerenciaDonacionInput,
@@ -28,6 +29,7 @@ export type {
 export type {
   ResultadoDeclaracion,
   ResultadoCedulaGeneral,
+  ResultadoDividendos,
   ResultadoGananciasOcasionales,
   ResultadoRentasTrabajo,
   ResultadoRentasCapital,

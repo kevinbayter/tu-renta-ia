@@ -57,7 +57,9 @@ export interface ResultadoCedulaGeneral {
 export interface ResultadoDescuentos {
   donacionesRealizadas: number;
   porDonaciones: number;
-  /** Tope del art. 258 (25% del impuesto) que se pudo aplicar. */
+  /** Descuento por dividendos del art. 254-1 (fuera del tope del 258). */
+  porDividendos: number;
+  /** Tope del art. 258 (25% del impuesto) que se pudo aplicar a las donaciones. */
   limiteAplicado: number;
   total: number;
 }
@@ -70,6 +72,21 @@ export interface ResultadoComparacionPatrimonial {
   capacidadDeJustificacion: number;
   /** > 0 exige explicación al usuario (art. 239); la plataforma NO la grava sola. */
   diferenciaSinJustificar: number;
+}
+
+export interface ResultadoDividendos {
+  /** Casilla 107: 1ª subcédula 2017+ (num. 3 art. 49). */
+  noGravados: number;
+  /** Casilla 108: 2ª subcédula 2017+ (par. 2 art. 49). */
+  gravados: number;
+  /** 35% sobre la 2ª subcédula (art. 242). */
+  impuestoGravados35: number;
+  netoGravadosATabla: number;
+  /** Lo que suma a la base de la tabla 241 (art. 331): noGravados + neto de gravados. */
+  baseParaTabla: number;
+  /** Descuento del art. 254-1 (19% sobre el exceso de 1.090 UVT de la 1ª subcédula). */
+  descuento: number;
+  retencionFuente: number;
 }
 
 export interface ResultadoGananciasOcasionales {
@@ -94,6 +111,8 @@ export interface ResultadoGananciasOcasionales {
 
 export interface ResultadoLiquidacion {
   impuestoSobreRentaLiquida: number;
+  /** 35% de la 2ª subcédula de dividendos (art. 242); 0 sin dividendos gravados. */
+  impuestoDividendosGravados: number;
   descuentos: ResultadoDescuentos;
   impuestoNetoRenta: number;
   impuestoGananciasOcasionales: number;
@@ -113,6 +132,7 @@ export interface ResultadoDeclaracion {
   patrimonioLiquido: number;
   cedulaGeneral: ResultadoCedulaGeneral;
   cedulaPensiones: ResultadoRentasPensiones;
+  dividendos: ResultadoDividendos;
   gananciasOcasionales: ResultadoGananciasOcasionales;
   comparacionPatrimonial: ResultadoComparacionPatrimonial;
   liquidacion: ResultadoLiquidacion;

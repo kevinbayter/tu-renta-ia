@@ -160,6 +160,7 @@ function aplicarTurno(turno: TurnoEntrevista): void {
   for (const captura of turno.camposCapturados) {
     asignarCampo(parcial, captura.campo, captura.valor);
   }
+  Object.assign(parcial, gananciasOcasionalesDe(turno, estado.respuestas));
   if (Object.keys(parcial).length > 0) {
     estado.actualizarRespuestas(parcial);
   }
@@ -169,6 +170,36 @@ function aplicarTurno(turno: TurnoEntrevista): void {
   if (turno.entrevistaCompleta) {
     estado.marcarEntrevistaCompleta();
   }
+}
+
+function gananciasOcasionalesDe(
+  turno: TurnoEntrevista,
+  actuales: RespuestasEntrevista,
+): Partial<RespuestasEntrevista> {
+  const parcial: Partial<RespuestasEntrevista> = {};
+  if (turno.ventasActivosCapturadas.length > 0) {
+    parcial.ventasActivos = [
+      ...(actuales.ventasActivos ?? []),
+      ...turno.ventasActivosCapturadas.map((v) => ({
+        ...v,
+        esViviendaHabitacion: v.esViviendaHabitacion === 1,
+        destinoAfcOHipoteca: v.destinoAfcOHipoteca === 1,
+      })),
+    ];
+  }
+  if (turno.herenciasCapturadas.length > 0) {
+    parcial.herenciasRecibidas = [
+      ...(actuales.herenciasRecibidas ?? []),
+      ...turno.herenciasCapturadas.map((h) => ({
+        ...h,
+        esLegitimarioOConyuge: h.esLegitimarioOConyuge === 1,
+      })),
+    ];
+  }
+  if (turno.premiosCapturados.length > 0) {
+    parcial.premiosRecibidos = [...(actuales.premiosRecibidos ?? []), ...turno.premiosCapturados];
+  }
+  return parcial;
 }
 
 function asignarCampo(parcial: Partial<RespuestasEntrevista>, campo: string, valor: number): void {

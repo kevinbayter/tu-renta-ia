@@ -1,5 +1,6 @@
 import type {
   ResultadoCedulaGeneral,
+  ResultadoGananciasOcasionales,
   ResultadoLiquidacion,
   ResultadoRentasPensiones,
 } from '../modelo/resultado';
@@ -11,6 +12,7 @@ interface DatosCasillas {
   patrimonioLiquido: number;
   cedula: ResultadoCedulaGeneral;
   pensiones: ResultadoRentasPensiones;
+  gananciasOcasionales: ResultadoGananciasOcasionales;
   liquidacion: ResultadoLiquidacion;
   cantidadDependientes: number;
 }
@@ -24,8 +26,18 @@ export function mapearCasillas(d: DatosCasillas): Record<string, number> {
     ...casillasNoLaborales(d.cedula),
     ...casillasConsolidacion(d.cedula),
     ...casillasPensiones(d.pensiones),
+    ...casillasGananciasOcasionales(d.gananciasOcasionales),
     ...casillasLiquidacion(d.liquidacion),
     ...casillasDependientes(d),
+  };
+}
+
+function casillasGananciasOcasionales(go: ResultadoGananciasOcasionales): Record<string, number> {
+  return {
+    '112': go.ingresos,
+    '113': go.costos,
+    '114': go.exentas,
+    '115': go.gravables,
   };
 }
 
@@ -106,7 +118,7 @@ function casillasLiquidacion(l: ResultadoLiquidacion): Record<string, number> {
     '123': l.descuentos.porDonaciones,
     '125': l.descuentos.total,
     '126': l.impuestoNetoRenta,
-    '127': 0,
+    '127': l.impuestoGananciasOcasionales,
     '129': l.totalImpuestoACargo,
     '130': l.anticipoLiquidadoAnterior,
     '131': l.saldoFavorAnterior,

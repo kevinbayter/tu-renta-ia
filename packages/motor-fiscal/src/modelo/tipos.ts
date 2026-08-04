@@ -71,6 +71,42 @@ export interface PatrimonioInput {
   deudas: number;
 }
 
+export interface VentaActivoInput {
+  descripcion: string;
+  /** Fechas ISO (YYYY-MM-DD). El motor decide con ellas: ≥2 años GO, <2 años renta ordinaria (art. 300). */
+  fechaAdquisicion: string;
+  fechaVenta: string;
+  precioVenta: number;
+  costoFiscal: number;
+  esViviendaHabitacion: boolean;
+  /** Dinero depositado en cuenta AFC o abonado a la hipoteca del inmueble vendido (exención 311-1). */
+  destinoAfcOHipoteca: boolean;
+  /** Retención practicada en la venta (p. ej. 1% en la escritura). */
+  retencionFuente: number;
+}
+
+export interface HerenciaDonacionInput {
+  descripcion: string;
+  tipo: 'vivienda_causante' | 'otro_inmueble_causante' | 'otros_bienes';
+  /** true = heredero/legatario legitimario o cónyuge (num. 3 art. 307); false = num. 4 (20%, tope 1.625 UVT). */
+  esLegitimarioOConyuge: boolean;
+  /** Valor del bien según art. 303 (a 31-dic del año anterior a la sucesión/donación). */
+  valor: number;
+}
+
+export interface PremioInput {
+  descripcion: string;
+  valor: number;
+  /** Retención del 20% practicada por el operador (premios >48 UVT). */
+  retencionFuente: number;
+}
+
+export interface GananciasOcasionalesInput {
+  ventas: VentaActivoInput[];
+  herencias: HerenciaDonacionInput[];
+  premios: PremioInput[];
+}
+
 export interface DescuentosInput {
   /** Donaciones a ESAL del régimen especial con certificación (art. 257). */
   donacionesEsal: number;
@@ -110,6 +146,8 @@ export interface PerfilFiscal {
   patrimonio: PatrimonioInput;
   /** Descuentos tributarios (art. 257); ausente = sin descuentos. */
   descuentos?: DescuentosInput;
+  /** Ganancias ocasionales (arts. 300-317); ausente = sin GO. */
+  gananciasOcasionales?: GananciasOcasionalesInput;
   /** Datos para la comparación patrimonial (arts. 236-239); ausente = no se evalúa. */
   comparacionPatrimonial?: ComparacionPatrimonialInput;
   historial: HistorialInput;

@@ -12,24 +12,32 @@ export interface CasoNoSoportado {
   detalle: string;
 }
 
+/** Eventos que el motor SÍ liquida, pero solo cuando la entrevista capturó sus datos. */
+const PENDIENTES_DE_DATOS: { evento: keyof RespuestasEntrevista; datos: keyof RespuestasEntrevista; etiqueta: string; detalle: string }[] = [
+  {
+    evento: 'eventoVentaActivos',
+    datos: 'ventasActivos',
+    etiqueta: 'Venta de activos sin datos completos',
+    detalle:
+      'Nos contaste que vendiste un activo pero faltan sus datos (fechas, precio, costo): vuelve a la entrevista y regístralos para liquidarla.',
+  },
+  {
+    evento: 'eventoHerenciaODonacion',
+    datos: 'herenciasRecibidas',
+    etiqueta: 'Herencia o donación sin datos completos',
+    detalle:
+      'Nos contaste que recibiste una herencia o donación pero faltan sus datos (tipo de bien, valor): vuelve a la entrevista y regístralos.',
+  },
+  {
+    evento: 'eventoPremiosOApuestas',
+    datos: 'premiosRecibidos',
+    etiqueta: 'Premios sin datos completos',
+    detalle:
+      'Nos contaste que ganaste premios pero falta su valor y retención: vuelve a la entrevista y regístralos.',
+  },
+];
+
 const CASOS: CasoNoSoportado[] = [
-  {
-    clave: 'eventoVentaActivos',
-    etiqueta: 'Venta de inmueble, vehículo u otro activo',
-    detalle:
-      'La utilidad tributa como ganancia ocasional (≥2 años de posesión) o renta ordinaria (<2 años), y aún no la liquidamos.',
-  },
-  {
-    clave: 'eventoHerenciaODonacion',
-    etiqueta: 'Herencia, legado o donación recibida',
-    detalle:
-      'Es ganancia ocasional gravada con exenciones propias (art. 307 E.T.) que aún no liquidamos; no basta con justificar el patrimonio.',
-  },
-  {
-    clave: 'eventoPremiosOApuestas',
-    etiqueta: 'Premios de loterías, rifas o apuestas',
-    detalle: 'Tributan como ganancia ocasional al 20% (art. 317 E.T.) y aún no la liquidamos.',
-  },
   {
     clave: 'eventoCripto',
     etiqueta: 'Criptomonedas',
@@ -62,5 +70,10 @@ const CASOS: CasoNoSoportado[] = [
 ];
 
 export function detectarCasosNoSoportados(respuestas: RespuestasEntrevista): CasoNoSoportado[] {
-  return CASOS.filter((caso) => respuestas[caso.clave] === 1);
+  const pendientes = PENDIENTES_DE_DATOS.filter(
+    (caso) =>
+      respuestas[caso.evento] === 1 &&
+      (respuestas[caso.datos] as unknown[] | undefined ?? []).length === 0,
+  ).map(({ evento, etiqueta, detalle }) => ({ clave: evento, etiqueta, detalle }));
+  return [...pendientes, ...CASOS.filter((caso) => respuestas[caso.clave] === 1)];
 }

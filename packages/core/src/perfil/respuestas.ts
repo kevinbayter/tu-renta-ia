@@ -1,7 +1,33 @@
+/** Venta de un activo capturada en la entrevista (el motor decide GO vs renta ordinaria por fechas). */
+export interface VentaActivoCapturada {
+  descripcion: string;
+  /** ISO YYYY-MM-DD. */
+  fechaAdquisicion: string;
+  fechaVenta: string;
+  precioVenta: number;
+  costoFiscal: number;
+  esViviendaHabitacion: boolean;
+  /** Dinero llevado a cuenta AFC o abonado a la hipoteca del inmueble vendido (311-1). */
+  destinoAfcOHipoteca: boolean;
+  retencionFuente: number;
+}
+
+export interface HerenciaCapturada {
+  descripcion: string;
+  tipo: 'vivienda_causante' | 'otro_inmueble_causante' | 'otros_bienes';
+  esLegitimarioOConyuge: boolean;
+  valor: number;
+}
+
+export interface PremioCapturado {
+  descripcion: string;
+  valor: number;
+  retencionFuente: number;
+}
+
 /**
  * Respuestas de la entrevista: datos que NO están en exógena ni certificados
- * (o que el usuario debe confirmar). En Fase 3 la entrevista conversacional
- * llenará esta estructura; hoy se llena programáticamente.
+ * (o que el usuario debe confirmar).
  */
 export interface RespuestasEntrevista {
   mesesConRelacionLaboral: number;
@@ -40,9 +66,15 @@ export interface RespuestasEntrevista {
   /** Causas justificativas del incremento patrimonial (art. 239): herencias, préstamos, valorizaciones. */
   justificacionesPatrimoniales?: number;
 
+  /** Ganancias ocasionales capturadas (el motor las liquida desde la Fase 3). */
+  ventasActivos?: VentaActivoCapturada[];
+  herenciasRecibidas?: HerenciaCapturada[];
+  premiosRecibidos?: PremioCapturado[];
+
   /**
-   * Eventos del año que el motor AÚN no liquida (0/1). Solo detección: con
-   * cualquiera en 1 la declaración queda incompleta y el borrador no se genera.
+   * Eventos del año (0/1). Venta/herencia/premios marcan que HAY datos por
+   * capturar (incompleta hasta que sus listas tengan elementos); el resto son
+   * casos que el motor aún no liquida y dejan la declaración incompleta.
    */
   eventoVentaActivos?: number;
   eventoHerenciaODonacion?: number;

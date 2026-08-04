@@ -47,7 +47,12 @@ export {
   type DuplicadoNoLaboral,
 } from './exogena/no-laborales';
 export { mesesTrabajadosSegunCertificados } from './perfil/meses-trabajados';
-export { type RespuestasEntrevista } from './perfil/respuestas';
+export {
+  type RespuestasEntrevista,
+  type VentaActivoCapturada,
+  type HerenciaCapturada,
+  type PremioCapturado,
+} from './perfil/respuestas';
 export { detectarCasosNoSoportados, type CasoNoSoportado } from './perfil/casos-no-soportados';
 export {
   normalizarPreferencias,

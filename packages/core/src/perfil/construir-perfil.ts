@@ -1,7 +1,9 @@
 import type {
   ActivoPatrimonial,
+  AportesVoluntariosInput,
   CertificadoLaboral,
   ComparacionPatrimonialInput,
+  GananciasOcasionalesInput,
   PerfilFiscal,
   RentasCapitalInput,
   RentasPensionesInput,
@@ -49,15 +51,28 @@ export function construirPerfilFiscal(insumos: InsumosPerfil): PerfilFiscal {
     },
     rentasPensiones: armarPensiones(insumos.exogena, insumos.certificados220, respuestas),
     deducciones: armarDeducciones(respuestas),
-    aportesVoluntarios: {
-      afcYPensionVoluntaria: respuestas.aportesAfcPensionVoluntaria ?? 0,
-      voluntarioPensionObligatoria: respuestas.aporteVoluntarioPensionObligatoria ?? 0,
-    },
+    aportesVoluntarios: armarAportesVoluntarios(respuestas),
     comprasFacturaElectronica: comprasFacturaElectronicaConBeneficio(insumos.exogena),
     patrimonio: armarPatrimonio(insumos.exogena, insumos.certificadosBancarios, respuestas),
     descuentos: { donacionesEsal: respuestas.donacionesEsal ?? 0 },
+    gananciasOcasionales: armarGananciasOcasionales(respuestas),
     comparacionPatrimonial: armarComparacion(respuestas),
     historial: armarHistorial(insumos.exogena, respuestas),
+  };
+}
+
+function armarAportesVoluntarios(r: RespuestasEntrevista): AportesVoluntariosInput {
+  return {
+    afcYPensionVoluntaria: r.aportesAfcPensionVoluntaria ?? 0,
+    voluntarioPensionObligatoria: r.aporteVoluntarioPensionObligatoria ?? 0,
+  };
+}
+
+function armarGananciasOcasionales(r: RespuestasEntrevista): GananciasOcasionalesInput {
+  return {
+    ventas: r.ventasActivos ?? [],
+    herencias: r.herenciasRecibidas ?? [],
+    premios: r.premiosRecibidos ?? [],
   };
 }
 

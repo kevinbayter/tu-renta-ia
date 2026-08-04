@@ -1,13 +1,13 @@
 'use client';
 
 import { documentosEsperados } from '@turenta/core';
-import { ArrowLeft, ArrowRight, CloudUpload, ExternalLink, Lock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CloudUpload, Download, ExternalLink, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 
 import { BloqueDeclaracionAnterior } from './bloque-declaracion-anterior';
 import { OpcionConectarDian } from './opcion-conectar-dian';
-import { NOMBRES_TIPO, registrarDocumento, useSubidas } from './pipeline-documentos';
+import { archivoExogenaDe, NOMBRES_TIPO, registrarDocumento, useSubidas } from './pipeline-documentos';
 import { TarjetaDocumento } from './tarjeta-documento';
 import { useDeclaracion } from '@/lib/store';
 
@@ -53,7 +53,10 @@ export function PasoExogena() {
                 <TarjetaDocumento documento={exogena} />
               </ul>
               <VistaPrevia exogena={exogena.exogena} />
-              <Reemplazar />
+              <div className="flex flex-wrap items-center gap-4">
+                <Reemplazar />
+                <DescargarExogena documento={exogena} />
+              </div>
             </>
           )}
           {!exogena && <GuiaDescarga />}
@@ -239,6 +242,31 @@ async function subirExogena(archivo: File): Promise<string | null> {
     return `${archivo.name}: ${resultado.error}`;
   }
   return avisoPorTipo(resultado);
+}
+
+/** Descarga el .xlsx original (subido o traído de la DIAN). Solo mientras dure la pestaña: el store no guarda los bytes. */
+function DescargarExogena({ documento }: { documento: DocumentoProcesado }) {
+  const archivo = archivoExogenaDe(documento.id);
+  if (!archivo) {
+    return null;
+  }
+  const descargar = () => {
+    const url = URL.createObjectURL(archivo);
+    const enlace = document.createElement('a');
+    enlace.href = url;
+    enlace.download = archivo.name;
+    enlace.click();
+    URL.revokeObjectURL(url);
+  };
+  return (
+    <button
+      type="button"
+      onClick={descargar}
+      className="flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-texto-suave underline hover:text-primario"
+    >
+      <Download size={13} aria-hidden /> Descargar mi exógena (.xlsx)
+    </button>
+  );
 }
 
 /** Reemplazar existe, pero discreto: lo normal es que ya no haga falta. */

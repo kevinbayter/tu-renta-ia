@@ -8,6 +8,7 @@ import {
 } from '@turenta/core';
 import { useEffect, useRef, useState } from 'react';
 
+import { irAIngresar } from './pipeline-documentos';
 import { useDeclaracion } from '@/lib/store';
 import { formatearPesos } from '@/lib/tipos';
 
@@ -142,6 +143,10 @@ async function pedirTurno(texto: string): Promise<TurnoEntrevista> {
       resumenDocumentos: resumirDocumentos(),
     }),
   });
+  if (respuesta.status === 401) {
+    irAIngresar();
+    throw new Error('sesión expirada');
+  }
   if (!respuesta.ok) {
     throw new Error('turno fallido');
   }

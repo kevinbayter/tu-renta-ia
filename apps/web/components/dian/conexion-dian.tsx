@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { AvisoTransparencia } from './aviso-transparencia';
+import { alcancesPanel, useAccesoGuardado, useConexionAutomatica, useConsentimientoDian } from './consentimiento';
 import { FormularioCredenciales } from './formulario-credenciales';
 import { PanelAutorizacion } from './panel-autorizacion';
 
@@ -39,21 +40,8 @@ const OPERACIONES: Record<
   },
 };
 
-/** Con acceso guardado no se vuelve a pedir la contraseña: ya la tiene el worker. */
-function useAccesoGuardado(titular: string): boolean {
-  const [guardado, setGuardado] = useState(false);
-  useEffect(() => {
-    consultarAccesos()
-      .then((accesos) => setGuardado(accesos.includes(titular)))
-      .catch(() => setGuardado(false));
-  }, [titular]);
-  return guardado;
-}
-
-async function consultarAccesos(): Promise<string[]> {
-  const respuesta = await fetch('/api/dian/acceso');
-  const cuerpo = (await respuesta.json()) as { accesos?: { titularIdentificacion: string }[] };
-  return (cuerpo.accesos ?? []).map((a) => a.titularIdentificacion);
+function credencialesGuardadas(titular: string): Credenciales {
+  return { tipoDocumento: 'CC', numeroDocumento: titular, contrasena: '' };
 }
 
 interface RespuestaApi {
@@ -81,24 +69,25 @@ export function ConexionDian({
   alCerrar: () => void;
   alCompletar: (resultado: ResultadoConexion) => void;
 }) {
-  const [fase, setFase] = useState<Fase>('autorizar');
+  const config = OPERACIONES[operacion];
+  const { consentido, registrar, alcancesEnEfecto } = useConsentimientoDian(titular, config.alcance);
+  const [fase, setFase] = useState<Fase>(consentido ? 'credenciales' : 'autorizar');
   const [etapa, setEtapa] = useState<EtapaConexion>('iniciando');
   const [error, setError] = useState('');
   const [recordar, setRecordar] = useState(false);
   const yaGuardado = useAccesoGuardado(titular);
-  const config = OPERACIONES[operacion];
-  const alcances: AlcanceAutorizacion[] = recordar
-    ? [config.alcance, 'recordar_acceso']
-    : [config.alcance];
+  const alcances = alcancesPanel(recordar);
 
   const conectar = async (credenciales: Credenciales) => {
+    const aceptados = alcancesEnEfecto(alcances);
     setFase('progreso');
     setEtapa('autenticando');
     const cuerpo = await pedir(config.ruta, {
       ...credenciales,
       titular,
       anioGravable,
-      recordarAcceso: recordar,
+      recordarAcceso: aceptados.includes('recordar_acceso'),
+      alcancesAceptados: aceptados,
     });
     if (cuerpo?.contenidoBase64) {
       setEtapa('completado');
@@ -114,14 +103,18 @@ export function ConexionDian({
     setFase(cuerpo?.motivoFallo === 'sin_declaracion' ? 'sin_dato' : 'error');
   };
 
-  /** Con acceso guardado no se vuelve a pedir la contraseña: ya la tiene el worker. */
+  const conectarConAccesoGuardado = () => void conectar(credencialesGuardadas(titular));
+
   const autorizar = () => {
+    registrar({ titular, alcances, otorgadoEn: Date.now() });
     if (yaGuardado) {
-      void conectar({ tipoDocumento: 'CC', numeroDocumento: titular, contrasena: '' });
+      conectarConAccesoGuardado();
       return;
     }
     setFase('credenciales');
   };
+
+  useConexionAutomatica(consentido && yaGuardado && fase === 'credenciales', conectarConAccesoGuardado);
 
   // Cerrar a media sesión dejaría un navegador abierto contra el portal.
   const cerrable = fase !== 'progreso';

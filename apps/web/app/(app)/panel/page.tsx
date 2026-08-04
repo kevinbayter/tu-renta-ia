@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { PREFERENCIAS_POR_DEFECTO } from '@turenta/core';
 
+import { SelectorNuevaDeclaracion } from '@/components/declaraciones/selector-nueva-declaracion';
 import { FilaPanel } from '@/components/panel/fila-panel';
 import { PanelDerecho } from '@/components/panel/panel-derecho';
 import { PersonalizarVista } from '@/components/panel/personalizar-vista';
@@ -24,6 +25,7 @@ export default function PaginaPanel() {
   const router = useRouter();
   const [lista, setLista] = useState<DeclaracionResumen[] | null>(null);
   const [preferencias, setPreferencias] = useState<PreferenciasUsuario>(PREFERENCIAS_POR_DEFECTO);
+  const [eligiendoTitular, setEligiendoTitular] = useState(false);
 
   const recargar = useCallback(() => {
     void cargarLista().then(setLista);
@@ -56,12 +58,15 @@ export default function PaginaPanel() {
       <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_320px]">
         <div className="min-w-0 space-y-6">
           <TarjetasMetricas lista={lista} />
-          <SeccionDeclaraciones lista={lista} alCambiar={recargar} alNueva={nuevaPropia} />
+          <SeccionDeclaraciones lista={lista} alCambiar={recargar} alNueva={() => setEligiendoTitular(true)} />
           {preferencias.widgets.recomendaciones && lista[0] && <RecomendacionesBanda declaracion={lista[0]} />}
         </div>
         <PanelDerecho lista={lista} widgets={preferencias.widgets} />
       </div>
-      <BotonFlotante alNueva={nuevaPropia} />
+      <BotonFlotante alNueva={() => setEligiendoTitular(true)} />
+      {eligiendoTitular && (
+        <SelectorNuevaDeclaracion alCerrar={() => setEligiendoTitular(false)} alPropia={nuevaPropia} />
+      )}
     </main>
   );
 }

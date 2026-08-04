@@ -29,7 +29,8 @@ export function EncabezadoWizard() {
             {declarante.identificacion && ` · Cédula ${declarante.identificacion}`}
           </p>
         </div>
-        {sesion.fase === 'activa' ? <Acciones /> : <InvitacionIngreso />}
+        {sesion.fase === 'activa' && <Acciones />}
+        {sesion.fase === 'anonimo' && <SesionExpirada />}
       </div>
     </header>
   );
@@ -139,14 +140,14 @@ function MenuAcciones() {
   );
 }
 
-function InvitacionIngreso() {
+function SesionExpirada() {
   return (
-    <p className="rounded-xl border border-borde bg-card px-3 py-2 text-xs text-texto-suave">
-      Tu avance solo vive en este navegador.{' '}
-      <Link href="/ingresar" className="font-semibold text-primario underline">
-        Ingresa
+    <p className="rounded-xl border border-alerta/40 bg-alerta-suave px-3 py-2 text-xs text-alerta">
+      Tu sesión expiró.{' '}
+      <Link href="/ingresar?siguiente=/declaracion" className="font-semibold underline">
+        Ingresa de nuevo
       </Link>{' '}
-      para guardarlo en la nube.
+      para continuar — tu avance sigue en este navegador.
     </p>
   );
 }

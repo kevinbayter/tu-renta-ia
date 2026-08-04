@@ -60,13 +60,15 @@ vi.mock('@/server/composicion', () => ({
 
 const { descargarDeLaDian } = await import('@/server/dian/descarga');
 
-function solicitud(): SolicitudConexionDian {
+function solicitud(cambios: Partial<SolicitudConexionDian> = {}): SolicitudConexionDian {
   return {
     credenciales: { tipoDocumento: 'CC', numeroDocumento: '1000000001', contrasena: new Secreto('clave') },
     titular: '1000000001',
     anioGravable: 2025,
     modoIngreso: 'propio',
     recordarAcceso: false,
+    alcancesAceptados: [],
+    ...cambios,
   };
 }
 
@@ -104,12 +106,40 @@ describe('caso de uso de descarga desde la DIAN', () => {
     expect(evidencia.registrarAutorizacion).toHaveBeenCalledWith(expect.anything(), HUELLA);
   });
 
-  it('la autorización solo pide el alcance de la operación en curso', async () => {
+  it('sin alcances del cliente, la autorización pide solo el de la operación en curso', async () => {
     await descargarDeLaDian('declaracion', solicitud(), 'usuario-1', HUELLA);
     expect(evidencia.registrarAutorizacion).toHaveBeenCalledWith(
       expect.objectContaining({ alcances: ['leer_declaraciones'] }),
       HUELLA,
     );
+  });
+
+  it('la evidencia registra exactamente los alcances que el usuario aceptó', async () => {
+    const aceptados = ['leer_exogena', 'leer_declaraciones'] as const;
+    await descargarDeLaDian('exogena', solicitud({ alcancesAceptados: [...aceptados] }), 'usuario-1', HUELLA);
+    expect(evidencia.registrarAutorizacion).toHaveBeenCalledWith(
+      expect.objectContaining({ alcances: [...aceptados] }),
+      HUELLA,
+    );
+  });
+
+  it('un cliente viejo con recordar acceso deja esa cláusula en la evidencia', async () => {
+    await descargarDeLaDian('exogena', solicitud({ recordarAcceso: true }), 'usuario-1', HUELLA);
+    expect(evidencia.registrarAutorizacion).toHaveBeenCalledWith(
+      expect.objectContaining({ alcances: ['leer_exogena', 'recordar_acceso'] }),
+      HUELLA,
+    );
+  });
+
+  it('un consentimiento que no cubre la operación no llega al portal', async () => {
+    const resultado = await descargarDeLaDian(
+      'declaracion',
+      solicitud({ alcancesAceptados: ['leer_exogena'] }),
+      'usuario-1',
+      HUELLA,
+    );
+    expect(resultado.resultado.exito).toBe(false);
+    expect(conexion.descargarDeclaracion).not.toHaveBeenCalled();
   });
 
   it('bloquea sin tocar el portal cuando el limitador dice que no', async () => {

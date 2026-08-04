@@ -5,6 +5,7 @@
 
 import { Secreto } from './secreto';
 
+import type { AlcanceAutorizacion } from './autorizacion';
 import type {
   CredencialesDian,
   ModoIngresoDian,
@@ -12,6 +13,13 @@ import type {
 } from '../puertos/conexion-dian-port';
 
 const TIPOS: TipoDocumentoDian[] = ['CC', 'CE', 'NIT', 'PA', 'TI'];
+
+/** Lo que puede aceptarse desde una descarga; presentar exige su propio flujo. */
+const ALCANCES_ACEPTABLES: AlcanceAutorizacion[] = [
+  'leer_exogena',
+  'leer_declaraciones',
+  'recordar_acceso',
+];
 const ANIO_MINIMO = 2018;
 const LARGO_MINIMO_DOCUMENTO = 5;
 const LARGO_MAXIMO_DOCUMENTO = 15;
@@ -26,6 +34,7 @@ export interface CuerpoConexion {
   anioGravable?: unknown;
   modoIngreso?: unknown;
   recordarAcceso?: unknown;
+  alcancesAceptados?: unknown;
 }
 
 export interface SolicitudConexionDian {
@@ -35,6 +44,12 @@ export interface SolicitudConexionDian {
   modoIngreso: ModoIngresoDian;
   /** Explicit consent to store the access; never inferred. */
   recordarAcceso: boolean;
+  /**
+   * Scopes the user saw and accepted on the consent screen. The evidence hash
+   * must cover exactly this text, so the server never widens or narrows it.
+   * Empty = older client that consented only to the operation's own scope.
+   */
+  alcancesAceptados: AlcanceAutorizacion[];
 }
 
 export type ResultadoValidacion =
@@ -49,6 +64,7 @@ interface Normalizado {
   anioGravable: number | null;
   modoIngreso: ModoIngresoDian;
   recordarAcceso: boolean;
+  alcancesAceptados: AlcanceAutorizacion[];
 }
 
 /** Safe conversion: an object is discarded, never turned into "[object Object]". */
@@ -71,8 +87,19 @@ function anioValido(valor: unknown, anioActual: number): number | null {
   return esEntero && valor >= ANIO_MINIMO && valor <= anioActual ? valor : null;
 }
 
+function alcancesAceptadosDe(valor: unknown): AlcanceAutorizacion[] {
+  if (!Array.isArray(valor)) {
+    return [];
+  }
+  const alcances = valor.filter((a): a is AlcanceAutorizacion =>
+    ALCANCES_ACEPTABLES.includes(a as AlcanceAutorizacion),
+  );
+  return [...new Set(alcances)];
+}
+
 function normalizar(cuerpo: CuerpoConexion, anioActual: number): Normalizado {
   const numeroDocumento = soloDigitos(cuerpo.numeroDocumento);
+  const alcancesAceptados = alcancesAceptadosDe(cuerpo.alcancesAceptados);
   return {
     numeroDocumento,
     contrasena: typeof cuerpo.contrasena === 'string' ? cuerpo.contrasena : '',
@@ -80,7 +107,11 @@ function normalizar(cuerpo: CuerpoConexion, anioActual: number): Normalizado {
     titular: cuerpo.titular === undefined ? numeroDocumento : soloDigitos(cuerpo.titular),
     anioGravable: anioValido(cuerpo.anioGravable, anioActual),
     modoIngreso: cuerpo.modoIngreso === 'tercero' ? 'tercero' : 'propio',
-    recordarAcceso: cuerpo.recordarAcceso === true,
+    // Guardar el acceso exige que el texto aceptado lo incluyera.
+    recordarAcceso:
+      cuerpo.recordarAcceso === true &&
+      (alcancesAceptados.length === 0 || alcancesAceptados.includes('recordar_acceso')),
+    alcancesAceptados,
   };
 }
 
@@ -139,6 +170,7 @@ function aSolicitud(datos: Normalizado, anioActual: number): SolicitudConexionDi
     anioGravable: datos.anioGravable ?? anioActual - 1,
     modoIngreso: datos.modoIngreso,
     recordarAcceso: datos.recordarAcceso,
+    alcancesAceptados: datos.alcancesAceptados,
   };
 }
 

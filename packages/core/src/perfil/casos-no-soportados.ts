@@ -59,12 +59,6 @@ const CASOS: CasoNoSoportado[] = [
       'Deben declararse en el patrimonio a costo fiscal y sus ventas generan renta o ganancia ocasional; aún no cubrimos su tratamiento.',
   },
   {
-    clave: 'eventoActivosExterior',
-    etiqueta: 'Cuentas o activos en el exterior',
-    detalle:
-      'Pueden exigir la declaración anual de activos en el exterior (formulario 160), que no preparamos.',
-  },
-  {
     clave: 'eventoIngresosExterior',
     etiqueta: 'Ingresos del exterior',
     detalle:
@@ -77,6 +71,30 @@ const CASOS: CasoNoSoportado[] = [
       'Generan pérdida del beneficio y retención contingente (arts. 126-1/126-4 E.T.), tratamiento que aún no liquidamos.',
   },
 ];
+
+export interface AdvertenciaDeclaracion {
+  clave: keyof RespuestasEntrevista;
+  etiqueta: string;
+  detalle: string;
+}
+
+/**
+ * Avisos que NO bloquean el borrador: la declaración de renta queda completa,
+ * pero el usuario tiene otra obligación aparte que debe conocer.
+ */
+export function detectarAdvertencias(respuestas: RespuestasEntrevista): AdvertenciaDeclaracion[] {
+  if (respuestas.eventoActivosExterior !== 1) {
+    return [];
+  }
+  return [
+    {
+      clave: 'eventoActivosExterior',
+      etiqueta: 'Activos en el exterior',
+      detalle:
+        'Tus cuentas y bienes fuera de Colombia deben estar incluidos en el patrimonio de esta declaración (regístralos en la entrevista como bienes, en pesos). Además, si a 1 de enero superaban 2.000 UVT, debes presentar por aparte la declaración anual de activos en el exterior (formulario 160) en los mismos plazos — TuRenta no la prepara.',
+    },
+  ];
+}
 
 export function detectarCasosNoSoportados(respuestas: RespuestasEntrevista): CasoNoSoportado[] {
   const pendientes = PENDIENTES_DE_DATOS.filter(

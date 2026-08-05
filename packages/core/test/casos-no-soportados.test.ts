@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { detectarCasosNoSoportados } from '../src/perfil/casos-no-soportados';
+import { detectarAdvertencias, detectarCasosNoSoportados } from '../src/perfil/casos-no-soportados';
 
 import type { RespuestasEntrevista } from '../src/perfil/respuestas';
 
@@ -34,17 +34,24 @@ describe('detección de casos que el motor no liquida', () => {
       eventoHerenciaODonacion: 1,
       eventoPremiosOApuestas: 1,
       eventoCripto: 1,
-      eventoActivosExterior: 1,
       eventoIngresosExterior: 1,
       eventoDividendos: 1,
       eventoRetirosAfcSinRequisitos: 1,
     });
-    expect(casos).toHaveLength(8);
+    expect(casos).toHaveLength(7);
     expect(casos.map((c) => c.clave)).toContain('eventoHerenciaODonacion');
     for (const caso of casos) {
       expect(caso.etiqueta.length).toBeGreaterThan(0);
       expect(caso.detalle.length).toBeGreaterThan(0);
     }
+  });
+
+  it('los activos en el exterior son advertencia, no bloqueo', () => {
+    expect(detectarCasosNoSoportados({ ...BASE, eventoActivosExterior: 1 })).toEqual([]);
+    const avisos = detectarAdvertencias({ ...BASE, eventoActivosExterior: 1 });
+    expect(avisos).toHaveLength(1);
+    expect(avisos[0]?.detalle).toContain('formulario 160');
+    expect(detectarAdvertencias(BASE)).toEqual([]);
   });
 
   it('solo el valor 1 cuenta como marcado', () => {

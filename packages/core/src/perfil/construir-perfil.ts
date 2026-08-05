@@ -5,6 +5,7 @@ import type {
   ComparacionPatrimonialInput,
   DividendosInput,
   GananciasOcasionalesInput,
+  HonorariosInput,
   PerfilFiscal,
   RentasCapitalInput,
   RentasPensionesInput,
@@ -44,6 +45,7 @@ export function construirPerfilFiscal(insumos: InsumosPerfil): PerfilFiscal {
   return {
     anioGravable: insumos.anioGravable,
     certificadosLaborales: laborales.map(aCertificadoLaboral),
+    honorarios: armarHonorarios(respuestas),
     rentasCapital: armarRentasCapital(insumos.exogena, insumos.certificadosBancarios, respuestas),
     rentasNoLaborales: {
       ingresosBrutos: respuestas.ingresosNoLaborales ?? 0,
@@ -75,6 +77,15 @@ function armarGananciasOcasionales(r: RespuestasEntrevista): GananciasOcasionale
     ventas: r.ventasActivos ?? [],
     herencias: r.herenciasRecibidas ?? [],
     premios: r.premiosRecibidos ?? [],
+  };
+}
+
+function armarHonorarios(r: RespuestasEntrevista): HonorariosInput {
+  return {
+    ingresos: r.honorariosIngresos ?? 0,
+    costos: r.honorariosCostos ?? 0,
+    aportesObligatorios: r.honorariosAportesPila ?? 0,
+    retencionFuente: r.honorariosRetencion ?? 0,
   };
 }
 

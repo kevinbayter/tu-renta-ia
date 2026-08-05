@@ -24,6 +24,7 @@ export function mapearCasillas(d: DatosCasillas): Record<string, number> {
   return {
     ...casillasPatrimonio(d),
     ...casillasTrabajo(d.cedula),
+    ...casillasHonorarios(d.cedula),
     ...casillasCapital(d.cedula),
     ...casillasNoLaborales(d.cedula),
     ...casillasConsolidacion(d.cedula),
@@ -68,6 +69,24 @@ function casillasPatrimonio(d: DatosCasillas): Record<string, number> {
     '29': d.patrimonioBruto,
     '30': d.deudas,
     '31': d.patrimonioLiquido,
+  };
+}
+
+/** Subcédula de honorarios con costos (43-57), por simetría de fila con la columna de trabajo. */
+function casillasHonorarios(cedula: ResultadoCedulaGeneral): Record<string, number> {
+  const h = cedula.honorarios;
+  if (h.ingresosBrutos === 0) {
+    return {};
+  }
+  return {
+    '43': h.ingresosBrutos,
+    '44': h.incrngo,
+    '45': h.costos,
+    '46': h.rentaLiquida,
+    '48': h.exenta25,
+    '49': h.exenta25,
+    '53': h.asignadoLimitado,
+    '57': h.rentaLiquidaOrdinaria,
   };
 }
 

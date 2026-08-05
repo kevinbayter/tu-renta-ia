@@ -1,13 +1,13 @@
 'use client';
 
-import { detectarCasosNoSoportados } from '@turenta/core';
-import { TriangleAlert } from 'lucide-react';
+import { detectarAdvertencias, detectarCasosNoSoportados } from '@turenta/core';
+import { Info, TriangleAlert } from 'lucide-react';
 
 import { BotonDescargarBorrador, GuiaPresentacion } from './guia-presentacion';
 import { useDeclaracion } from '@/lib/store';
 import { formatearPesos } from '@/lib/tipos';
 
-import type { CasoNoSoportado } from '@turenta/core';
+import type { AdvertenciaDeclaracion, CasoNoSoportado } from '@turenta/core';
 import type { ResultadoDeclaracion } from '@/lib/tipos';
 
 export function PasoResultado() {
@@ -25,10 +25,12 @@ export function PasoResultado() {
     );
   }
   const casos = detectarCasosNoSoportados(respuestas);
+  const advertencias = detectarAdvertencias(respuestas);
   const incompleta = casos.length > 0;
   return (
     <section aria-label="Resultado">
       {incompleta && <AvisoIncompleta casos={casos} />}
+      {advertencias.length > 0 && <AvisoAdvertencias advertencias={advertencias} />}
       <CifraPrincipal resultado={resultado} parcial={incompleta} />
       {!incompleta && <BotonDescargarBorrador resultado={resultado} />}
       <Desglose resultado={resultado} />
@@ -75,6 +77,22 @@ function AvisoIncompleta({ casos }: { casos: CasoNoSoportado[] }) {
         Para presentar tu declaración con estos casos necesitas un contador. Presentarla sin incluirlos
         puede costarte la sanción por inexactitud de la DIAN.
       </p>
+    </div>
+  );
+}
+
+/** Obligaciones aparte que no bloquean el borrador (p. ej. el formulario 160). */
+function AvisoAdvertencias({ advertencias }: { advertencias: AdvertenciaDeclaracion[] }) {
+  return (
+    <div className="mb-4 rounded-3xl border border-primario/30 bg-primario-suave/40 p-5">
+      {advertencias.map((a) => (
+        <p key={a.clave} className="flex items-start gap-2 text-sm leading-relaxed">
+          <Info size={16} className="mt-0.5 shrink-0 text-primario" aria-hidden />
+          <span>
+            <span className="font-semibold">{a.etiqueta}.</span> {a.detalle}
+          </span>
+        </p>
+      ))}
     </div>
   );
 }

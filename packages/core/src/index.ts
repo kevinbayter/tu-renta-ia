@@ -53,7 +53,12 @@ export {
   type HerenciaCapturada,
   type PremioCapturado,
 } from './perfil/respuestas';
-export { detectarCasosNoSoportados, type CasoNoSoportado } from './perfil/casos-no-soportados';
+export {
+  detectarCasosNoSoportados,
+  detectarAdvertencias,
+  type CasoNoSoportado,
+  type AdvertenciaDeclaracion,
+} from './perfil/casos-no-soportados';
 export {
   normalizarPreferencias,
   PREFERENCIAS_POR_DEFECTO,

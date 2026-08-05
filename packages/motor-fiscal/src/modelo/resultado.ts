@@ -42,8 +42,22 @@ export interface ResultadoRentasNoLaborales {
   rentaLiquidaOrdinaria: number;
 }
 
+export interface ResultadoHonorarios {
+  ingresosBrutos: number;
+  incrngo: number;
+  costos: number;
+  rentaLiquida: number;
+  exenta25: number;
+  solicitadoExentasYDeducciones: number;
+  /** Modo ganador del art. 336-4 (se liquidan ambos y gana el de menor RLG). */
+  modo: 'costos' | 'renta_exenta_25';
+  asignadoLimitado: number;
+  rentaLiquidaOrdinaria: number;
+}
+
 export interface ResultadoCedulaGeneral {
   trabajo: ResultadoRentasTrabajo;
+  honorarios: ResultadoHonorarios;
   capital: ResultadoRentasCapital;
   noLaborales: ResultadoRentasNoLaborales;
   rentaLiquidaCedula: number;

@@ -76,6 +76,12 @@ export interface RespuestasEntrevista {
   dividendosGravados?: number;
   retencionDividendos?: number;
 
+  /** Honorarios de independiente sin relación laboral (el motor elige costos vs 25%). */
+  honorariosIngresos?: number;
+  honorariosCostos?: number;
+  honorariosAportesPila?: number;
+  honorariosRetencion?: number;
+
   /**
    * Eventos del año (0/1). Venta/herencia/premios marcan que HAY datos por
    * capturar (incompleta hasta que sus listas tengan elementos); el resto son

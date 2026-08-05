@@ -43,6 +43,16 @@ export interface AportesVoluntariosInput {
   voluntarioPensionObligatoria: number;
 }
 
+export interface HonorariosInput {
+  /** Honorarios y compensaciones por servicios personales SIN relación laboral (facturas/cuentas de cobro). */
+  ingresos: number;
+  /** Costos y gastos procedentes con soporte (excluyentes con el 25% — art. 336-4). */
+  costos: number;
+  /** Aportes PILA del independiente a salud y pensión obligatorias (INCRNGO). */
+  aportesObligatorios: number;
+  retencionFuente: number;
+}
+
 export interface RentasNoLaboralesInput {
   /** Arriendos vía mandato, honorarios sin vínculo y demás del art. 335 (ya deduplicados). */
   ingresosBrutos: number;
@@ -141,6 +151,8 @@ export interface HistorialInput {
 export interface PerfilFiscal {
   anioGravable: number;
   certificadosLaborales: CertificadoLaboral[];
+  /** Honorarios de independiente (subcédula 43-57); ausente = sin honorarios. */
+  honorarios?: HonorariosInput;
   rentasCapital: RentasCapitalInput;
   /** Rentas no laborales de la cédula general (art. 335); ausente = sin estos ingresos. */
   rentasNoLaborales?: RentasNoLaboralesInput;

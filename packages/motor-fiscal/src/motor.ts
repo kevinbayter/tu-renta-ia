@@ -104,9 +104,10 @@ function calcularPatrimonio(perfil: PerfilFiscal): {
 
 function calcularRetenciones(perfil: PerfilFiscal): number {
   const laborales = perfil.certificadosLaborales.reduce((acc, x) => acc + x.retencionFuente, 0);
+  const honorarios = perfil.honorarios?.retencionFuente ?? 0;
   const pensionales = perfil.rentasPensiones?.retencionFuente ?? 0;
   const noLaborales = perfil.rentasNoLaborales?.retencionFuente ?? 0;
-  return redondearMil(laborales + perfil.rentasCapital.retencionFuente + pensionales + noLaborales);
+  return redondearMil(laborales + honorarios + perfil.rentasCapital.retencionFuente + pensionales + noLaborales);
 }
 
 function sumarActivos(perfil: PerfilFiscal): number {

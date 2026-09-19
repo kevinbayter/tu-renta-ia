@@ -67,12 +67,10 @@ async function registrarGuardado(
     return;
   }
   await repositorio
-    .guardarPersona(usuarioId, {
+    .asegurarPersona(usuarioId, {
       nombres: titular.nombres,
       apellidos: titular.apellidos,
       identificacion: titular.identificacion,
-      email: '',
-      telefono: '',
     })
     .catch(() => null);
 }

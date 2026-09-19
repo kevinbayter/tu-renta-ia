@@ -57,6 +57,11 @@ export interface RepositorioPort {
   listarPersonas(usuarioId: string): Promise<PersonaAdministrada[]>;
   /** Upsert por (usuario, identificación). Devuelve el id. */
   guardarPersona(usuarioId: string, persona: Omit<PersonaAdministrada, 'id'>): Promise<{ id: string }>;
+  /** Crea la persona si no existe; si existe solo actualiza nombres y apellidos (nunca email ni teléfono). */
+  asegurarPersona(
+    usuarioId: string,
+    persona: Pick<PersonaAdministrada, 'nombres' | 'apellidos' | 'identificacion'>,
+  ): Promise<{ id: string }>;
   eliminarPersona(usuarioId: string, personaId: string): Promise<void>;
 
   registrarActividad(

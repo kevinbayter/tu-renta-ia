@@ -43,7 +43,7 @@ export function obtenerRepositorio(): RepositorioPort {
   if (!url) {
     throw new Error('DATABASE_URL no configurada');
   }
-  repositorioSingleton ??= new RepositorioPrisma(url);
+  repositorioSingleton ??= RepositorioPrisma.desdeUrl(url);
   return repositorioSingleton;
 }
 

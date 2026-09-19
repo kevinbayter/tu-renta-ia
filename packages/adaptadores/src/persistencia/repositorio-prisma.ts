@@ -19,11 +19,10 @@ import type { Prisma } from './generado/client';
 
 /** Adaptador de persistencia sobre Postgres (Prisma 7 + driver pg). */
 export class RepositorioPrisma implements RepositorioPort {
-  private readonly prisma: PrismaClient;
+  constructor(private readonly prisma: PrismaClient) {}
 
-  constructor(connectionString: string) {
-    const adapter = new PrismaPg({ connectionString });
-    this.prisma = new PrismaClient({ adapter });
+  static desdeUrl(connectionString: string): RepositorioPrisma {
+    return new RepositorioPrisma(new PrismaClient({ adapter: new PrismaPg({ connectionString }) }));
   }
 
   async upsertUsuario(email: string): Promise<UsuarioRegistrado> {
@@ -164,6 +163,20 @@ export class RepositorioPrisma implements RepositorioPort {
       where: { usuarioId_identificacion: { usuarioId, identificacion } },
       create: { usuarioId, ...datos },
       update: datos,
+      select: { id: true },
+    });
+  }
+
+  async asegurarPersona(
+    usuarioId: string,
+    persona: Pick<PersonaAdministrada, 'nombres' | 'apellidos' | 'identificacion'>,
+  ): Promise<{ id: string }> {
+    const identificacion = persona.identificacion.replace(/\D/g, '');
+    const nombre = { nombres: persona.nombres, apellidos: persona.apellidos };
+    return this.prisma.persona.upsert({
+      where: { usuarioId_identificacion: { usuarioId, identificacion } },
+      create: { usuarioId, identificacion, ...nombre },
+      update: nombre,
       select: { id: true },
     });
   }

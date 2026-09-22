@@ -9,6 +9,8 @@ export interface PerfilUsuario {
   nombres: string;
   apellidos: string;
   identificacion: string;
+  /** Casilla 286 del 210 ('1' F, '2' M, '3' No binario, '4' Otro, '6' No responde); '' sin registrar. */
+  genero?: string;
 }
 
 export interface TitularDeclaracion {
@@ -16,6 +18,7 @@ export interface TitularDeclaracion {
   apellidos: string;
   identificacion: string;
   esPropia: boolean;
+  genero?: string;
 }
 
 export interface DeclaracionResumen {
@@ -60,7 +63,7 @@ export interface RepositorioPort {
   /** Crea la persona si no existe; si existe solo actualiza nombres y apellidos (nunca email ni teléfono). */
   asegurarPersona(
     usuarioId: string,
-    persona: Pick<PersonaAdministrada, 'nombres' | 'apellidos' | 'identificacion'>,
+    persona: Pick<PersonaAdministrada, 'nombres' | 'apellidos' | 'identificacion' | 'genero'>,
   ): Promise<{ id: string }>;
   eliminarPersona(usuarioId: string, personaId: string): Promise<void>;
 
@@ -93,6 +96,7 @@ export interface PersonaAdministrada {
   identificacion: string;
   email: string;
   telefono: string;
+  genero?: string;
 }
 
 export interface EventoActividad {

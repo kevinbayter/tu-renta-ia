@@ -41,6 +41,10 @@ const SALIDAS_AUTORIZADAS = [
   '/packages/adaptadores/src/dian/sesion-muisca.ts',
   // Process boundary: travels to the isolated worker over Docker's network.
   '/packages/adaptadores/src/dian/conexion-dian-remota.ts',
+  // Escrita en la ventana de firma: la contraseña de la firma electrónica ES
+  // la de la cuenta (Res. 000227 de 2025, art. 1.7.4.2). Se revela aquí, al
+  // escribirla, y no antes: así no viaja en claro por el flujo de firma.
+  '/packages/adaptadores/src/dian/campos-firma-210.ts',
 ];
 
 describe('la contraseña de la DIAN no puede escaparse', () => {
@@ -101,3 +105,40 @@ describe('las fixtures del MUISCA falso no pueden traer datos reales', () => {
 function esInventado(numero: string): boolean {
   return new Set(numero).size === 1 || numero === '1000000001';
 }
+
+/**
+ * Las pruebas se escriben calcando pantallas del portal, y de ahí es fácil
+ * arrastrar más de la cuenta, también fuera de `test/navegador`. No se listan
+ * datos a prohibir —listarlos aquí sería publicarlos—: se exige que todo lo que
+ * TIENE FORMA de dato personal sea de los ficticios. Lista blanca, no negra.
+ */
+describe('ninguna prueba del adaptador lleva datos personales reales', () => {
+  const contenido = archivosBajo(join(RAIZ, 'packages/adaptadores/test'), ['.html', '.ts', '.json']).map((a) => ({
+    archivo: a.replace(RAIZ, ''),
+    texto: readFileSync(a, 'utf8'),
+  }));
+  const hallazgos = (patron: RegExp, esFicticio: (valor: string) => boolean): string[] =>
+    contenido.flatMap(({ archivo, texto }) =>
+      [...texto.matchAll(patron)]
+        .map((m) => m[1] ?? '')
+        .filter((valor) => !esFicticio(valor))
+        .map((valor) => `${archivo}: ${valor}`),
+    );
+
+  it('los números de formulario de la DIAN son inventados', () => {
+    // Uno real tiene trece cifras sin patrón (2118…). Los de prueba repiten una
+    // sola o son la secuencia 1234…
+    const ficticio = (valor: string) => new Set(valor).size === 1 || valor === '1234567890123';
+    expect(hallazgos(/\b(\d{13})\b/g, ficticio)).toEqual([]);
+  });
+
+  it('toda cédula o NIT que acompaña a una persona es la ficticia', () => {
+    const documentos = /(?:NIT|C\.?C\.?|usuario)\s*:?\s*(?:\d{2}-)?(\d{6,10})\b/gi;
+    expect(hallazgos(documentos, (valor) => valor === '1000000001')).toEqual([]);
+  });
+
+  it('los nombres de personas son ficticios', () => {
+    const nombres = /Nombre:\s*([A-ZÁÉÍÓÚÑ]{3,}(?:\s+[A-ZÁÉÍÓÚÑ]{3,}){1,3})/g;
+    expect(hallazgos(nombres, (valor) => /\b(PEREZ|FICTICIO|PRUEBA)\b/.test(valor))).toEqual([]);
+  });
+});

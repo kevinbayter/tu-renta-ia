@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { evaluarDeclaracion } from '../src/declaracion/recomendaciones';
-import { ingresosNoLaboralesReportados } from '../src/exogena/no-laborales';
+import { ingresosMandatoReportados } from '../src/exogena/mandato';
 import { precargarDesdeExogena } from '../src/exogena/precarga';
 
 import type { ExogenaParseada, FilaExogena } from '../src/exogena/tipos';
@@ -28,10 +28,12 @@ const EXOGENA_MANDATO: ExogenaParseada = {
   ],
 };
 
-describe('ingresosNoLaboralesReportados — deduplicación de mandato', () => {
+describe('ingresosMandatoReportados — deduplicación de mandato', () => {
   it('el mismo valor de informantes distintos cuenta UNA vez y queda marcado', () => {
-    const r = ingresosNoLaboralesReportados(EXOGENA_MANDATO);
+    const r = ingresosMandatoReportados(EXOGENA_MANDATO);
     expect(r.total).toBe(16_180_000);
+    expect(r.arrendamientos).toBe(16_180_000);
+    expect(r.otros).toBe(0);
     expect(r.duplicados).toHaveLength(1);
     expect(r.duplicados[0]?.informantes).toContain('INMOBILIARIA EJEMPLO S.A.S.');
   });
@@ -44,26 +46,40 @@ describe('ingresosNoLaboralesReportados — deduplicación de mandato', () => {
         filaMandato('900252525', 'INMOBILIARIA EJEMPLO S.A.S.', 9_000_000),
       ],
     };
-    const r = ingresosNoLaboralesReportados(exogena);
+    const r = ingresosMandatoReportados(exogena);
     expect(r.total).toBe(25_180_000);
     expect(r.duplicados).toHaveLength(0);
   });
 
+  it('reportado por una inmobiliaria es arriendo (rentas de capital); sin inmobiliaria queda como no laboral', () => {
+    const exogena = {
+      ...EXOGENA_MANDATO,
+      filas: [
+        filaMandato('900252525', 'INMOBILIARIA EJEMPLO S.A.S.', 12_000_000),
+        filaMandato('900272727', 'ADMINISTRACIONES XYZ LTDA', 3_000_000),
+      ],
+    };
+    const r = ingresosMandatoReportados(exogena);
+    expect(r.arrendamientos).toBe(12_000_000);
+    expect(r.otros).toBe(3_000_000);
+  });
+
   it('ignora retenciones y exógenas sin rentas no laborales', () => {
     const sinNoLaborales = { ...EXOGENA_MANDATO, filas: [] };
-    expect(ingresosNoLaboralesReportados(sinNoLaborales).total).toBe(0);
+    expect(ingresosMandatoReportados(sinNoLaborales).total).toBe(0);
   });
 });
 
-describe('precarga y recomendaciones de no laborales', () => {
+describe('precarga y recomendaciones de ingresos por mandato', () => {
   it('la precarga deja el total deduplicado en las respuestas y lo explica en el resumen', () => {
     const precarga = precargarDesdeExogena(EXOGENA_MANDATO);
-    expect(precarga.respuestas.ingresosNoLaborales).toBe(16_180_000);
-    expect(precarga.resumen).toContain('NO laborales');
+    expect(precarga.respuestas.ingresosArrendamientos).toBe(16_180_000);
+    expect(precarga.respuestas.ingresosNoLaborales).toBe(0);
+    expect(precarga.resumen).toContain('rentas de capital');
     expect(precarga.resumen).toContain('UNA sola vez');
   });
 
-  it('la exógena reporta no laborales y la declaración va en $0: crítica', () => {
+  it('la exógena reporta mandato y la declaración va en $0: crítica', () => {
     const estado = {
       declarante: { identificacion: '23456789' },
       documentos: [{ tipo: 'exogena', exogena: EXOGENA_MANDATO }],
@@ -72,7 +88,7 @@ describe('precarga y recomendaciones de no laborales', () => {
       respuestas: { anticipoLiquidadoAnioAnterior: 0, tieneDependiente387: true, ingresosNoLaborales: 0 },
     };
     const evaluacion = evaluarDeclaracion(estado);
-    const critica = evaluacion.recomendaciones.find((r) => r.texto.includes('no laborales'));
+    const critica = evaluacion.recomendaciones.find((r) => r.texto.includes('mandato'));
     expect(critica?.nivel).toBe('critica');
     expect(critica?.texto).toContain('16.180.000');
   });
@@ -83,9 +99,9 @@ describe('precarga y recomendaciones de no laborales', () => {
       documentos: [{ tipo: 'exogena', exogena: EXOGENA_MANDATO }],
       entrevistaCompleta: true,
       resultado: { casillas: {} },
-      respuestas: { anticipoLiquidadoAnioAnterior: 0, tieneDependiente387: true, ingresosNoLaborales: 16_180_000 },
+      respuestas: { anticipoLiquidadoAnioAnterior: 0, tieneDependiente387: true, ingresosArrendamientos: 16_180_000 },
     };
     const evaluacion = evaluarDeclaracion(estado);
-    expect(evaluacion.recomendaciones.some((r) => r.texto.includes('no laborales'))).toBe(false);
+    expect(evaluacion.recomendaciones.some((r) => r.texto.includes('mandato'))).toBe(false);
   });
 });

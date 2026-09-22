@@ -16,10 +16,13 @@ const monorepoRoot = join(__dirname, '../..');
  * same-origin or server-side), so the CSP can stay tight. 'unsafe-inline' is
  * kept for scripts/styles because Next injects inline hydration and Tailwind
  * inline styles, and without middleware there is no nonce to replace it.
+ * React needs eval() only in development, to rebuild call stacks.
  */
+const EVAL_EN_DESARROLLO = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : '';
+
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline'${EVAL_EN_DESARROLLO}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",

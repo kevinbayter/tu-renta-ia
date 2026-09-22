@@ -8,6 +8,7 @@ import { SeccionApariencia } from '@/components/configuracion/seccion-apariencia
 import { SeccionAvatar } from '@/components/configuracion/seccion-avatar';
 import { SeccionNotificaciones } from '@/components/configuracion/seccion-notificaciones';
 import { DialogoConfirmar } from '@/components/ui/dialogo-confirmar';
+import { SelectorGenero } from '@/components/ui/selector-genero';
 import { useSesionCliente } from '@/lib/sesion-cliente';
 
 const CAMPOS = [
@@ -16,7 +17,7 @@ const CAMPOS = [
   { campo: 'identificacion', etiqueta: 'Número de cédula (sin puntos)' },
 ] as const;
 
-type DatosPerfil = Record<(typeof CAMPOS)[number]['campo'], string>;
+type DatosPerfil = Record<(typeof CAMPOS)[number]['campo'], string> & { genero?: string };
 
 export default function PaginaConfiguracion() {
   const sesion = useSesionCliente();
@@ -73,6 +74,9 @@ function FormularioPerfil({ inicial }: { inicial: DatosPerfil }) {
             />
           </label>
         ))}
+      </div>
+      <div className="mt-3 sm:w-1/3">
+        <SelectorGenero valor={datos.genero ?? ''} alCambiar={(genero) => setDatos({ ...datos, genero })} />
       </div>
       <div className="mt-4 flex items-center gap-3">
         <button

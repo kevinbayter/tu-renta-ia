@@ -19,17 +19,16 @@ export interface Credenciales {
 
 /** Mismos campos que el portal real, con el diseño de la plataforma. */
 export function FormularioCredenciales({
+  documento,
   alEnviar,
   alVolver,
 }: {
+  /** Cédula del titular: el servidor solo acepta entrar a esa cuenta. */
+  documento: string;
   alEnviar: (credenciales: Credenciales) => void;
   alVolver: () => void;
 }) {
-  const [datos, setDatos] = useState<Credenciales>({
-    tipoDocumento: 'CC',
-    numeroDocumento: '',
-    contrasena: '',
-  });
+  const [datos, setDatos] = useState<Credenciales>({ tipoDocumento: 'CC', numeroDocumento: documento, contrasena: '' });
   const [verClave, setVerClave] = useState(false);
   const listo = datos.numeroDocumento.length >= 5 && datos.contrasena.length >= 4;
 
@@ -60,6 +59,7 @@ export function FormularioCredenciales({
         <span className="text-xs font-medium text-texto-suave">Número de documento (sin puntos ni comas)</span>
         <input
           value={datos.numeroDocumento}
+          readOnly={documento !== ''}
           onChange={(e) => setDatos({ ...datos, numeroDocumento: e.target.value.replace(/\D/g, '') })}
           inputMode="numeric"
           autoComplete="off"

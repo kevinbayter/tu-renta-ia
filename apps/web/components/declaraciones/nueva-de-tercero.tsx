@@ -3,16 +3,20 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { iniciarDeclaracionDeTercero } from '@/lib/declaraciones-acciones';
+import { SelectorGenero } from '@/components/ui/selector-genero';
+import { ANIO_GRAVABLE } from '@/components/wizard/pipeline-documentos';
+import { abrirDeclaracionDeTercero } from '@/lib/declaraciones-acciones';
 
 /** Modal para iniciar la declaración de otra persona (tercero). */
 export function NuevaDeTercero({ alCerrar }: { alCerrar: () => void }) {
   const router = useRouter();
-  const [datos, setDatos] = useState({ nombres: '', apellidos: '', identificacion: '' });
-  const listo = datos.nombres.trim() && datos.apellidos.trim() && datos.identificacion.length >= 5;
+  const [datos, setDatos] = useState({ nombres: '', apellidos: '', identificacion: '', genero: '' });
+  const listo = datos.nombres.trim() && datos.apellidos.trim() && datos.identificacion.length >= 5 && datos.genero;
 
-  const iniciar = () => {
-    iniciarDeclaracionDeTercero(datos, null);
+  const [abriendo, setAbriendo] = useState(false);
+  const iniciar = async () => {
+    setAbriendo(true);
+    await abrirDeclaracionDeTercero(datos, ANIO_GRAVABLE);
     router.push('/declaracion');
   };
 
@@ -33,6 +37,7 @@ export function NuevaDeTercero({ alCerrar }: { alCerrar: () => void }) {
             alCambiar={(v) => setDatos({ ...datos, identificacion: v.replace(/\D/g, '') })}
             numerico
           />
+          <SelectorGenero valor={datos.genero} alCambiar={(genero) => setDatos({ ...datos, genero })} />
         </div>
         <div className="mt-5 flex gap-3">
           <button type="button" onClick={alCerrar} className="h-11 flex-1 rounded-2xl border border-borde font-semibold">
@@ -40,8 +45,8 @@ export function NuevaDeTercero({ alCerrar }: { alCerrar: () => void }) {
           </button>
           <button
             type="button"
-            onClick={iniciar}
-            disabled={!listo}
+            onClick={() => void iniciar()}
+            disabled={!listo || abriendo}
             className="h-11 flex-1 rounded-2xl bg-primario font-semibold text-white transition hover:bg-primario-oscuro disabled:opacity-40"
           >
             Empezar

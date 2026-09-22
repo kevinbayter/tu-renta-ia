@@ -19,6 +19,7 @@ export interface ResultadoRentasTrabajo {
 export interface ResultadoRentasCapital {
   ingresosBrutos: number;
   incrngoComponenteInflacionario: number;
+  costosYGastos: number;
   rentaLiquida: number;
   deduccionGmf: number;
   solicitadoExentasYDeducciones: number;

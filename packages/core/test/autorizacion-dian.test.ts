@@ -46,12 +46,24 @@ describe('autorización para operar en la DIAN', () => {
     expect(permiteAlcance(auth, 'leer_exogena', tarde)).toBe(false);
   });
 
-  it('el texto legal dice lo esencial: no almacenamos, vence, es revocable', () => {
+  it('el texto legal dice lo esencial: no almacenamos y es revocable', () => {
     const plano = serializarAutorizacion(textoAutorizacion('1234567890', ['leer_exogena']));
     expect(plano).toContain('1234567890');
     expect(plano).toContain('NO serán almacenadas');
     expect(plano).toContain('revocable');
-    expect(plano).toContain('manualmente en el portal de la DIAN');
+  });
+
+  /**
+   * Un muro de texto no se lee, y lo que no se lee no informa. El límite no es
+   * estético: es la diferencia entre consentimiento informado y una firma a
+   * ciegas.
+   */
+  it('cabe en una pantalla: ninguna lista se desborda', () => {
+    const texto = textoAutorizacion('1234567890', ['presentar_declaracion', 'recordar_acceso']);
+    expect(texto.haremos.length + texto.noHaremos.length + texto.declaraciones.length).toBeLessThanOrEqual(6);
+    [...texto.haremos, ...texto.noHaremos, ...texto.declaraciones].forEach((linea) => {
+      expect(linea.length).toBeLessThanOrEqual(120);
+    });
   });
 
   it('solo enumera los alcances pedidos: no ofrece presentar si no se pidió', () => {
@@ -94,5 +106,36 @@ describe('autorización para operar en la DIAN', () => {
       AHORA,
     );
     expect(auth.titularIdentificacion).not.toBe(auth.operadorUsuarioId);
+  });
+
+  it('en nombre de otra persona nunca declara ser el titular y deja constancia de su autorización', () => {
+    const texto = textoAutorizacion('23456789', ['leer_exogena', 'leer_declaraciones'], true);
+    const plano = serializarAutorizacion(texto);
+    expect(texto.declaraciones.join(' ')).not.toContain('Soy el titular');
+    expect(plano).toContain('No soy el titular');
+    expect(plano).toContain('en_nombre_de_otro: si');
+    expect(texto.haremos.join(' ')).toContain('su información exógena');
+  });
+
+  it('las dos variantes producen textos distintos: la huella distingue quién firmó', () => {
+    const propia = serializarAutorizacion(textoAutorizacion('23456789', ['leer_exogena']));
+    const deOtro = serializarAutorizacion(textoAutorizacion('23456789', ['leer_exogena'], true));
+    expect(propia).not.toBe(deOtro);
+    expect(propia).toContain('en_nombre_de_otro: no');
+  });
+});
+
+
+describe('autorizar la presentación', () => {
+  it('dice que firma con la firma electrónica y presenta, y advierte que es irreversible', () => {
+    const texto = textoAutorizacion('1234567890', ['presentar_declaracion']);
+    expect(texto.haremos.join(' ')).toContain('presentar tu declaración ante la DIAN');
+    expect(texto.declaraciones.join(' ')).toContain('declaración de corrección');
+  });
+
+  it('diligenciar sin presentar no arrastra la advertencia de irreversibilidad', () => {
+    const texto = textoAutorizacion('1234567890', ['diligenciar_declaracion']);
+    expect(texto.declaraciones.join(' ')).not.toContain('declaración de corrección');
+    expect(texto.haremos.join(' ')).toContain('sin firmarla ni presentarla');
   });
 });

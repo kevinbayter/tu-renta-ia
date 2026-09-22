@@ -65,7 +65,7 @@ export class RepositorioPrisma implements RepositorioPort {
   async obtenerPerfil(usuarioId: string): Promise<PerfilUsuario | null> {
     return this.prisma.usuario.findUnique({
       where: { id: usuarioId },
-      select: { nombres: true, apellidos: true, identificacion: true },
+      select: { nombres: true, apellidos: true, identificacion: true, genero: true },
     });
   }
 
@@ -152,7 +152,7 @@ export class RepositorioPrisma implements RepositorioPort {
     return this.prisma.persona.findMany({
       where: { usuarioId },
       orderBy: [{ nombres: 'asc' }],
-      select: { id: true, nombres: true, apellidos: true, identificacion: true, email: true, telefono: true },
+      select: { id: true, nombres: true, apellidos: true, identificacion: true, email: true, telefono: true, genero: true },
     });
   }
 
@@ -169,10 +169,11 @@ export class RepositorioPrisma implements RepositorioPort {
 
   async asegurarPersona(
     usuarioId: string,
-    persona: Pick<PersonaAdministrada, 'nombres' | 'apellidos' | 'identificacion'>,
+    persona: Pick<PersonaAdministrada, 'nombres' | 'apellidos' | 'identificacion' | 'genero'>,
   ): Promise<{ id: string }> {
     const identificacion = persona.identificacion.replace(/\D/g, '');
-    const nombre = { nombres: persona.nombres, apellidos: persona.apellidos };
+    // An empty gender never overwrites a registered one.
+    const nombre = { nombres: persona.nombres, apellidos: persona.apellidos, ...(persona.genero ? { genero: persona.genero } : {}) };
     return this.prisma.persona.upsert({
       where: { usuarioId_identificacion: { usuarioId, identificacion } },
       create: { usuarioId, identificacion, ...nombre },

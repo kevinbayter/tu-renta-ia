@@ -13,14 +13,23 @@ const PALABRAS_GENERICAS = new Set([
   'SALDO', 'CUENTA', 'CUENTAS', 'AHORROS', 'CORRIENTE', 'SEGUN', 'EXOGENA',
 ]);
 
-/** Tokens significativos del nombre de una entidad (sin tildes, siglas ni genéricos). */
+/** Siglas con las que un banco firma unos certificados y no otros ("BBVA Colombia" vs su razón social). */
+const SIGLAS: Record<string, string[]> = {
+  BBVA: ['BILBAO', 'VIZCAYA', 'ARGENTARIA'],
+};
+
+/** Tokens significativos del nombre de una entidad (sin tildes ni genéricos), con su sigla si la tiene. */
 export function tokensDeEntidad(nombre: string): string[] {
-  return nombre
+  const tokens = nombre
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toUpperCase()
     .split(/[^A-Z0-9]+/)
     .filter((token) => token.length > 1 && !PALABRAS_GENERICAS.has(token));
+  const siglas = Object.entries(SIGLAS)
+    .filter(([sigla, palabras]) => !tokens.includes(sigla) && palabras.some((p) => tokens.includes(p)))
+    .map(([sigla]) => sigla);
+  return [...tokens, ...siglas];
 }
 
 /** "BANCO EJEMPLO COMPAÑIA DE FINANCIAMIENTO S.A." coincide con "Banco Ejemplo SA". */

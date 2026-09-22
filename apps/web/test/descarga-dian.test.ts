@@ -68,6 +68,7 @@ function solicitud(cambios: Partial<SolicitudConexionDian> = {}): SolicitudConex
     modoIngreso: 'propio',
     recordarAcceso: false,
     alcancesAceptados: [],
+    enNombreDeOtro: false,
     ...cambios,
   };
 }
@@ -171,5 +172,13 @@ describe('caso de uso de descarga desde la DIAN', () => {
   it('la operación corre dentro del portón de concurrencia', async () => {
     await descargarDeLaDian('exogena', solicitud(), 'usuario-1', HUELLA);
     expect(limitador.conPermiso).toHaveBeenCalled();
+  });
+
+  it('en nombre de otra persona la evidencia guarda el texto que no declara ser el titular', async () => {
+    await descargarDeLaDian('exogena', solicitud({ enNombreDeOtro: true }), 'usuario-1', HUELLA);
+    expect(evidencia.registrarAutorizacion).toHaveBeenCalledWith(
+      expect.objectContaining({ textoAceptado: expect.stringContaining('No soy el titular') as unknown }),
+      HUELLA,
+    );
   });
 });

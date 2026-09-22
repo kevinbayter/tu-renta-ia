@@ -1,6 +1,6 @@
 'use client';
 
-import { Info, Loader2, ShieldCheck, Zap } from 'lucide-react';
+import { Loader2, ShieldCheck, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { ANIO_GRAVABLE, registrarDocumentoDian, useSubidas } from './pipeline-documentos';
@@ -49,11 +49,8 @@ export function OpcionConectarDian({
   // puntos, el texto firmado y el que se hashea como evidencia no coincidirían.
   const titular = (declarante?.identificacion ?? '').replace(/\D/g, '');
 
-  // La DIAN permite entrar a nombre de un tercero, pero ese formulario aún no
-  // está mapeado: se dice la verdad en vez de pedir una clave para nada.
-  if (esPropia === false) {
-    return <NoDisponibleParaTerceros />;
-  }
+  // Con la cuenta de otra persona se entra con SUS credenciales, a nombre propio de ella.
+  const deOtro = esPropia === false ? nombreDe(declarante) : null;
   // Sin cédula del titular la petición sería rechazada siempre; no tiene
   // sentido pedir la contraseña de la DIAN para eso.
   if (titular.length < LARGO_MINIMO_CEDULA || !habilitada) {
@@ -85,7 +82,7 @@ export function OpcionConectarDian({
 
   return (
     <>
-      <Tarjeta operacion={operacion} alAbrir={() => setAbierto(true)} ocupado={leyendo || leyendoAparte} />
+      <Tarjeta operacion={operacion} deOtro={deOtro} alAbrir={() => setAbierto(true)} ocupado={leyendo || leyendoAparte} />
       {leyendoAparte && (
         <p className="mt-2 flex items-center gap-2 text-xs text-texto-suave" role="status">
           <Loader2 size={13} className="animate-spin text-primario" aria-hidden />
@@ -101,6 +98,7 @@ export function OpcionConectarDian({
         <ConexionDian
           operacion={operacion}
           titular={titular}
+          deOtro={deOtro}
           anioGravable={anioGravable}
           alCerrar={() => setAbierto(false)}
           alCompletar={(r) => void completar(r)}
@@ -123,16 +121,33 @@ const TEXTOS: Record<OperacionDian, { titulo: string; detalle: string; boton: st
   },
 };
 
+function nombreDe(declarante: { nombres?: string; apellidos?: string } | undefined): string {
+  return [declarante?.nombres, declarante?.apellidos].filter(Boolean).join(' ') || 'esta persona';
+}
+
+function textosPara(operacion: OperacionDian, deOtro: string | null) {
+  if (deOtro === null) {
+    return TEXTOS[operacion];
+  }
+  return {
+    ...TEXTOS[operacion],
+    titulo: operacion === 'exogena' ? `Trae la información de ${deOtro} desde la DIAN` : `Trae la declaración del año pasado de ${deOtro}`,
+    detalle: `Usa el usuario y la contraseña de la DIAN DE ${deOtro}, no los tuyos, y solo si te autorizó. Nos conectamos una sola vez, contigo presente.`,
+  };
+}
+
 function Tarjeta({
   operacion,
+  deOtro,
   alAbrir,
   ocupado,
 }: {
   operacion: OperacionDian;
+  deOtro: string | null;
   alAbrir: () => void;
   ocupado: boolean;
 }) {
-  const texto = TEXTOS[operacion];
+  const texto = textosPara(operacion, deOtro);
   return (
     <div className="rounded-2xl border border-primario/30 bg-primario-suave/40 p-4">
       <div className="flex items-start gap-3">
@@ -152,18 +167,6 @@ function Tarjeta({
       >
         <ShieldCheck size={16} aria-hidden /> {ocupado ? 'Leyendo documento…' : texto.boton}
       </button>
-    </div>
-  );
-}
-
-function NoDisponibleParaTerceros() {
-  return (
-    <div className="flex items-start gap-2.5 rounded-2xl border border-borde bg-background p-4">
-      <Info size={15} className="mt-0.5 shrink-0 text-primario" aria-hidden />
-      <p className="text-xs leading-relaxed text-texto-suave">
-        La conexión automática solo está disponible para tu propia declaración. Para la de otra persona,
-        sube los documentos aquí abajo: nunca te pediremos la contraseña de la DIAN de un tercero.
-      </p>
     </div>
   );
 }

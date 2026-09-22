@@ -10,7 +10,12 @@ import type {
   ConexionDianPort,
   ContextoOperacionDian,
   CredencialesDian,
+  DatosDiligenciamiento,
+  DatosPresentacion,
+  ProgresoConexion,
   ResultadoDescarga,
+  ResultadoDiligenciamiento,
+  ResultadoPresentacion,
 } from '@turenta/core';
 
 const ESPERA_POR_DEFECTO_MS = 180_000;
@@ -47,22 +52,85 @@ export class ConexionDianRemota implements ConexionDianPort {
     return this.pedir('declaracion', credenciales, contexto);
   }
 
+  async diligenciarDeclaracion(
+    credenciales: CredencialesDian,
+    contexto: ContextoOperacionDian,
+    datos: DatosDiligenciamiento,
+    alProgresar?: (progreso: ProgresoConexion) => void,
+  ): Promise<ResultadoDiligenciamiento> {
+    const respuesta = await this.enviar('diligenciar', cuerpoDe(credenciales, contexto, datos), ESPERA_DILIGENCIAR_MS);
+    return interpretarDiligenciamiento(respuesta, alProgresar ?? (() => undefined));
+  }
+
+  async presentarDeclaracion(
+    credenciales: CredencialesDian,
+    contexto: ContextoOperacionDian,
+    datos: DatosPresentacion,
+    alProgresar?: (progreso: ProgresoConexion) => void,
+  ): Promise<ResultadoPresentacion> {
+    const respuesta = await this.enviar('presentar', cuerpoDe(credenciales, contexto, datos), ESPERA_DILIGENCIAR_MS);
+    return interpretarDiligenciamiento(respuesta, alProgresar ?? (() => undefined));
+  }
+
   private async pedir(
     operacion: 'exogena' | 'declaracion',
     credenciales: CredencialesDian,
     contexto: ContextoOperacionDian,
   ): Promise<ResultadoDescarga> {
-    const respuesta = await fetch(`${this.config.url}/dian/${operacion}`, {
+    return interpretar(await this.enviar(operacion, cuerpoDe(credenciales, contexto)));
+  }
+
+  private enviar(operacion: string, cuerpo: string, tiempoMs?: number): Promise<Response | null> {
+    return fetch(`${this.config.url}/dian/${operacion}`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
         authorization: `Bearer ${this.config.token}`,
       },
-      body: cuerpoDe(credenciales, contexto),
-      signal: AbortSignal.timeout(this.config.tiempoMaximoMs ?? ESPERA_POR_DEFECTO_MS),
+      body: cuerpo,
+      signal: AbortSignal.timeout(tiempoMs ?? this.config.tiempoMaximoMs ?? ESPERA_POR_DEFECTO_MS),
     }).catch(() => null);
-    return interpretar(respuesta);
   }
+}
+
+/** Fifteen sections typed one by one against a slow portal: several minutes is normal. */
+const ESPERA_DILIGENCIAR_MS = 480_000;
+
+/** The worker streams NDJSON: progress lines and, last, the result. A plain JSON body is an early refusal. */
+async function interpretarDiligenciamiento<T extends ResultadoDiligenciamiento>(
+  respuesta: Response | null,
+  alProgresar: (progreso: ProgresoConexion) => void,
+): Promise<T> {
+  if (!respuesta?.body) {
+    return noDisponible('El servicio de conexión no respondió') as T;
+  }
+  if (!(respuesta.headers.get('content-type') ?? '').includes('ndjson')) {
+    return ((await respuesta.json().catch(() => null)) as T | null) ?? (noDisponible(`El servicio de conexión respondió ${String(respuesta.status)}`) as T);
+  }
+  let resultado: T | null = null;
+  const alLinea = (linea: string) => {
+    const mensaje = JSON.parse(linea) as { progreso?: ProgresoConexion; resultado?: T };
+    if (mensaje.progreso) {
+      alProgresar(mensaje.progreso);
+    }
+    resultado = mensaje.resultado ?? resultado;
+  };
+  const completo = await leerLineas(respuesta.body.getReader(), alLinea, new TextDecoder()).then(() => true, () => false);
+  return (completo ? resultado : null) ?? (noDisponible('La conexión con el servicio se cortó') as T);
+}
+
+/** One decoder per stream: it keeps half-received multi-byte characters between chunks. */
+async function leerLineas(
+  lector: ReadableStreamDefaultReader<Uint8Array>,
+  alLinea: (linea: string) => void,
+  decodificador: TextDecoder,
+  pendiente = '',
+): Promise<void> {
+  const { done, value } = await lector.read();
+  const lineas = (pendiente + (value ? decodificador.decode(value, { stream: true }) : '')).split('\n');
+  const resto = done ? '' : (lineas.pop() ?? '');
+  lineas.filter((l) => l.trim() !== '').forEach(alLinea);
+  return done ? undefined : leerLineas(lector, alLinea, decodificador, resto);
 }
 
 /**
@@ -70,12 +138,17 @@ export class ConexionDianRemota implements ConexionDianPort {
  * the redaction marker), so the value is taken deliberately here. It travels
  * over Docker's internal network to the worker, never over the Internet.
  */
-function cuerpoDe(credenciales: CredencialesDian, contexto: ContextoOperacionDian): string {
+function cuerpoDe(
+  credenciales: CredencialesDian,
+  contexto: ContextoOperacionDian,
+  datos?: DatosDiligenciamiento | DatosPresentacion,
+): string {
   return JSON.stringify({
     tipoDocumento: credenciales.tipoDocumento,
     numeroDocumento: credenciales.numeroDocumento,
     contrasena: credenciales.contrasena.revelar(),
     contexto,
+    ...(datos ? { datos } : {}),
   });
 }
 

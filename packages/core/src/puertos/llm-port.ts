@@ -1,5 +1,5 @@
 /**
- * Puerto hacia el proveedor LLM (OpenCode Go / Kimi K3).
+ * Puerto hacia el proveedor LLM (hoy DeepSeek V4.1 Flash; cualquier API compatible OpenAI).
  * Los adaptadores implementan esto; core y motor-fiscal jamás llaman al LLM directamente.
  */
 export interface LlmPort {

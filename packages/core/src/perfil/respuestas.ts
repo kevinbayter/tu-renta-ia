@@ -45,9 +45,15 @@ export interface RespuestasEntrevista {
   rendimientosAdicionalesConComponente: number;
   /** Rendimientos sin componente inflacionario (p. ej. rendimientos de cesantías). */
   rendimientosSinComponente: number;
-  /** Ingresos no laborales confirmados (arriendos vía mandato, etc.), ya deduplicados. */
+  /** Arriendos confirmados, con o sin inmobiliaria (rentas de capital, art. 335-2), ya deduplicados. */
+  ingresosArrendamientos?: number;
+  /** Predial del inmueble arrendado, comisión de la inmobiliaria con IVA, administración (con soporte). */
+  costosArrendamientos?: number;
+  /** Retención en la fuente sobre arriendos según el certificado de la inmobiliaria. */
+  retencionArrendamientos?: number;
+  /** Ingresos no laborales confirmados (lo que no es arriendo ni otra cédula), ya deduplicados. */
   ingresosNoLaborales?: number;
-  /** Costos y gastos procedentes de esos ingresos (predial, administración, con soporte). */
+  /** Costos y gastos procedentes de esos ingresos, con soporte. */
   costosNoLaborales?: number;
   /** Activos que no vienen de certificados: bienes personales, CxC, saldos confirmados. */
   activosManuales: { descripcion: string; valor: number }[];

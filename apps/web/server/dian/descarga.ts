@@ -82,7 +82,7 @@ function autorizacionPara(operacion: Operacion, solicitud: SolicitudConexionDian
       titularIdentificacion: solicitud.titular,
       operadorUsuarioId: usuarioId,
       alcances,
-      textoAceptado: serializarAutorizacion(textoAutorizacion(solicitud.titular, alcances)),
+      textoAceptado: serializarAutorizacion(textoAutorizacion(solicitud.titular, alcances, solicitud.enNombreDeOtro)),
     },
     new Date(),
   );

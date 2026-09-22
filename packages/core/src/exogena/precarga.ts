@@ -1,4 +1,5 @@
-import { ingresosNoLaboralesReportados } from './no-laborales';
+import { deudasReportadas, inmueblesReportados } from './inmuebles-y-deudas';
+import { ingresosMandatoReportados } from './mandato';
 
 import type { ExogenaParseada, FilaExogena } from './tipos';
 
@@ -13,6 +14,7 @@ export interface PrecargaExogena {
   respuestas: {
     rendimientosSinComponente: number;
     rendimientosAdicionalesConComponente: number;
+    ingresosArrendamientos: number;
     ingresosNoLaborales: number;
   };
   /** Saldos reportados a 31-dic que la entrevista debe ofrecer como activos. */
@@ -24,13 +26,14 @@ export interface PrecargaExogena {
 export function precargarDesdeExogena(exogena: ExogenaParseada): PrecargaExogena {
   const rendimientosCesantias = sumar(exogena.filas.filter(esRendimientoCesantias));
   const rendimientosFondos = sumar(exogena.filas.filter(esRendimientoFondoInversion));
-  const noLaborales = ingresosNoLaboralesReportados(exogena);
+  const mandato = ingresosMandatoReportados(exogena);
   const sugerenciasActivos = extraerSaldosNoBancarios(exogena.filas);
   return {
     respuestas: {
       rendimientosSinComponente: rendimientosCesantias,
       rendimientosAdicionalesConComponente: rendimientosFondos,
-      ingresosNoLaborales: noLaborales.total,
+      ingresosArrendamientos: mandato.arrendamientos,
+      ingresosNoLaborales: mandato.otros,
     },
     sugerenciasActivos,
     resumen: construirResumen(exogena, rendimientosCesantias, rendimientosFondos, sugerenciasActivos),
@@ -81,7 +84,8 @@ function construirResumen(
     `- Rendimientos de cesantías: ${pesos(rendimientosCesantias)}`,
     `- Rendimientos de fondos de inversión (carteras colectivas): ${pesos(rendimientosFondos)}`,
     `- Compras con factura electrónica y saldo a favor del año anterior: se aplican automáticamente.`,
-    ...lineasNoLaborales(exogena),
+    ...lineasMandato(exogena),
+    ...lineasPatrimonio(exogena),
   ];
   const saldos = activos.map((a) => `  · ${a.descripcion}: ${pesos(a.valor)}`);
   if (saldos.length > 0) {
@@ -90,20 +94,41 @@ function construirResumen(
   return lineas.join('\n');
 }
 
-function lineasNoLaborales(exogena: ExogenaParseada): string[] {
-  const noLaborales = ingresosNoLaboralesReportados(exogena);
-  if (noLaborales.total === 0) {
-    return [];
+function lineasMandato(exogena: ExogenaParseada): string[] {
+  const mandato = ingresosMandatoReportados(exogena);
+  const lineas: string[] = [];
+  if (mandato.arrendamientos > 0) {
+    lineas.push(
+      `- ARRIENDOS reportados por inmobiliaria (rentas de capital): ${pesos(mandato.arrendamientos)} en ingresosArrendamientos — confírmalo y pide el certificado de la inmobiliaria: costos con soporte (predial SOLO del inmueble arrendado, comisión de la inmobiliaria con IVA, administración) en costosArrendamientos y la retención en la fuente en retencionArrendamientos.`,
+    );
   }
-  const lineas = [
-    `- Ingresos NO laborales (arriendos/mandato): ${pesos(noLaborales.total)} — confirma este valor y pregunta por costos con soporte (predial del inmueble arrendado, administración) para costosNoLaborales.`,
-  ];
-  noLaborales.duplicados.forEach((d) =>
+  if (mandato.otros > 0) {
+    lineas.push(
+      `- Ingresos por mandato sin inmobiliaria: ${pesos(mandato.otros)} precargados como NO laborales — pregunta qué son: si es un arriendo, muévelo a ingresosArrendamientos (y deja ingresosNoLaborales en 0).`,
+    );
+  }
+  mandato.duplicados.forEach((d) =>
     lineas.push(
       `  OJO: ${pesos(d.valor)} aparece reportado por ${d.informantes.join(' y ')} — típico duplicado de mandato: YA lo contamos UNA sola vez; solo confirma que es el mismo ingreso.`,
     ),
   );
   return lineas;
+}
+
+function lineasPatrimonio(exogena: ExogenaParseada): string[] {
+  const inmuebles = inmueblesReportados(exogena).map(
+    (i) => `  · Inmueble matrícula ${i.matricula} (${nombreCorto(i.municipio)}): avalúo ${pesos(i.valor)}`,
+  );
+  const deudas = deudasReportadas(exogena).map((d) => `  · ${nombreCorto(d.acreedor)}: ${pesos(d.valor)}`);
+  return [
+    ...(inmuebles.length > 0
+      ? [
+          'INMUEBLES SEGÚN LA EXÓGENA (predial): ofrécelos como activos a confirmar y pregunta cuál está arrendado; van por el MAYOR entre este avalúo y su costo fiscal si el usuario lo conoce:',
+          ...inmuebles,
+        ]
+      : []),
+    ...(deudas.length > 0 ? ['DEUDAS SEGÚN LA EXÓGENA (saldo a 31-dic): confírmalas en deudas y pregunta de qué tipo son:', ...deudas] : []),
+  ];
 }
 
 function sumar(filas: FilaExogena[]): number {

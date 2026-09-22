@@ -75,13 +75,22 @@ export function paginaResultado(lienzo: Lienzo, resultado: ResultadoDeclaracion)
 function filasDesglose(resultado: ResultadoDeclaracion): [string, number, boolean?][] {
   const l = resultado.liquidacion;
   const g = resultado.cedulaGeneral;
+  const p = resultado.cedulaPensiones;
+  const opcionales: [string, number][] = [
+    ['Costos de los arriendos', -g.capital.costosYGastos],
+    ['Ingresos no laborales', g.noLaborales.ingresosBrutos],
+    ['Costos de ingresos no laborales', -g.noLaborales.costosYGastos],
+    ['Pensiones', p.ingresosBrutos],
+    ['Pensiones no gravadas (salud y exenta art. 206-5)', -(p.incrngo + p.rentaExenta)],
+  ];
   return [
     ['Ingresos por rentas de trabajo', g.trabajo.ingresosBrutos],
     ['Ingresos por rentas de capital', g.capital.ingresosBrutos],
+    ...opcionales.filter(([, valor]) => valor !== 0),
     ['Aportes a salud y pensión (no gravados)', -g.trabajo.incrngo],
     ['Componente inflacionario (no gravado)', -g.capital.incrngoComponenteInflacionario],
     ['Rentas exentas y deducciones aplicadas', -g.totalExentasYDeduccionesConFueraDeLimite],
-    ['Renta líquida gravable', g.rentaLiquidaGravable, true],
+    ['Renta líquida gravable', g.rentaLiquidaGravable + p.rentaLiquidaGravable, true],
     ['Impuesto de renta (tabla art. 241 E.T.)', l.impuestoNetoRenta],
     ['Retenciones que ya te practicaron', -l.retenciones],
     ['Saldo a favor de años anteriores', -l.saldoFavorAnterior],
@@ -91,6 +100,13 @@ function filasDesglose(resultado: ResultadoDeclaracion): [string, number, boolea
 
 export function paginaDepuracion(lienzo: Lienzo, resultado: ResultadoDeclaracion): void {
   nuevaPaginaConMarco(lienzo, subtituloDe(resultado));
+  if (resultado.cedulaGeneral.trabajo.ingresosBrutos > 0) {
+    dibujarTrabajo(lienzo, resultado);
+  }
+  dibujarCapitalYGlobal(lienzo, resultado);
+}
+
+function dibujarTrabajo(lienzo: Lienzo, resultado: ResultadoDeclaracion): void {
   const t = resultado.cedulaGeneral.trabajo;
   tituloSeccion(lienzo, 'Rentas de trabajo');
   const filasTrabajo: [string, number, boolean?, number?][] = [
@@ -109,16 +125,30 @@ export function paginaDepuracion(lienzo: Lienzo, resultado: ResultadoDeclaracion
     filaTabla(lienzo, clave, pesos(valor), { indice, destacar: destacar ?? false, sangria: sangria ?? 0 });
   });
   espacio(lienzo, 16);
-  dibujarCapitalYGlobal(lienzo, resultado);
+}
+
+function dibujarPensiones(lienzo: Lienzo, resultado: ResultadoDeclaracion): void {
+  const p = resultado.cedulaPensiones;
+  tituloSeccion(lienzo, 'Rentas de pensiones');
+  const filas: [string, number, boolean?][] = [
+    ['Pensiones recibidas en el año', p.ingresosBrutos],
+    ['(-) Aportes obligatorios a salud', -p.incrngo],
+    ['(-) Renta exenta (hasta 1.000 UVT mensuales, art. 206-5)', -p.rentaExenta],
+    ['Renta líquida gravable de pensiones', p.rentaLiquidaGravable, true],
+  ];
+  filas.forEach(([clave, valor, destacar], indice) => {
+    filaTabla(lienzo, clave, pesos(valor), { indice, destacar: destacar ?? false });
+  });
+  espacio(lienzo, 16);
 }
 
 function dibujarCapitalYGlobal(lienzo: Lienzo, resultado: ResultadoDeclaracion): void {
   const k = resultado.cedulaGeneral.capital;
-  const g = resultado.cedulaGeneral;
   tituloSeccion(lienzo, 'Rentas de capital');
   const filasCapital: [string, number, boolean?][] = [
-    ['Rendimientos financieros y de fondos', k.ingresosBrutos],
+    ['Rendimientos financieros y arriendos', k.ingresosBrutos],
     ['(-) Componente inflacionario (55,43%)', -k.incrngoComponenteInflacionario],
+    ...(k.costosYGastos > 0 ? ([['(-) Costos del arriendo con soporte', -k.costosYGastos]] as [string, number][]) : []),
     ['(-) GMF deducible aplicado', -k.asignadoLimitado],
     ['Renta líquida ordinaria de capital', k.rentaLiquidaOrdinaria, true],
   ];
@@ -126,6 +156,14 @@ function dibujarCapitalYGlobal(lienzo: Lienzo, resultado: ResultadoDeclaracion):
     filaTabla(lienzo, clave, pesos(valor), { indice, destacar: destacar ?? false });
   });
   espacio(lienzo, 16);
+  if (resultado.cedulaPensiones.ingresosBrutos > 0) {
+    dibujarPensiones(lienzo, resultado);
+  }
+  dibujarGlobal(lienzo, resultado);
+}
+
+function dibujarGlobal(lienzo: Lienzo, resultado: ResultadoDeclaracion): void {
+  const g = resultado.cedulaGeneral;
   tituloSeccion(lienzo, 'Límite global y beneficios adicionales');
   const filasGlobal: [string, number, boolean?][] = [
     ['Límite de exentas y deducciones (40% / 1.340 UVT)', g.limiteGlobal],

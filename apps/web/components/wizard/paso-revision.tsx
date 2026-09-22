@@ -1,6 +1,6 @@
 'use client';
 
-import { saldoAFavorAnterior } from '@turenta/core';
+import { documentosEsperados, saldoAFavorAnterior } from '@turenta/core';
 import { useState } from 'react';
 
 import { DatosDeclarante } from './datos-declarante';
@@ -19,7 +19,10 @@ const CAMPOS_EDITABLES: { campo: keyof RespuestasEntrevista; etiqueta: string }[
   { campo: 'gmfTotalPagado', etiqueta: 'GMF (4×1000) total pagado ($)' },
   { campo: 'rendimientosAdicionalesConComponente', etiqueta: 'Otros rendimientos financieros ($)' },
   { campo: 'rendimientosSinComponente', etiqueta: 'Rendimientos de cesantías ($)' },
-  { campo: 'ingresosNoLaborales', etiqueta: 'Ingresos no laborales: arriendos, mandato ($)' },
+  { campo: 'ingresosArrendamientos', etiqueta: 'Arriendos recibidos en 2025, con o sin inmobiliaria ($)' },
+  { campo: 'costosArrendamientos', etiqueta: 'Costos del arriendo: predial del inmueble arrendado, comisión, administración ($)' },
+  { campo: 'retencionArrendamientos', etiqueta: 'Retención en la fuente sobre arriendos ($)' },
+  { campo: 'ingresosNoLaborales', etiqueta: 'Otros ingresos no laborales ($)' },
   { campo: 'costosNoLaborales', etiqueta: 'Costos de esos ingresos, con soporte ($)' },
   { campo: 'deudas', etiqueta: 'Deudas al 31 de diciembre ($)' },
   { campo: 'mesesConPension', etiqueta: 'Meses con pensión en 2025 (si aplica)' },
@@ -99,10 +102,11 @@ function AvisosDeCompletitud() {
   if (cedulaExogena && cedulaTitular && cedulaExogena !== cedulaTitular) {
     avisos.push(`La exógena subida es de la cédula ${cedulaExogena}, no del titular (${cedulaTitular}). El resultado será incorrecto.`);
   }
+  // Pensions and banks fall back to the exógena; only an employer's salary needs its 220.
   const tiene220 = documentos.some((d) => d.tipo === 'certificado_220');
-  const reportaIngresos = exogena?.tipo === 'exogena' && exogena.exogena.topes.ingresos > 0;
-  if (reportaIngresos && !tiene220) {
-    avisos.push('La exógena reporta ingresos, pero no has subido ningún certificado 220 de tus empleadores: los ingresos y retenciones de trabajo quedarán en $0 y el cálculo estará incompleto.');
+  const empleadores = exogena?.tipo === 'exogena' ? documentosEsperados(exogena.exogena).filter((d) => d.tipo === 'certificado_220' && !d.opcional) : [];
+  if (empleadores.length > 0 && !tiene220) {
+    avisos.push(`La exógena reporta pagos laborales de ${empleadores.map((e) => e.nombre).join(', ')}, pero no has subido su certificado 220: los ingresos y retenciones de trabajo quedarán en $0 y el cálculo estará incompleto.`);
   }
   if (avisos.length === 0) {
     return null;

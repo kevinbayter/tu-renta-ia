@@ -3,6 +3,8 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 
+import { SelectorGenero } from '@/components/ui/selector-genero';
+
 export default function PaginaIngresar() {
   return (
     <Suspense>
@@ -49,7 +51,7 @@ function Ingreso() {
 
 function FormularioPerfil({ destino }: { destino: string }) {
   const router = useRouter();
-  const [datos, setDatos] = useState({ nombres: '', apellidos: '', identificacion: '' });
+  const [datos, setDatos] = useState({ nombres: '', apellidos: '', identificacion: '', genero: '' });
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
 
@@ -63,7 +65,7 @@ function FormularioPerfil({ destino }: { destino: string }) {
     }).catch(() => null);
     setCargando(false);
     if (!respuesta?.ok) {
-      setError('Revisa los datos: nombres, apellidos y una cédula válida.');
+      setError('Revisa los datos: nombres, apellidos, una cédula válida y el género.');
       return;
     }
     router.push(destino);
@@ -79,6 +81,7 @@ function FormularioPerfil({ destino }: { destino: string }) {
         alCambiar={(v) => setDatos({ ...datos, identificacion: v.replace(/\D/g, '') })}
         numerico
       />
+      <SelectorGenero valor={datos.genero} alCambiar={(genero) => setDatos({ ...datos, genero })} />
       {error && <p role="alert" className="text-sm text-error">{error}</p>}
       <button
         type="button"

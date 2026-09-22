@@ -4,6 +4,7 @@ import { detectarAdvertencias, detectarCasosNoSoportados } from '@turenta/core';
 import { Info, TriangleAlert } from 'lucide-react';
 
 import { BotonDescargarBorrador, GuiaPresentacion } from './guia-presentacion';
+import { LlevarALaDian } from '@/components/dian/llevar-a-la-dian';
 import { useDeclaracion } from '@/lib/store';
 import { formatearPesos } from '@/lib/tipos';
 
@@ -34,6 +35,7 @@ export function PasoResultado() {
       <CifraPrincipal resultado={resultado} parcial={incompleta} />
       {!incompleta && <BotonDescargarBorrador resultado={resultado} />}
       <Desglose resultado={resultado} />
+      {!incompleta && <LlevarALaDian resultado={resultado} />}
       {!incompleta && <GuiaPresentacion resultado={resultado} />}
       <Casillas resultado={resultado} />
       <button
@@ -126,6 +128,20 @@ function CifraPrincipal({ resultado, parcial }: { resultado: ResultadoDeclaracio
   );
 }
 
+/** Filas que solo aparecen si la persona tiene esas rentas (resultados viejos pueden no traerlas). */
+function filasOtrasRentas(resultado: ResultadoDeclaracion): [string, number][] {
+  const g = resultado.cedulaGeneral;
+  const p = resultado.cedulaPensiones as ResultadoDeclaracion['cedulaPensiones'] | undefined;
+  const filas: [string, number][] = [
+    ['Costos de los arriendos', -(g.capital.costosYGastos ?? 0)],
+    ['Ingresos no laborales', g.noLaborales?.ingresosBrutos ?? 0],
+    ['Costos de ingresos no laborales', -(g.noLaborales?.costosYGastos ?? 0)],
+    ['Pensiones', p?.ingresosBrutos ?? 0],
+    ['Pensiones no gravadas (salud y exenta)', -((p?.incrngo ?? 0) + (p?.rentaExenta ?? 0))],
+  ];
+  return filas.filter(([, valor]) => valor !== 0);
+}
+
 function Desglose({ resultado }: { resultado: ResultadoDeclaracion }) {
   const g = resultado.cedulaGeneral;
   // Un resultado guardado con una versión anterior no trae este campo.
@@ -134,9 +150,10 @@ function Desglose({ resultado }: { resultado: ResultadoDeclaracion }) {
   const filas: [string, number][] = [
     ['Ingresos rentas de trabajo', g.trabajo.ingresosBrutos],
     ['Ingresos rentas de capital', g.capital.ingresosBrutos],
+    ...filasOtrasRentas(resultado),
     ['Aportes salud y pensión (no gravados)', -g.trabajo.incrngo],
     ['Rentas exentas y deducciones aplicadas', -g.totalExentasYDeduccionesConFueraDeLimite - g.capital.incrngoComponenteInflacionario],
-    ['Renta líquida gravable', g.rentaLiquidaGravable],
+    ['Renta líquida gravable', g.rentaLiquidaGravable + (resultado.cedulaPensiones?.rentaLiquidaGravable ?? 0)],
     ...((resultado.dividendos as ResultadoDeclaracion['dividendos'] | undefined)?.baseParaTabla ?? 0) > 0
       ? ([['Dividendos que entran a la base', resultado.dividendos.baseParaTabla]] as [string, number][])
       : [],

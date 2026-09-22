@@ -22,6 +22,15 @@ export interface RentasCapitalInput {
   rendimientosSinComponente: number;
   gmfPagado: number;
   retencionFuente: number;
+  /** Arriendos de bienes, con o sin inmobiliaria: son rentas de capital (art. 335-2), no no laborales. */
+  arrendamientos?: ArrendamientosInput;
+}
+
+export interface ArrendamientosInput {
+  ingresosBrutos: number;
+  /** Predial del bien arrendado, comisión de la inmobiliaria con IVA, administración (casilla 60). */
+  costosYGastos: number;
+  retencionFuente: number;
 }
 
 export interface DeduccionesInput {
@@ -54,7 +63,7 @@ export interface HonorariosInput {
 }
 
 export interface RentasNoLaboralesInput {
-  /** Arriendos vía mandato, honorarios sin vínculo y demás del art. 335 (ya deduplicados). */
+  /** Lo que no clasifica en otra cédula (art. 335-3): honorarios sin vínculo, ventas <2 años, etc. */
   ingresosBrutos: number;
   /** Costos y gastos procedentes con soporte (num. 4 art. 336). */
   costosYGastos: number;

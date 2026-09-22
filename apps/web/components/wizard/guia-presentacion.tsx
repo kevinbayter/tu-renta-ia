@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { nombreArchivoBorrador } from '@/lib/nombre-borrador';
 import { useDeclaracion } from '@/lib/store';
 import { formatearPesos } from '@/lib/tipos';
 import { fechaVencimiento, obtenerConstantes } from '@turenta/motor-fiscal';
@@ -14,7 +15,7 @@ export function GuiaPresentacion({ resultado }: { resultado: ResultadoDeclaracio
   const pasos = construirPasos(resultado, vencimiento);
   return (
     <details className="mt-3 rounded-2xl border border-borde bg-card p-4" open>
-      <summary className="cursor-pointer font-semibold">Guía: cómo presentarla en la DIAN</summary>
+      <summary className="cursor-pointer font-semibold">Guía: cómo presentarla tú mismo en la DIAN</summary>
       {vencimiento && (
         <p className="mt-3 rounded-xl bg-alerta-suave px-3 py-2 text-sm">
           📅 Tu fecha límite: <strong>{formatearFecha(vencimiento)}</strong> (cédula terminada en{' '}
@@ -31,7 +32,8 @@ export function GuiaPresentacion({ resultado }: { resultado: ResultadoDeclaracio
         <a href="https://www.dian.gov.co" target="_blank" rel="noreferrer" className="text-primario underline">
           dian.gov.co
         </a>{' '}
-        → Usuario Registrado. La declaración la firmas y presentas tú.
+        → Usuario Registrado. Esta guía es por si prefieres hacerlo tú: con el botón de arriba la
+        presentamos nosotros.
       </p>
     </details>
   );
@@ -127,7 +129,7 @@ async function pedirYDescargar(
   if (!respuesta.ok) {
     return 'No se pudo generar el PDF. Verifica tus datos.';
   }
-  abrirDescarga(await respuesta.blob(), `borrador-210-ag${String(resultado.anioGravable)}.pdf`);
+  abrirDescarga(await respuesta.blob(), nombreArchivoBorrador(declarante, resultado.anioGravable));
   return null;
 }
 

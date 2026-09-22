@@ -78,7 +78,7 @@ describe('validación de la solicitud de conexión', () => {
     const resultado = validar({
       alcancesAceptados: ['leer_exogena', 'leer_exogena', 'presentar_declaracion', 'hackear', 42],
     });
-    expect(resultado.valida && resultado.solicitud.alcancesAceptados).toEqual(['leer_exogena']);
+    expect(resultado.valida && resultado.solicitud.alcancesAceptados).toEqual(['leer_exogena', 'presentar_declaracion']);
   });
 
   it('sin alcances en el cuerpo la solicitud queda con lista vacía', () => {
@@ -106,5 +106,19 @@ describe('validación de la solicitud de conexión', () => {
     expect(
       validarSolicitudConexion({ numeroDocumento: { a: 1 }, contrasena: 42 }, ANIO_ACTUAL).valida,
     ).toBe(false);
+  });
+});
+
+describe('conexión con las credenciales de otra persona', () => {
+  it('se marca solo si el cliente lo declara explícitamente', () => {
+    const propia = validar();
+    expect(propia.valida && propia.solicitud.enNombreDeOtro).toBe(false);
+    const resultado = validar({ enNombreDeOtro: true });
+    expect(resultado.valida && resultado.solicitud.enNombreDeOtro).toBe(true);
+  });
+
+  it('exige que las credenciales sean las del titular (a nombre propio de esa persona)', () => {
+    expect(validar({ enNombreDeOtro: true, titular: '9999999999' }).valida).toBe(false);
+    expect(validar({ enNombreDeOtro: true, modoIngreso: 'tercero', titular: '9999999999' }).valida).toBe(false);
   });
 });

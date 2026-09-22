@@ -2,21 +2,25 @@
 
 Respaldo normativo de la subcédula de rentas no laborales implementada en
 `motor-fiscal` (`depuracion/no-laborales.ts`) y de la deduplicación de ingresos
-por mandato en la exógena (`core/exogena/no-laborales.ts`).
+por mandato en la exógena (`core/exogena/mandato.ts`).
 
 ## 1. Qué ingresos entran (art. 335 E.T.)
 
 Son rentas no laborales todos los ingresos que no clasifiquen expresamente en
-las demás rentas de la cédula general: arrendamientos recibidos a través de
-contratos de **mandato** (inmobiliarias), honorarios sin vínculo, enajenaciones
-de menos de 2 años, etc. Van en la columna "Rentas no laborales" de la cédula
+las demás rentas de la cédula general: honorarios sin vínculo, enajenaciones de
+menos de 2 años, etc. Van en la columna "Rentas no laborales" de la cédula
 general del 210.
+
+**Los arrendamientos NO van aquí**, aunque los cobre una inmobiliaria por
+mandato: son rentas de capital (art. 335-2 E.T.; instructivo del 210, casilla
+58). La sugerida de la DIAN los pone en la 74 porque la inmobiliaria los
+reporta como ingreso por mandato; TuRenta los lleva a capital
+(`motor-fiscal/depuracion/rentas-capital.ts`) con sus costos en la 60.
 
 ## 2. Depuración (art. 336 E.T.)
 
 - Renta líquida no laboral = ingresos brutos − INCRNGO − **costos y gastos
-  procedentes** (art. 336 num. 4; para arriendos: predial del inmueble
-  arrendado, administración, reparaciones locativas — con soporte).
+  procedentes** (art. 336 num. 4, con soporte).
 - Los costos no pueden exceder los ingresos en esta implementación (las
   pérdidas cedulares y sus compensaciones —arts. 330/331— quedan fuera de
   alcance y documentadas como limitación).
@@ -43,7 +47,8 @@ calibradas contra una declaración real presentada.)
 
 En contratos de mandato el MISMO ingreso suele aparecer DOS veces en la
 exógena: lo reporta la inmobiliaria mandataria (concepto 4040) y también el
-tercero pagador. La propia DIAN advierte en el reporte que la exógena "no
+tercero pagador. Si la mandataria es una inmobiliaria, el ingreso se clasifica
+como arrendamiento (rentas de capital, ver §1); el resto sigue en no laborales. La propia DIAN advierte en el reporte que la exógena "no
 reemplaza la información de su realidad económica".
 
 **Regla implementada**: las filas de ingresos no laborales (uso sugerido R74 o

@@ -13,6 +13,8 @@
 export type AlcanceAutorizacion =
   | 'leer_exogena'
   | 'leer_declaraciones'
+  /** Fill the 210 in the portal as a draft and save it; never sign nor file. */
+  | 'diligenciar_declaracion'
   | 'presentar_declaracion'
   /** Keep the access stored so the user does not sign in on every operation. */
   | 'recordar_acceso';
@@ -37,12 +39,19 @@ export const MINUTOS_VIGENCIA_AUTORIZACION = 15;
  * Changing the wording requires bumping this, so old evidence stays verifiable.
  * v2: storing the credential became possible, so the promise that it is never
  * stored had to go. Evidence signed under v1 remains valid for v1's wording.
+ * v3: variant for operating with another person's own credentials; the
+ * wording for one's own account did not change.
+ * v5: la redacción se acortó. Un muro de texto no se lee, y lo que no se lee no
+ * informa: queda lo que de verdad decide (qué se hace, quién autoriza y que
+ * presentar solo se deshace corrigiendo).
  */
-export const VERSION_TEXTO_AUTORIZACION = 'v2';
+export const VERSION_TEXTO_AUTORIZACION = 'v5';
 
 export interface TextoAutorizacion {
   version: string;
   titular: string;
+  /** The operator is not the taxpayer: signs in with the taxpayer's credentials, with their consent. */
+  enNombreDeOtro: boolean;
   alcances: AlcanceAutorizacion[];
   encabezado: string;
   haremos: string[];
@@ -74,33 +83,58 @@ export function permiteAlcance(
   return autorizacionVigente(autorizacion, ahora) && autorizacion.alcances.includes(alcance);
 }
 
-const ACCIONES: Record<AlcanceAutorizacion, string> = {
-  leer_exogena: 'Descargar tu información exógena reportada por terceros',
-  leer_declaraciones: 'Descargar tus declaraciones de renta ya presentadas',
-  presentar_declaracion: 'Diligenciar, firmar y presentar tu declaración de renta',
-  recordar_acceso:
-    'Guardar tu acceso cifrado para no pedirte la contraseña en cada operación',
+interface Redaccion {
+  acciones: Record<AlcanceAutorizacion, string>;
+  noHaremos: string[];
+  titularidad: string;
+  sinGuardar: string;
+}
+
+const PROPIA: Redaccion = {
+  acciones: {
+    leer_exogena: 'Descargar tu información exógena reportada por terceros',
+    leer_declaraciones: 'Descargar tus declaraciones de renta ya presentadas',
+    diligenciar_declaracion:
+      'Diligenciar tu declaración en el portal y guardarla como borrador, sin firmarla ni presentarla',
+    presentar_declaracion:
+      'Diligenciar, firmar con tu firma electrónica y presentar tu declaración ante la DIAN, y traerte el acuse',
+    recordar_acceso: 'Guardar tu acceso cifrado para no pedirte la contraseña cada vez',
+  },
+  noHaremos: ['Nada distinto de lo anterior, ni entrar a tu cuenta si tú no lo pides'],
+  titularidad: 'Soy el titular de la cuenta y esta autorización es revocable.',
+  sinGuardar: 'Mis credenciales se usan solo en esta operación y NO serán almacenadas.',
 };
 
-const NO_HAREMOS = [
-  'Entrar a tu cuenta sin que tú lo pidas desde la plataforma',
-  'Mostrar tu contraseña, ni siquiera a ti: solo se descifra para entrar al portal',
-  'Hacer nada distinto de lo enumerado arriba',
+/**
+ * Operating with someone else's own credentials: the operator must not sign
+ * "I am the taxpayer". What they can truthfully state, and what the evidence
+ * must prove, is that the taxpayer gave them the credentials and consented.
+ */
+const DE_OTRA_PERSONA: Redaccion = {
+  acciones: {
+    leer_exogena: 'Descargar su información exógena reportada por terceros',
+    leer_declaraciones: 'Descargar sus declaraciones de renta ya presentadas',
+    diligenciar_declaracion:
+      'Diligenciar su declaración en el portal y guardarla como borrador, sin firmarla ni presentarla',
+    presentar_declaracion:
+      'Diligenciar, firmar con su firma electrónica y presentar su declaración ante la DIAN, y traer el acuse',
+    recordar_acceso: 'Guardar su acceso cifrado para no pedir la contraseña cada vez',
+  },
+  noHaremos: ['Nada distinto de lo anterior, ni entrar a su cuenta si tú no lo pides'],
+  titularidad:
+    'No soy el titular: la persona titular me entregó sus claves y me autorizó a hacer esto en su nombre; esta autorización es revocable.',
+  sinGuardar: 'Sus credenciales se usan solo en esta operación y NO serán almacenadas.',
+};
+
+/**
+ * Presentar es irreversible: solo se corrige con una declaración de corrección
+ * (art. 588 E.T.). Quien autoriza debe declararlo entendido y haber revisado.
+ */
+const DECLARACIONES_PRESENTAR = [
+  'Revisé las cifras y entiendo que, una vez presentada, solo se cambia con una declaración de corrección.',
 ];
 
-const DECLARACIONES_BASE = [
-  `Esta autorización vence en ${String(MINUTOS_VIGENCIA_AUTORIZACION)} minutos y es revocable en cualquier momento.`,
-  'Soy el titular de la cuenta y de la información consultada.',
-  'Puedo hacer este mismo trámite manualmente en el portal de la DIAN si lo prefiero.',
-];
-
-/** Only shown when the user actually asks to be remembered. */
-const DECLARACION_SIN_GUARDAR =
-  'Mis credenciales se usan solo durante esta operación y NO serán almacenadas.';
-
-const DECLARACIONES_RECORDAR = [
-  'Autorizo guardar mi contraseña CIFRADA para no tener que escribirla en cada operación.',
-  'Entiendo que la clave de cifrado vive en un servicio aislado, separado de la base de datos.',
+const DECLARACIONES_RECORDAR_COMUNES = [
   'Puedo borrar este acceso guardado cuando quiera, y se borra solo tras 90 días sin uso.',
 ];
 
@@ -108,26 +142,37 @@ const DECLARACIONES_RECORDAR = [
 export function textoAutorizacion(
   titular: string,
   alcances: AlcanceAutorizacion[],
+  enNombreDeOtro = false,
 ): TextoAutorizacion {
+  const redaccion = enNombreDeOtro ? DE_OTRA_PERSONA : PROPIA;
   return {
     version: VERSION_TEXTO_AUTORIZACION,
     titular,
+    enNombreDeOtro,
     alcances,
-    encabezado: `Autorizo a TuRenta AI a ingresar a la cuenta de la DIAN de la cédula ${titular} una sola vez, ahora mismo y conmigo presente, para:`,
-    haremos: [
-      ...alcances.map((a) => ACCIONES[a]),
-      'Cerrar la sesión y borrar las credenciales de la memoria',
-    ],
-    noHaremos: NO_HAREMOS,
-    declaraciones: declaracionesDe(alcances),
+    encabezado: encabezadoDe(titular, enNombreDeOtro),
+    haremos: alcances.map((a) => redaccion.acciones[a]),
+    noHaremos: redaccion.noHaremos,
+    declaraciones: declaracionesDe(alcances, redaccion),
   };
 }
 
-function declaracionesDe(alcances: AlcanceAutorizacion[]): string[] {
-  if (alcances.includes('recordar_acceso')) {
-    return [...DECLARACIONES_BASE, ...DECLARACIONES_RECORDAR];
+function encabezadoDe(titular: string, enNombreDeOtro: boolean): string {
+  if (enNombreDeOtro) {
+    return `Con la autorización de la persona titular de la cédula ${titular}, autorizo a TuRenta AI a entrar a su cuenta de la DIAN ahora, para:`;
   }
-  return [...DECLARACIONES_BASE, DECLARACION_SIN_GUARDAR];
+  return `Autorizo a TuRenta AI a entrar a la cuenta de la DIAN de la cédula ${titular} ahora, para:`;
+}
+
+function declaracionesDe(alcances: AlcanceAutorizacion[], redaccion: Redaccion): string[] {
+  const base = [
+    redaccion.titularidad,
+    ...(alcances.includes('presentar_declaracion') ? DECLARACIONES_PRESENTAR : []),
+  ];
+  if (alcances.includes('recordar_acceso')) {
+    return [...base, ...DECLARACIONES_RECORDAR_COMUNES];
+  }
+  return [...base, redaccion.sinGuardar];
 }
 
 /** Canonical form: this is what gets hashed. Deterministic and stable. */
@@ -135,6 +180,7 @@ export function serializarAutorizacion(texto: TextoAutorizacion): string {
   return [
     `version: ${texto.version}`,
     `titular: ${texto.titular}`,
+    `en_nombre_de_otro: ${texto.enNombreDeOtro ? 'si' : 'no'}`,
     `alcances: ${texto.alcances.join(',')}`,
     texto.encabezado,
     ...texto.haremos.map((h) => `SI: ${h}`),

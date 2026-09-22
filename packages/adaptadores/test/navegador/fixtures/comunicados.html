@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mis comunicados (fixture de prueba)</title>
+  </head>
+  <body>
+    <!-- Calcado a mano de la bandeja real: la lista de asuntos y, aparte, el
+         panel del mensaje más nuevo, que el portal muestra ya abierto.
+         Todo el contenido es ficticio. -->
+    <h1>Mis comunicados</h1>
+    <table>
+      <tr><th>Asunto</th><th>Fecha envio</th></tr>
+      __FILA_CODIGO__
+      <tr><td>Generación Firma Electrónica Exitosa</td><td>19/09/2026 22:27</td></tr>
+      <!-- Trampa del portal real: el asunto lleva la cédula. Si el robot lee la
+           lista en vez del panel, se la lleva como si fuera el código. -->
+      <tr><td>Se informa clave dinámica - Recuperacion de clave para el usuario: 13-1000000001</td><td>19/09/2026 22:24</td></tr>
+    </table>
+    <table id="vistaComunicados:frmComunicados:pnlMensajeCorreo">
+      <tr><td>__CUERPO__</td></tr>
+    </table>
+  </body>
+</html>

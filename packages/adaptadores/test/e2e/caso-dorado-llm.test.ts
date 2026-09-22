@@ -15,7 +15,7 @@ import { crearLlmDesdeEnv } from '../../src/llm/crear-llm';
 
 /**
  * E2E CON LLM REAL — gate de Fase 2: los documentos reales de /docs pasan por
- * extracción (Kimi K3) + ensamblaje + motor y reproducen el resultado de referencia.
+ * extracción (LLM configurado en .env.local) + ensamblaje + motor y reproducen el resultado de referencia.
  * Se salta si no hay documentos (CI) o no hay API key.
  */
 
@@ -30,7 +30,7 @@ const ARCHIVOS = {
 };
 
 const hayDocs = Object.values(ARCHIVOS).every((ruta) => existsSync(ruta));
-const hayLlm = (): boolean => Boolean(process.env['OPENCODE_API_KEY'] ?? process.env['LLM_API_KEY']);
+const hayLlm = (): boolean => Boolean(process.env['LLM_API_KEY'] || process.env['OPENCODE_API_KEY']);
 
 const RESPUESTAS: RespuestasEntrevista = {
   mesesConRelacionLaboral: 11,
@@ -57,9 +57,9 @@ const RESPUESTAS: RespuestasEntrevista = {
   anticipoLiquidadoAnioAnterior: 0,
 };
 
-describe.skipIf(!hayDocs)('E2E caso dorado con documentos reales + Kimi K3', () => {
+describe.skipIf(!hayDocs)('E2E caso dorado con documentos reales + LLM real', () => {
   it('extrae, ensambla y liquida reproduciendo el resultado de referencia', async () => {
-    expect(hayLlm(), 'Falta OPENCODE_API_KEY en .env.local').toBe(true);
+    expect(hayLlm(), 'Falta LLM_API_KEY en .env.local').toBe(true);
     const extractor = new ExtractorCertificados(crearLlmDesdeEnv(process.env));
 
     const exogena = parsearExogena(new Uint8Array(readFileSync(ARCHIVOS.exogena)));

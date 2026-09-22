@@ -14,10 +14,11 @@ import type {
 
 const TIPOS: TipoDocumentoDian[] = ['CC', 'CE', 'NIT', 'PA', 'TI'];
 
-/** Lo que puede aceptarse desde una descarga; presentar exige su propio flujo. */
 const ALCANCES_ACEPTABLES: AlcanceAutorizacion[] = [
   'leer_exogena',
   'leer_declaraciones',
+  'diligenciar_declaracion',
+  'presentar_declaracion',
   'recordar_acceso',
 ];
 const ANIO_MINIMO = 2018;
@@ -35,6 +36,7 @@ export interface CuerpoConexion {
   modoIngreso?: unknown;
   recordarAcceso?: unknown;
   alcancesAceptados?: unknown;
+  enNombreDeOtro?: unknown;
 }
 
 export interface SolicitudConexionDian {
@@ -44,6 +46,12 @@ export interface SolicitudConexionDian {
   modoIngreso: ModoIngresoDian;
   /** Explicit consent to store the access; never inferred. */
   recordarAcceso: boolean;
+  /**
+   * The operator signs in with the TAXPAYER's own credentials ("A nombre
+   * propio" in MUISCA) on their behalf. Whether that person really belongs to
+   * this user is checked where the database is readable (`errorDeTitularidad`).
+   */
+  enNombreDeOtro: boolean;
   /**
    * Scopes the user saw and accepted on the consent screen. The evidence hash
    * must cover exactly this text, so the server never widens or narrows it.
@@ -65,6 +73,7 @@ interface Normalizado {
   modoIngreso: ModoIngresoDian;
   recordarAcceso: boolean;
   alcancesAceptados: AlcanceAutorizacion[];
+  enNombreDeOtro: boolean;
 }
 
 /** Safe conversion: an object is discarded, never turned into "[object Object]". */
@@ -112,6 +121,7 @@ function normalizar(cuerpo: CuerpoConexion, anioActual: number): Normalizado {
       cuerpo.recordarAcceso === true &&
       (alcancesAceptados.length === 0 || alcancesAceptados.includes('recordar_acceso')),
     alcancesAceptados,
+    enNombreDeOtro: cuerpo.enNombreDeOtro === true,
   };
 }
 
@@ -127,6 +137,9 @@ function largoDocumentoValido(documento: string): boolean {
  * user is checked by the layer that can read the database.
  */
 function errorDeTitular(datos: Normalizado): string | null {
+  if (datos.enNombreDeOtro && datos.modoIngreso !== 'propio') {
+    return 'Con las credenciales de otra persona se ingresa a nombre propio de ella';
+  }
   if (datos.modoIngreso === 'propio') {
     return datos.titular === datos.numeroDocumento ? null : 'Solo puedes conectar tu propia cuenta';
   }
@@ -171,6 +184,7 @@ function aSolicitud(datos: Normalizado, anioActual: number): SolicitudConexionDi
     modoIngreso: datos.modoIngreso,
     recordarAcceso: datos.recordarAcceso,
     alcancesAceptados: datos.alcancesAceptados,
+    enNombreDeOtro: datos.enNombreDeOtro,
   };
 }
 

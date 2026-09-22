@@ -1,50 +1,20 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { Secreto } from '@turenta/core';
-import type { ContextoOperacionDian, CredencialesDian } from '@turenta/core';
-
 import { ConexionMuisca } from '../../src/dian/conexion-muisca';
 
+import { ESPERA_FALLO_MS, ESPERA_TEST_MS, contexto, credenciales } from './ayudas-muisca';
 import { TITULAR_FICTICIO } from './fixtures/datos-ficticios';
 import { levantarMuiscaFalso } from './servidor-fixtures';
 
 import type { MuiscaFalso, ModoServidor } from './servidor-fixtures';
 
-
-/**
- * Full adapter flow against a fake MUISCA.
- *
- * IMPORTANT LIMIT: these fixtures freeze what WE believe about the portal, not
- * what the portal is. If DIAN renames a control these tests stay green and
- * production breaks anyway. They are regression tests of our own code, not a
- * contract with the tax authority.
- */
-
-const ESPERA_TEST_MS = 15_000;
-/** For cases that MUST time out: otherwise CI pays 15 s per test. */
-const ESPERA_FALLO_MS = 2_000;
+/** Exógena y garantías transversales del adaptador. */
 
 let servidor: MuiscaFalso | null = null;
 
 async function conectar(modo: ModoServidor = 'normal', esperaMs = ESPERA_TEST_MS) {
   servidor = await levantarMuiscaFalso(modo);
   return new ConexionMuisca({ urlBase: servidor.urlBase, esperaMs });
-}
-
-function credenciales(contrasena: string = TITULAR_FICTICIO.contrasena): CredencialesDian {
-  return {
-    tipoDocumento: 'CC',
-    numeroDocumento: TITULAR_FICTICIO.documento,
-    contrasena: new Secreto(contrasena),
-  };
-}
-
-function contexto(anioGravable: number): ContextoOperacionDian {
-  return {
-    titularIdentificacion: TITULAR_FICTICIO.documento,
-    operadorUsuarioId: 'usuario-de-prueba',
-    anioGravable,
-  };
 }
 
 afterEach(async () => {
@@ -107,35 +77,6 @@ describe('exógena: flujo completo contra el MUISCA falso', () => {
     const conexion = await conectar('portal_cambiado', ESPERA_FALLO_MS);
     const resultado = await conexion.descargarExogena(credenciales(), contexto(2024));
     expect(JSON.stringify(resultado)).not.toContain(TITULAR_FICTICIO.contrasena);
-  });
-});
-
-describe('declaraciones presentadas: flujo completo', () => {
-  it('abre el menú con hover real y descarga el PDF del año pedido', async () => {
-    const conexion = await conectar();
-    const resultado = await conexion.descargarDeclaracion(credenciales(), contexto(2024));
-    expect(resultado.exito).toBe(true);
-    // Row 2024: proves it picked the right row and did not grab the
-    // corregir/pagar icons.
-    expect(resultado.nombreArchivo).toBe('3333333333333.pdf');
-  });
-
-  it('elige la fila del año pedido, no la primera de la tabla', async () => {
-    const conexion = await conectar();
-    const resultado = await conexion.descargarDeclaracion(credenciales(), contexto(2022));
-    expect(resultado.nombreArchivo).toBe('1111111111111.pdf');
-  });
-
-  it('sin declaraciones responde sin_declaracion, que NO es un error del portal', async () => {
-    const conexion = await conectar('sin_declaraciones');
-    const resultado = await conexion.descargarDeclaracion(credenciales(), contexto(2024));
-    expect(resultado.motivoFallo).toBe('sin_declaracion');
-  });
-
-  it('un año que no está en la tabla responde sin_declaracion', async () => {
-    const conexion = await conectar();
-    const resultado = await conexion.descargarDeclaracion(credenciales(), contexto(2019));
-    expect(resultado.motivoFallo).toBe('sin_declaracion');
   });
 });
 

@@ -21,7 +21,7 @@ const MENSAJES: Record<MotivoFalloDian, Mensaje> = {
     estado: 502,
   },
   estructura_cambiada: {
-    texto: 'El portal de la DIAN cambió y no pudimos completar la descarga.',
+    texto: 'El portal de la DIAN cambió y no pudimos terminar. No se modificó nada en tu cuenta.',
     estado: 502,
   },
   requiere_verificacion: {
@@ -32,6 +32,11 @@ const MENSAJES: Record<MotivoFalloDian, Mensaje> = {
   sin_declaracion: {
     texto: 'No encontramos una declaración presentada de ese año en tu cuenta de la DIAN.',
     estado: 404,
+  },
+  sin_firma_electronica: {
+    texto:
+      'La DIAN dice que esta cuenta no tiene firma electrónica vigente. Si tienes el portal de la DIAN abierto en otra pestaña, ciérralo y vuelve a intentarlo: con dos sesiones a la vez el portal responde esto aunque la firma sí exista. Si no, genérala en dian.gov.co → Usuario Registrado; al generarla cambia la contraseña de la cuenta.',
+    estado: 409,
   },
   acceso_caducado: {
     texto: 'Tu acceso guardado ya no funciona. Vuelve a escribir tu contraseña de la DIAN.',

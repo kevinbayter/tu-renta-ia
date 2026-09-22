@@ -6,6 +6,7 @@ import { detectarCasosNoSoportados } from '@turenta/core';
 import { fechaVencimiento, obtenerConstantes } from '@turenta/motor-fiscal';
 import { NextResponse } from 'next/server';
 
+import { nombreArchivoBorrador } from '@/lib/nombre-borrador';
 import { obtenerRepositorio } from '@/server/composicion';
 import { leerSesion } from '@/server/sesion';
 
@@ -13,7 +14,7 @@ import type { RespuestasEntrevista } from '@turenta/core';
 import type { ResultadoDeclaracion } from '@turenta/motor-fiscal';
 
 interface CuerpoBorrador {
-  declarante: { nombres: string; apellidos: string; identificacion: string };
+  declarante: { nombres: string; apellidos: string; identificacion: string; actividadEconomica?: string };
   resultado: ResultadoDeclaracion;
   respuestas?: RespuestasEntrevista;
 }
@@ -65,10 +66,11 @@ export async function POST(request: Request): Promise<Response> {
       cuerpo.resultado,
     );
     await registrarDescarga(cuerpo.resultado.anioGravable);
+    const nombre = nombreArchivoBorrador(cuerpo.declarante, cuerpo.resultado.anioGravable);
     return new Response(new Uint8Array(pdf), {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="borrador-210-ag${String(cuerpo.resultado.anioGravable)}.pdf"`,
+        'Content-Disposition': `attachment; filename="${nombre}"`,
       },
     });
   } catch (error) {

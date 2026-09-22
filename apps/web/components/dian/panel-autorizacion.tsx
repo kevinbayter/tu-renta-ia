@@ -16,6 +16,7 @@ import type { AlcanceAutorizacion } from '@turenta/core';
  */
 export function PanelAutorizacion({
   titular,
+  deOtro,
   alcances,
   recordar,
   alCambiarRecordar,
@@ -23,6 +24,7 @@ export function PanelAutorizacion({
   alCancelar,
 }: {
   titular: string;
+  deOtro: string | null;
   alcances: AlcanceAutorizacion[];
   recordar: boolean;
   alCambiarRecordar: (valor: boolean) => void;
@@ -30,7 +32,7 @@ export function PanelAutorizacion({
   alCancelar: () => void;
 }) {
   const [acepta, setAcepta] = useState(false);
-  const texto = textoAutorizacion(titular || 'la registrada', alcances);
+  const texto = textoAutorizacion(titular || 'la registrada', alcances, deOtro !== null);
 
   return (
     <div className="pt-5">
@@ -54,7 +56,7 @@ export function PanelAutorizacion({
           className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-[var(--primario)]"
         />
         <span className="text-xs leading-relaxed">
-          <strong>Recordar mi acceso</strong> para no escribir la contraseña en cada operación.
+          <strong>{deOtro === null ? 'Recordar mi acceso' : `Recordar el acceso de ${deOtro}`}</strong> para no escribir la contraseña en cada operación.
         </span>
       </label>
 

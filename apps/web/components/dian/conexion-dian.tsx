@@ -9,6 +9,7 @@ import { AvisoTransparencia } from './aviso-transparencia';
 import { alcancesPanel, useAccesoGuardado, useConexionAutomatica, useConsentimientoDian } from './consentimiento';
 import { FormularioCredenciales } from './formulario-credenciales';
 import { PanelAutorizacion } from './panel-autorizacion';
+import { cuerpoConexion, pedir } from './peticion-conexion';
 
 import type { Credenciales } from './formulario-credenciales';
 import type { AlcanceAutorizacion, EtapaConexion } from '@turenta/core';
@@ -44,13 +45,6 @@ function credencialesGuardadas(titular: string): Credenciales {
   return { tipoDocumento: 'CC', numeroDocumento: titular, contrasena: '' };
 }
 
-interface RespuestaApi {
-  nombreArchivo?: string;
-  contenidoBase64?: string;
-  mensaje?: string;
-  motivoFallo?: string;
-}
-
 /**
  * Conexión con la DIAN: autorización explícita, credenciales de un solo uso y
  * progreso en vivo. El formulario es nuestro porque la sesión de un iframe del
@@ -59,12 +53,15 @@ interface RespuestaApi {
 export function ConexionDian({
   operacion,
   titular,
+  deOtro,
   anioGravable,
   alCerrar,
   alCompletar,
 }: {
   operacion: OperacionDian;
   titular: string;
+  /** Nombre del titular cuando no es el usuario: se entra con SUS credenciales. */
+  deOtro: string | null;
   anioGravable: number;
   alCerrar: () => void;
   alCompletar: (resultado: ResultadoConexion) => void;
@@ -82,13 +79,7 @@ export function ConexionDian({
     const aceptados = alcancesEnEfecto(alcances);
     setFase('progreso');
     setEtapa('autenticando');
-    const cuerpo = await pedir(config.ruta, {
-      ...credenciales,
-      titular,
-      anioGravable,
-      recordarAcceso: aceptados.includes('recordar_acceso'),
-      alcancesAceptados: aceptados,
-    });
+    const cuerpo = await pedir(config.ruta, cuerpoConexion(credenciales, { titular, deOtro, anioGravable }, aceptados));
     if (cuerpo?.contenidoBase64) {
       setEtapa('completado');
       setFase('listo');
@@ -130,6 +121,7 @@ export function ConexionDian({
             etapa={etapa}
             error={error}
             titular={titular}
+            deOtro={deOtro}
             alcances={alcances}
             recordar={recordar}
             alCambiarRecordar={setRecordar}
@@ -174,6 +166,7 @@ interface PropsCuerpo {
   etapa: EtapaConexion;
   error: string;
   titular: string;
+  deOtro: string | null;
   alcances: AlcanceAutorizacion[];
   recordar: boolean;
   alCambiarRecordar: (valor: boolean) => void;
@@ -189,6 +182,7 @@ function CuerpoSegunFase(props: PropsCuerpo) {
     return (
       <PanelAutorizacion
         titular={props.titular}
+        deOtro={props.deOtro}
         alcances={props.alcances}
         recordar={props.recordar}
         alCambiarRecordar={props.alCambiarRecordar}
@@ -200,8 +194,8 @@ function CuerpoSegunFase(props: PropsCuerpo) {
   if (fase === 'credenciales') {
     return (
       <>
-        <AvisoTransparencia />
-        <FormularioCredenciales alEnviar={props.alConectar} alVolver={() => alIrA('autorizar')} />
+        <AvisoTransparencia deOtro={props.deOtro} />
+        <FormularioCredenciales documento={props.titular} alEnviar={props.alConectar} alVolver={() => alIrA('autorizar')} />
       </>
     );
   }
@@ -215,19 +209,6 @@ function CuerpoSegunFase(props: PropsCuerpo) {
     return <SinDato mensaje={props.error} alCerrar={alCerrar} />;
   }
   return <Exito />;
-}
-
-/** Un cuerpo ilegible dejaría el modal clavado en "progreso": se trata como fallo. */
-async function pedir(ruta: string, cuerpo: Record<string, unknown>): Promise<RespuestaApi | null> {
-  const respuesta = await fetch(ruta, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(cuerpo),
-  }).catch(() => null);
-  if (!respuesta) {
-    return null;
-  }
-  return (await respuesta.json().catch(() => null)) as RespuestaApi | null;
 }
 
 function Encabezado({

@@ -53,7 +53,7 @@ Este documento consolida los datos de entrada (documentos en `/docs`) y el resul
 | ----------------------------------- | -------------- |
 | Bienes personales                   | 24.500.000     |
 | Ejemplo Dos cuenta                  | 6.909          |
-| Banco Ejemplo cuenta ahorros                   | 20.902.486     |
+| Banco Ejemplo cuenta ahorros        | 20.902.486     |
 | FIC Ejemplo Dos                     | 15.205         |
 | Fondo Uno (Fiduciaria Uno)          | 1.467.428      |
 | Comisionista (Comisionista Ejemplo) | 682.355        |
@@ -69,7 +69,7 @@ Nota: patrimonio bruto año anterior (AG2024): 45.053.000. No incluyó saldos me
 | --------------------------------- | ------------------------------------------ |
 | ANDINA (trabajo)                  | 386.000                                    |
 | PTC/WOM (trabajo)                 | 396.000                                    |
-| Banco Ejemplo (rendimientos)                 | 42.540                                     |
+| Banco Ejemplo (rendimientos)      | 42.540                                     |
 | Fiduciaria Tres Fiduciaria        | 3.309                                      |
 | Fiduciaria Uno                    | 13+15                                      |
 | **Total usado por la referencia** | 825.000 (trabajo 782.000 + capital 43.000) |

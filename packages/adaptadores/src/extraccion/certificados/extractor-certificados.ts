@@ -1,3 +1,4 @@
+import { extraerValidado } from '@turenta/core';
 import type {
   DocumentoFuente,
   ExtractorDocumentosPort,
@@ -26,8 +27,8 @@ import type { ZodType } from 'zod';
 
 const SYSTEM_BASE = `Eres un extractor de datos de documentos tributarios colombianos.
 Reglas estrictas:
-- Montos SIEMPRE como enteros en pesos COP, sin puntos, comas ni decimales ("15.770.000" → 15770000; "3.199.749" → 3199749).
-- En Colombia el punto separa miles y la coma separa decimales; los centavos se descartan ("786.273,39" → 786273).
+- Montos SIEMPRE como enteros en pesos COP, sin puntos, comas ni decimales ("15.770.000" → 15770000; "1.234.567" → 1234567).
+- En Colombia el punto separa miles y la coma separa decimales; los centavos se descartan ("987.654,32" → 987654).
 - Si un campo no aparece en el documento, usa 0 (números) o "" (textos).
 - NO inventes valores. Responde SOLO el JSON pedido.`;
 
@@ -45,14 +46,18 @@ export class ExtractorCertificados implements ExtractorDocumentosPort {
 - declaracion_anterior: un formulario 210 YA PRESENTADO (declaración de renta de un año gravable anterior), con casillas numeradas del 28 al 141 y sellos o número de autoadhesivo de la DIAN.
 - exogena: reporte "Consulta de información reportada por terceros" de la DIAN — tabla con MÚLTIPLES empresas informantes distintas y sus reportes.
 - otro: cualquier otro documento.`;
-    const bruto = await this.llm.extraerEstructurado({
-      system: `${SYSTEM_BASE}\n${guia}`,
-      user: recortar(doc.texto),
-      ...(doc.imagenesBase64 ? { imagenesBase64: doc.imagenesBase64 } : {}),
-      jsonSchema: jsonSchemas.clasificacion,
-      esfuerzo: 'low',
-    });
-    return clasificacionDocumentoSchema.parse(bruto).tipo;
+    const clasificacion = await extraerValidado(
+      this.llm,
+      {
+        system: `${SYSTEM_BASE}\n${guia}`,
+        user: recortar(doc.texto),
+        ...(doc.imagenesBase64 ? { imagenesBase64: doc.imagenesBase64 } : {}),
+        jsonSchema: jsonSchemas.clasificacion,
+        esfuerzo: 'low',
+      },
+      clasificacionDocumentoSchema,
+    );
+    return clasificacion.tipo;
   }
 
   extraer220(doc: DocumentoFuente): Promise<ResultadoExtraccion<Certificado220Extraido>> {
@@ -74,7 +79,9 @@ Verifica que la suma de los pagos coincida con el total de ingresos brutos.`;
   extraerBancario(doc: DocumentoFuente): Promise<ResultadoExtraccion<CertificadoBancarioExtraido>> {
     const instruccion = `Documento: certificado tributario de entidad financiera.
 Campos: entidad; año gravable; saldo de cuentas a 31 de diciembre; rendimientos financieros totales del año;
-GMF (4x1000) pagado; retención en la fuente practicada; componente inflacionario informado (0 si no aparece).`;
+GMF (4x1000) pagado; retención en la fuente practicada; componente inflacionario informado (0 si no aparece).
+GMF: SOLO si hay una línea explícita de "GMF", "Gravamen a los Movimientos Financieros" o "4x1000"; si no la hay, 0.
+NUNCA copies en el GMF los rendimientos, intereses ni la base de retención.`;
     return this.extraerConDoblePasada(
       doc,
       instruccion,
@@ -157,7 +164,11 @@ Extrae cada amparo/contrato como un elemento del arreglo con su valor pagado y v
     const pasada1 = await this.unaPasada(doc, instruccion, schema, jsonSchema);
     const pasada2 = await this.unaPasada(doc, `${instruccion}\n${PROMPT_VERIFICACION}`, schema, jsonSchema);
     const discrepancias = compararMontos(pasada1, pasada2);
-    return { datos: pasada1, pasadasCoinciden: discrepancias.length === 0, discrepancias };
+    if (discrepancias.length === 0) {
+      return { datos: pasada1, pasadasCoinciden: true, discrepancias };
+    }
+    const pasada3 = await this.unaPasada(doc, `${instruccion}\n${PROMPT_VERIFICACION}`, schema, jsonSchema);
+    return desempatar([pasada1, pasada2, pasada3], discrepancias);
   }
 
   private async unaPasada<T>(
@@ -167,15 +178,18 @@ Extrae cada amparo/contrato como un elemento del arreglo con su valor pagado y v
     jsonSchema: unknown,
     esfuerzo: 'low' | 'medium' | 'high' = 'high',
   ): Promise<T> {
-    const bruto = await this.llm.extraerEstructurado({
-      system: `${SYSTEM_BASE}\n${instruccion}`,
-      user: recortar(doc.texto),
-      ...(doc.imagenesBase64 ? { imagenesBase64: doc.imagenesBase64 } : {}),
-      jsonSchema: jsonSchema as Record<string, unknown>,
-      // Por defecto alto: son montos que alimentan una declaración legal.
-      esfuerzo,
-    });
-    return schema.parse(bruto);
+    return extraerValidado(
+      this.llm,
+      {
+        system: `${SYSTEM_BASE}\n${instruccion}`,
+        user: recortar(doc.texto),
+        ...(doc.imagenesBase64 ? { imagenesBase64: doc.imagenesBase64 } : {}),
+        jsonSchema: jsonSchema as Record<string, unknown>,
+        // Por defecto alto: son montos que alimentan una declaración legal.
+        esfuerzo,
+      },
+      schema,
+    );
   }
 }
 
@@ -213,6 +227,21 @@ const MAXIMO_CARACTERES = 30_000;
 
 function recortar(texto: string): string {
   return texto.length > MAXIMO_CARACTERES ? texto.slice(0, MAXIMO_CARACTERES) : texto;
+}
+
+/**
+ * Dos lecturas que no coinciden: una tercera decide por mayoría. Si coincide
+ * por completo con una de las dos, esa es la lectura buena; si no coincide con
+ * ninguna, no hay mayoría y la discrepancia sigue a la vista del usuario.
+ */
+function desempatar<T>([pasada1, pasada2, pasada3]: [T, T, T], discrepancias: string[]): ResultadoExtraccion<T> {
+  if (compararMontos(pasada1, pasada3).length === 0) {
+    return { datos: pasada1, pasadasCoinciden: true, discrepancias: [] };
+  }
+  if (compararMontos(pasada2, pasada3).length === 0) {
+    return { datos: pasada2, pasadasCoinciden: true, discrepancias: [] };
+  }
+  return { datos: pasada1, pasadasCoinciden: false, discrepancias };
 }
 
 function compararMontos(a: unknown, b: unknown): string[] {

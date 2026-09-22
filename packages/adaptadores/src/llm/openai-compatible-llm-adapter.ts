@@ -7,9 +7,16 @@ export interface LlmProviderConfig {
   modelo: string;
   /** Headers extra que algún proveedor exija (p. ej. OpenRouter: HTTP-Referer). */
   headersExtra?: Record<string, string>;
-  /** Parámetros extra del body (p. ej. reasoning_effort para Kimi K3). */
+  /** Parámetros extra del body (p. ej. reasoning_effort). */
   parametrosExtra?: Record<string, unknown>;
+  /**
+   * `json_object` para proveedores sin structured output (DeepSeek): el schema
+   * viaja en el prompt y la validación queda en manos del Zod del llamador.
+   */
+  formatoJson?: FormatoJson;
 }
+
+export type FormatoJson = 'json_schema' | 'json_object';
 
 type ContenidoMensaje = string | { type: string; [clave: string]: unknown }[];
 
@@ -19,12 +26,12 @@ interface ChatMessage {
 }
 
 interface ChatCompletionResponse {
-  choices: { message: { content: string } }[];
+  choices: { message: { content: string | null } }[];
 }
 
 /**
  * Adaptador LlmPort para CUALQUIER proveedor con API compatible OpenAI
- * (OpenCode Go/Zen, OpenRouter, Moonshot directo, Groq, Gemini, OpenAI...).
+ * (DeepSeek, OpenCode Go/Zen, OpenRouter, Moonshot directo, Groq, Gemini, OpenAI...).
  * El proveedor es 100% configuración (LlmProviderConfig) — nunca código.
  * Proveedores con protocolo propio se soportan creando otra clase que
  * implemente LlmPort, sin tocar core ni la UI.
@@ -68,12 +75,21 @@ export class OpenAiCompatibleLlmAdapter implements LlmPort {
       messages,
     };
     if (jsonSchema) {
-      body['response_format'] = {
-        type: 'json_schema',
-        json_schema: { name: 'extraccion', schema: jsonSchema, strict: true },
-      };
+      Object.assign(body, this.cuerpoJson(messages, jsonSchema));
     }
     return conReintentos(() => this.llamar(body));
+  }
+
+  private cuerpoJson(messages: ChatMessage[], jsonSchema: Record<string, unknown>): Record<string, unknown> {
+    if (this.config.formatoJson === 'json_object') {
+      return { messages: conSchemaEnSystem(messages, jsonSchema), response_format: { type: 'json_object' } };
+    }
+    return {
+      response_format: {
+        type: 'json_schema',
+        json_schema: { name: 'extraccion', schema: jsonSchema, strict: true },
+      },
+    };
   }
 
   private async llamar(body: Record<string, unknown>): Promise<string> {
@@ -116,7 +132,17 @@ async function manejarFalloLlm(
 
 function esTransitorio(error: unknown): boolean {
   const mensaje = error instanceof Error ? error.message : '';
-  return /LLM error (429|5\d\d)/.test(mensaje);
+  return /LLM error (429|5\d\d)|LLM: respuesta vacía/.test(mensaje);
+}
+
+// DeepSeek exige la palabra "json" en el prompt para aceptar json_object.
+function conSchemaEnSystem(messages: ChatMessage[], jsonSchema: Record<string, unknown>): ChatMessage[] {
+  const instruccion = `Responde ÚNICAMENTE con un objeto JSON válido que cumpla este JSON Schema (todos los campos de "required" presentes, sin texto adicional):\n${JSON.stringify(jsonSchema)}`;
+  return messages.map((m) =>
+    m.role === 'system' && typeof m.content === 'string'
+      ? { ...m, content: `${m.content}\n\n${instruccion}` }
+      : m,
+  );
 }
 
 function esperar(ms: number): Promise<void> {
@@ -147,8 +173,9 @@ async function extraerContenido(res: Response): Promise<string> {
   }
   const data = (await res.json()) as ChatCompletionResponse;
   const contenido = data.choices[0]?.message.content;
-  if (contenido === undefined) {
-    throw new Error('LLM: respuesta sin contenido');
+  // DeepSeek documenta respuestas vacías ocasionales en modo JSON: se reintentan.
+  if (!contenido?.trim()) {
+    throw new Error('LLM: respuesta vacía');
   }
   return contenido;
 }

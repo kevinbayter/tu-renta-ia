@@ -23,6 +23,8 @@ import {
 import { comprasFacturaElectronicaConBeneficio, saldoAFavorAnterior } from '../exogena/interpretar';
 import { pensionesSinCertificado } from '../exogena/pensiones-sin-certificado';
 
+import { consolidarPorEntidad } from './consolidar-bancarios';
+
 import type { RespuestasEntrevista } from './respuestas';
 import type { ExogenaParseada } from '../exogena/tipos';
 
@@ -41,12 +43,12 @@ export interface InsumosPerfil {
  */
 export function construirPerfilFiscal(insumos: InsumosPerfil): PerfilFiscal {
   const { respuestas } = insumos;
-  const laborales = insumos.certificados220.filter((c) => !esCertificadoSoloPension(c));
+  const bancarios = consolidarPorEntidad(insumos.certificadosBancarios);
   return {
     anioGravable: insumos.anioGravable,
-    certificadosLaborales: laborales.map(aCertificadoLaboral),
+    certificadosLaborales: insumos.certificados220.filter((c) => !esCertificadoSoloPension(c)).map(aCertificadoLaboral),
     honorarios: armarHonorarios(respuestas),
-    rentasCapital: armarRentasCapital(insumos.exogena, insumos.certificadosBancarios, respuestas),
+    rentasCapital: armarRentasCapital(insumos.exogena, bancarios, respuestas),
     rentasNoLaborales: {
       ingresosBrutos: respuestas.ingresosNoLaborales ?? 0,
       costosYGastos: respuestas.costosNoLaborales ?? 0,
@@ -56,7 +58,7 @@ export function construirPerfilFiscal(insumos: InsumosPerfil): PerfilFiscal {
     deducciones: armarDeducciones(respuestas),
     aportesVoluntarios: armarAportesVoluntarios(respuestas),
     comprasFacturaElectronica: comprasFacturaElectronicaConBeneficio(insumos.exogena),
-    patrimonio: armarPatrimonio(insumos.exogena, insumos.certificadosBancarios, respuestas),
+    patrimonio: armarPatrimonio(insumos.exogena, bancarios, respuestas),
     descuentos: { donacionesEsal: respuestas.donacionesEsal ?? 0 },
     gananciasOcasionales: armarGananciasOcasionales(respuestas),
     dividendos: armarDividendos(respuestas),
@@ -164,6 +166,11 @@ function armarRentasCapital(
     rendimientosSinComponente: r.rendimientosSinComponente,
     gmfPagado: r.gmfTotalPagado,
     retencionFuente: retenciones,
+    arrendamientos: {
+      ingresosBrutos: r.ingresosArrendamientos ?? 0,
+      costosYGastos: r.costosArrendamientos ?? 0,
+      retencionFuente: r.retencionArrendamientos ?? 0,
+    },
   };
 }
 

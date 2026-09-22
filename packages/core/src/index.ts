@@ -1,4 +1,6 @@
 export { type LlmPort } from './puertos/llm-port';
+export { extraerValidado, type Validador } from './llm/extraer-validado';
+export { GENEROS_DIAN, esGeneroValido } from './perfil/genero';
 export { type ArchivoStoragePort } from './puertos/archivo-storage-port';
 export {
   type ExtractorDocumentosPort,
@@ -32,6 +34,12 @@ export {
   umbralesObligadoADeclarar,
 } from './exogena/interpretar';
 export { precargarDesdeExogena, type PrecargaExogena } from './exogena/precarga';
+export {
+  inmueblesReportados,
+  deudasReportadas,
+  type InmuebleExogena,
+  type DeudaExogena,
+} from './exogena/inmuebles-y-deudas';
 export { documentosEsperados, type DocumentoEsperado } from './exogena/documentos-esperados';
 export {
   coincideEntidad,
@@ -42,10 +50,10 @@ export {
 } from './exogena/bancos-sin-certificado';
 export { pensionesSinCertificado, type PensionesExogena } from './exogena/pensiones-sin-certificado';
 export {
-  ingresosNoLaboralesReportados,
-  type IngresosNoLaboralesExogena,
-  type DuplicadoNoLaboral,
-} from './exogena/no-laborales';
+  ingresosMandatoReportados,
+  type IngresosMandatoExogena,
+  type DuplicadoMandato,
+} from './exogena/mandato';
 export { mesesTrabajadosSegunCertificados } from './perfil/meses-trabajados';
 export {
   type RespuestasEntrevista,
@@ -79,6 +87,12 @@ export {
   type ProgresoConexion,
   type EtapaConexion,
   type ResultadoDescarga,
+  type GeneroDian,
+  type DatosPresentacion,
+  type ResultadoPresentacion,
+  type DatosDiligenciamiento,
+  type DiferenciaCasilla,
+  type ResultadoDiligenciamiento,
   type MotivoFalloDian,
   type ModoIngresoDian,
   type SobreCifrado,
@@ -119,6 +133,17 @@ export {
   type SolicitudConexionDian,
   type ResultadoValidacion,
 } from './dian/solicitud-conexion';
+export { errorDeTitularidad, type ContextoTitularidad } from './dian/titularidad';
+export {
+  CASILLAS_ENTRADA_210,
+  CASILLAS_VERIFICADAS_210,
+  valoresDeEntrada210,
+  diferenciasConPortal,
+  montoDelPortal,
+  nombreDeSeccion210,
+  anclasSinLeer,
+  CASILLAS_ANCLA_210,
+} from './dian/formulario-210-portal';
 export {
   type EvidenciaAutorizacionPort,
   type EvidenciaAutorizacion,

@@ -125,13 +125,14 @@ pnpm --filter web dev                    # app en modo desarrollo
 
 Los secretos van en `.env.local` (nunca se commitea). Variables principales:
 
-| Variable                                          | Uso                                                      |
-| ------------------------------------------------- | -------------------------------------------------------- |
-| `DATABASE_URL`                                    | Conexión a PostgreSQL. **Requerida.**                    |
-| `AUTH_SECRET`                                     | Firma de la sesión JWT (≥ 32 caracteres). **Requerida.** |
-| `OPENCODE_API_KEY` · `LLM_BASE_URL` · `LLM_MODEL` | Proveedor de IA (OpenAI-compatible).                     |
-| `BREVO_API_KEY` · `EMAIL_FROM_ADDRESS`            | Correos de OTP y vencimientos.                           |
-| `WORKER_DIAN_TOKEN` · `DIAN_CRED_KEY`             | Autenticación y cifrado del worker DIAN.                 |
+| Variable                                     | Uso                                                                                                           |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                               | Conexión a PostgreSQL. **Requerida.**                                                                         |
+| `AUTH_SECRET`                                | Firma de la sesión JWT (≥ 32 caracteres). **Requerida.**                                                      |
+| `LLM_API_KEY` · `LLM_BASE_URL` · `LLM_MODEL` | Proveedor de IA (OpenAI-compatible). Hoy: DeepSeek V4.1 Flash (`https://api.deepseek.com`, `deepseek-flash`). |
+| `LLM_FORMATO_JSON`                           | `json_object` para DeepSeek (no soporta `json_schema`).                                                       |
+| `BREVO_API_KEY` · `EMAIL_FROM_ADDRESS`       | Correos de OTP y vencimientos.                                                                                |
+| `WORKER_DIAN_TOKEN` · `DIAN_CRED_KEY`        | Autenticación y cifrado del worker DIAN.                                                                      |
 
 ## ✦ El golden test
 

@@ -20,7 +20,9 @@
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "test:navegador": "vitest run --config vitest.navegador.config.ts"
+    "test:navegador": "vitest run --config vitest.navegador.config.ts",
+    "test:navegador:firma": "vitest run --config vitest.navegador.config.ts test/navegador/firmar-210-muisca.test.ts",
+    "test:navegador:210": "vitest run --config vitest.navegador.config.ts test/navegador/diligenciar-210-muisca.test.ts test/navegador/firmar-210-muisca.test.ts"
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.2",

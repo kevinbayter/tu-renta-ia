@@ -27,6 +27,53 @@
       <div>Haga su declaración de renta</div>
       <div>Edite su declaración de renta</div>
       <div id="irPresentadas">Declaraciones de renta presentadas</div>
+      <!-- The suggested return (research/09 §1). "Firmar y presentar" files it as-is: a trap the robot must never press. -->
+      <button id="firmarSugerida">Firmar y presentar</button>
+      <button id="editarSugerida">Sí, editar</button>
+    </div>
+
+    <!-- Sin firma electrónica el portal no deja entrar al formulario: solo muestra este error. -->
+    <div id="sinFirma" class="pantalla">
+      <div role="dialog" style="position: fixed; inset: 0; background: rgba(0,0,0,0.4)">
+        <p>Error</p>
+        <p>
+          Señor usuario, el formulario requiere de Firma Electrónica, la cual Ud. NO posee. Favor realizar la
+          migración de la firma digital a la firma electrónica o solicitar la emisión de la misma.
+        </p>
+        <button>close</button>
+      </div>
+    </div>
+
+    <!-- Entry screen with a notice on top: the portal sometimes lands here instead of on the drafts list. -->
+    <div id="entrada" class="pantalla">
+      <div>Haga su declaración de renta</div>
+      <div id="irBorradores">Edite su declaración de renta</div>
+      <!-- Como en MUISCA: el cierre es un ícono, no un <button>. -->
+      <div id="avisoEntrada" class="modal show" style="position: fixed; inset: 0; background: rgba(0,0,0,0.4)">
+        <p>Mensaje</p>
+        <span id="cerrarAvisoEntrada">close</span>
+      </div>
+    </div>
+
+    <!-- Drafts list, shown instead of the suggestion once a draft exists. "Anular" voids the return: a trap. -->
+    <div id="borradores" class="pantalla">
+      <div>Edite su declaración de renta</div>
+      <mat-row class="mat-row">
+        <mat-cell>5555555555555</mat-cell><mat-cell>2024 / anual</mat-cell><mat-cell>Edición</mat-cell>
+        <mat-cell>
+          <button class="buttonIconAccion"><img mattooltip="Descargar" src="./assets/img/descargar.png" /></button>
+          <button class="buttonIconAccion"><img mattooltip="Editar" src="./assets/img/lapiz.png" data-destino="/editor-equivocado" /></button>
+          <button class="buttonIconAccion"><img mattooltip="Anular" src="./assets/img/anular.png" data-destino="/anular-borrador" /></button>
+        </mat-cell>
+      </mat-row>
+      <mat-row class="mat-row">
+        <mat-cell>4444444444444</mat-cell><mat-cell>2025 / anual</mat-cell><mat-cell>Edición</mat-cell>
+        <mat-cell>
+          <button class="buttonIconAccion"><img mattooltip="Descargar" src="./assets/img/descargar.png" /></button>
+          <button class="buttonIconAccion"><img mattooltip="Anular" src="./assets/img/anular.png" data-destino="/anular-borrador" /></button>
+          <button class="buttonIconAccion"><img mattooltip="Editar" src="./assets/img/lapiz.png" data-destino="/WebFormRenta210v18/?concepto=inicial&anio=2025&periodicidad=anual&periodo=1&idedocumento=4444444444444&modo=experto" /></button>
+        </mat-cell>
+      </mat-row>
     </div>
 
     <!-- History. The header proves the screen loaded even with no rows. -->
@@ -45,7 +92,21 @@
         document.getElementById(id).classList.add('activa');
       };
 
-      $('#ir210').addEventListener('click', () => mostrar('menu210'));
+      const CON_BORRADOR = __CON_BORRADOR__;
+      const SIN_FIRMA = __SIN_FIRMA__;
+      $('#ir210').addEventListener('click', () => mostrar(SIN_FIRMA ? 'sinFirma' : CON_BORRADOR ? 'entrada' : 'menu210'));
+      $('#cerrarAvisoEntrada').addEventListener('click', () => ($('#avisoEntrada').style.display = 'none'));
+      $('#irBorradores').addEventListener('click', () => mostrar('borradores'));
+      // El SPA enruta por hash: ir a la ruta directa muestra la lista sin pasar por las tarjetas.
+      if (location.hash.includes('/ingreso/borradores')) mostrar('borradores');
+      $('#borradores').addEventListener('click', (evento) => {
+        const destino = evento.target.dataset?.destino;
+        if (destino) window.location.href = destino;
+      });
+      $('#firmarSugerida').addEventListener('click', () => (window.location.href = '/firmar-sugerida'));
+      $('#editarSugerida').addEventListener('click', () => {
+        window.location.href = '/WebFormRenta210v18/?concepto=inicial&anio=2025&periodicidad=anual&periodo=1&idedocumento=4444444444444&modo=experto';
+      });
 
       $('#irPresentadas').addEventListener('click', async () => {
         const declaraciones = await (await fetch('/api/presentadas')).json();

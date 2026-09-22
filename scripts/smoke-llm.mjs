@@ -1,13 +1,14 @@
 /* eslint-disable no-console */
-// Smoke test del LLM (OpenCode Go / Kimi K3): structured output con JSON Schema.
+// Smoke test del LLM configurado (hoy DeepSeek V4.1 Flash): salida estructurada con JSON Schema.
 // Uso: pnpm smoke:llm  (lee .env.local vía --env-file)
 
 const baseUrl = process.env.LLM_BASE_URL;
-const apiKey = process.env.OPENCODE_API_KEY;
+const apiKey = process.env.LLM_API_KEY || process.env.OPENCODE_API_KEY;
 const modelo = process.env.LLM_MODEL;
+const formatoJson = process.env.LLM_FORMATO_JSON || 'json_schema';
 
 if (!baseUrl || !apiKey || !modelo) {
-  console.error('Faltan LLM_BASE_URL / OPENCODE_API_KEY / LLM_MODEL en .env.local');
+  console.error('Faltan LLM_BASE_URL / LLM_API_KEY / LLM_MODEL en .env.local');
   process.exit(1);
 }
 
@@ -35,12 +36,16 @@ const res = await fetch(`${baseUrl}/chat/completions`, {
     messages: [
       {
         role: 'system',
-        content:
-          'Extraes datos de certificados tributarios colombianos. Montos como enteros COP sin puntos. Responde SOLO el JSON.',
+        content: `Extraes datos de certificados tributarios colombianos. Montos como enteros COP sin puntos. Responde SOLO el JSON.${
+          formatoJson === 'json_object' ? `\nJSON Schema de la respuesta: ${JSON.stringify(schema)}` : ''
+        }`,
       },
       { role: 'user', content: textoCertificado },
     ],
-    response_format: { type: 'json_schema', json_schema: { name: 'cert', schema, strict: true } },
+    response_format:
+      formatoJson === 'json_object'
+        ? { type: 'json_object' }
+        : { type: 'json_schema', json_schema: { name: 'cert', schema, strict: true } },
   }),
 });
 

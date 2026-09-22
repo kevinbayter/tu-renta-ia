@@ -13,6 +13,8 @@ model Usuario {
   nombres        String         @default("")
   apellidos      String         @default("")
   identificacion String         @default("")
+  /// Casilla 286 del 210 (1 F, 2 M, 3 No binario, 4 Otro, 6 No responde); "" = sin registrar.
+  genero         String         @default("")
   /// Preferencias de UI y notificaciones (widgets del panel, emails de vencimiento)
   preferencias   Json           @default("{}")
   fotoAvatar     Bytes?
@@ -90,6 +92,8 @@ model Persona {
   identificacion String
   email          String   @default("")
   telefono       String   @default("")
+  /// Casilla 286 del 210; se pide al registrar a la persona para no frenar la presentación.
+  genero         String   @default("")
   creadaEn       DateTime @default(now())
 
   @@unique([usuarioId, identificacion])

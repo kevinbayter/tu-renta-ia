@@ -6,6 +6,7 @@ export { impuestoTabla241 } from './liquidacion/tabla-241';
 export { calcularAnticipo, porcentajeAnticipo } from './liquidacion/anticipo';
 export { porcentajeCesantiasExentas } from './depuracion/rentas-trabajo';
 export { fechaVencimiento, ultimosDosDigitos } from './calendario/vencimientos';
+export { actividadEconomicaSugerida } from './formulario210/actividad-economica';
 export type { ConstantesAnio, RangoTarifa, TramoCesantias } from './constantes/tipos';
 export type {
   PerfilFiscal,
@@ -18,6 +19,7 @@ export type {
   HerenciaDonacionInput,
   PremioInput,
   RentasCapitalInput,
+  ArrendamientosInput,
   RentasNoLaboralesInput,
   RentasPensionesInput,
   DescuentosInput,

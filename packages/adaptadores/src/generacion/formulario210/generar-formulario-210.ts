@@ -1,5 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
+import { actividadEconomicaSugerida } from '@turenta/motor-fiscal';
 import type { ResultadoDeclaracion } from '@turenta/motor-fiscal';
 
 import { CASILLAS_210, ENCABEZADO_210, FUENTE_VALORES } from './coordenadas-ag2025';
@@ -10,6 +11,8 @@ export interface Declarante210 {
   nombres: string;
   apellidos: string;
   identificacion: string;
+  /** Casilla 24 elegida por el usuario; sin ella se sugiere por la renta predominante. */
+  actividadEconomica?: string;
 }
 
 const TINTA = rgb(0.13, 0.13, 0.13);
@@ -30,7 +33,7 @@ export async function generarFormulario210(
   const fuenteBold = await doc.embedFont(StandardFonts.HelveticaBold);
   const pagina = doc.getPage(0);
   dibujarMontos(pagina, fuente, resultado.casillas);
-  dibujarEncabezado(pagina, fuente, declarante, resultado.anioGravable);
+  dibujarEncabezado(pagina, fuente, declarante, resultado);
   dibujarMarcaBorrador(pagina, fuenteBold);
   return doc;
 }
@@ -55,12 +58,14 @@ function dibujarEncabezado(
   pagina: PDFPage,
   fuente: PDFFont,
   declarante: Declarante210,
-  anioGravable: number,
+  resultado: ResultadoDeclaracion,
 ): void {
-  dibujarDigitos(pagina, fuente, String(anioGravable).split(''), ENCABEZADO_210.anio.xs, ENCABEZADO_210.anio.y);
+  const anio = String(resultado.anioGravable).split('');
+  dibujarDigitos(pagina, fuente, anio, ENCABEZADO_210.anio.xs, ENCABEZADO_210.anio.y);
   dibujarNit(pagina, fuente, declarante.identificacion);
   dibujarNombres(pagina, fuente, declarante);
-  dibujarSecuencia(pagina, fuente, '0010', ENCABEZADO_210.actividadEconomica);
+  const actividad = declarante.actividadEconomica || actividadEconomicaSugerida(resultado.casillas);
+  dibujarSecuencia(pagina, fuente, actividad, ENCABEZADO_210.actividadEconomica);
 }
 
 function dibujarNit(pagina: PDFPage, fuente: PDFFont, identificacion: string): void {

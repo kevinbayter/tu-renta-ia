@@ -18,7 +18,16 @@ import {
 } from '@turenta/adaptadores/cifrado';
 import { ConexionMuisca } from '@turenta/adaptadores/dian';
 import { Secreto, detalleSeguro } from '@turenta/core';
-import type { ContextoOperacionDian, ResultadoDescarga } from '@turenta/core';
+import type {
+  ContextoOperacionDian,
+  SobreCifrado,
+  DatosDiligenciamiento,
+  DatosPresentacion,
+  ProgresoConexion,
+  ResultadoDescarga,
+  ResultadoDiligenciamiento,
+  ResultadoPresentacion,
+} from '@turenta/core';
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
@@ -37,6 +46,7 @@ interface CuerpoPeticion {
   numeroDocumento?: string;
   contrasena?: string;
   contexto?: ContextoOperacionDian;
+  datos?: unknown;
 }
 
 function responder(respuesta: ServerResponse, estado: number, cuerpo: unknown): void {
@@ -44,13 +54,18 @@ function responder(respuesta: ServerResponse, estado: number, cuerpo: unknown): 
   respuesta.end(JSON.stringify(cuerpo));
 }
 
-function leerCuerpo(peticion: IncomingMessage): Promise<string> {
+/** Downloads carry only credentials (~1 KB); filling also carries the return's ~80 boxes. */
+const LIMITE_CUERPO = { descarga: 4_096, diligenciar: 16_384 } as const;
+
+/** The signing code travels with the figures: six to ten characters, nothing else. */
+const CODIGO_FIRMA = /^[A-Za-z0-9-]{4,20}$/;
+
+function leerCuerpo(peticion: IncomingMessage, limite: number = LIMITE_CUERPO.descarga): Promise<string> {
   return new Promise((listo, fallar) => {
     let datos = '';
     peticion.on('data', (trozo) => {
       datos += String(trozo);
-      // Nothing legitimate exceeds 1 KB here.
-      if (datos.length > 4096) {
+      if (datos.length > limite) {
         fallar(new Error('cuerpo demasiado grande'));
       }
     });
@@ -93,25 +108,140 @@ function contrasenaDe(cuerpo: CuerpoPeticion, contexto: ContextoOperacionDian): 
   return descifrarCredencial(contexto.cifrado, CLAVE_MAESTRA);
 }
 
-async function ejecutar(operacion: string, cuerpo: CuerpoPeticion): Promise<ResultadoDescarga> {
+type Credenciales = Parameters<typeof conexion.descargarExogena>[0];
+
+const ACCESO_CADUCADO = { exito: false, motivoFallo: 'acceso_caducado', detalle: 'El acceso guardado no se pudo abrir' } as const;
+
+/** Opens the credential for one operation and destroys it afterwards, whatever happens. */
+async function conCredenciales<T>(
+  cuerpo: CuerpoPeticion,
+  operacion: (credenciales: Credenciales, contexto: ContextoOperacionDian, clara: string) => Promise<T>,
+): Promise<T | typeof ACCESO_CADUCADO> {
   const contexto = cuerpo.contexto as ContextoOperacionDian;
   const clara = contrasenaDe(cuerpo, contexto);
   if (clara === null) {
-    return { exito: false, motivoFallo: 'acceso_caducado', detalle: 'El acceso guardado no se pudo abrir' };
+    return ACCESO_CADUCADO;
   }
   const contrasena = new Secreto(clara);
-  const credenciales = {
-    tipoDocumento: (cuerpo.tipoDocumento ?? 'CC') as 'CC',
-    numeroDocumento: cuerpo.numeroDocumento ?? '',
-    contrasena,
-  };
+  const credenciales = { tipoDocumento: (cuerpo.tipoDocumento ?? 'CC') as 'CC', numeroDocumento: cuerpo.numeroDocumento ?? '', contrasena };
   try {
-    const resultado = await operar(operacion, credenciales, contexto);
-    return conSobre(resultado, contexto, clara);
+    return await operacion(credenciales, contexto, clara);
   } finally {
     // The credential dies with the request.
     contrasena.olvidar();
   }
+}
+
+function ejecutar(operacion: string, cuerpo: CuerpoPeticion): Promise<ResultadoDescarga> {
+  return conCredenciales(cuerpo, async (credenciales, contexto, clara) =>
+    conSobre(await operar(operacion, credenciales, contexto), contexto, clara),
+  );
+}
+
+const GENEROS = ['1', '2', '3', '4', '6'];
+
+/** Typed boxes go straight into a legal return: anything that is not a plain number is refused. */
+function datosValidos(datos: unknown): datos is DatosDiligenciamiento {
+  const d = (datos ?? {}) as Partial<DatosDiligenciamiento>;
+  const casillas = Object.entries(d.casillas ?? {});
+  const codigo = (d as DatosPresentacion).codigoFirma;
+  const formulario = d.numeroFormulario;
+  return (
+    (codigo === undefined || CODIGO_FIRMA.test(String(codigo))) &&
+    (formulario === undefined || /^\d{10,15}$/.test(String(formulario))) &&
+    GENEROS.includes(String(d.genero)) &&
+    /^\d{4}$/.test(String(d.actividadEconomica)) &&
+    casillas.length > 0 &&
+    casillas.every(([c, v]) => /^\d{1,3}$/.test(c) && Number.isSafeInteger(v) && v >= 0)
+  );
+}
+
+function diligenciar(
+  cuerpo: CuerpoPeticion,
+  operacion: 'diligenciar' | 'presentar',
+  alProgresar: (progreso: ProgresoConexion) => void,
+): Promise<ResultadoDiligenciamiento | ResultadoPresentacion> {
+  const datos = cuerpo.datos;
+  if (!datosValidos(datos)) {
+    return Promise.resolve({ exito: false, motivoFallo: 'desconocido', detalle: 'Datos de la declaración inválidos' });
+  }
+  return conCredenciales(cuerpo, async (credenciales, contexto, clara) =>
+    conSobre(await alPortal(credenciales, contexto, datos, operacion, alProgresar), contexto, clara),
+  );
+}
+
+function alPortal(
+  credenciales: Credenciales,
+  contexto: ContextoOperacionDian,
+  datos: DatosDiligenciamiento,
+  operacion: 'diligenciar' | 'presentar',
+  alProgresar: (progreso: ProgresoConexion) => void,
+): Promise<ResultadoDiligenciamiento | ResultadoPresentacion> {
+  if (operacion === 'presentar') {
+    return conexion.presentarDeclaracion(credenciales, contexto, datos, alProgresar);
+  }
+  return conexion.diligenciarDeclaracion(credenciales, contexto, datos, alProgresar);
+}
+
+/** Nombres del portal fuera del log: el diagnóstico es estructura, no personas. */
+const PARECE_NOMBRE = /\b[A-ZÁÉÍÓÚÑ]{3,}(\s+[A-ZÁÉÍÓÚÑ]{3,})+\b/g;
+
+interface Anotable {
+  exito: boolean;
+  motivoFallo?: string;
+  detalle?: string;
+  firmada?: boolean;
+  presentada?: boolean;
+  requiereCodigo?: boolean;
+}
+
+/** Presentar y no quedar presentada también hay que poder explicarlo. */
+function desenlaceDe(operacion: string, resultado: Anotable): string | null {
+  if (!resultado.exito) {
+    return `falló: ${resultado.motivoFallo ?? 'sin motivo'}`;
+  }
+  if (operacion !== 'presentar' || resultado.presentada === true) {
+    return null;
+  }
+  return `terminó sin presentar: firmada=${String(resultado.firmada ?? false)} requiereCodigo=${String(resultado.requiereCodigo ?? false)}`;
+}
+
+/**
+ * Un desenlace que solo se ve en la pantalla del usuario obliga a pedírselo
+ * copiado para poder diagnosticarlo. Queda en el log del worker, que es de la
+ * máquina y no viaja a ninguna parte.
+ */
+function anotarFallo(operacion: string, resultado: Anotable): void {
+  const desenlace = desenlaceDe(operacion, resultado);
+  if (desenlace === null) {
+    return;
+  }
+  const detalle = (resultado.detalle ?? '').replace(PARECE_NOMBRE, '«nombre»');
+  process.stderr.write(`[${new Date().toISOString()}] ${operacion} ${desenlace} · ${detalle}\n`);
+}
+
+/**
+ * Filling takes minutes: each step goes out as its own NDJSON line so the user
+ * sees where the robot is, and the result is always the last line.
+ */
+async function transmitirDiligenciamiento(
+  respuesta: ServerResponse,
+  cuerpo: CuerpoPeticion,
+  operacion: 'diligenciar' | 'presentar',
+): Promise<void> {
+  respuesta.writeHead(200, { 'content-type': 'application/x-ndjson', 'cache-control': 'no-store' });
+  const emitir = (linea: unknown) => respuesta.write(`${JSON.stringify(linea)}\n`);
+  const resultado = await diligenciar(cuerpo, operacion, (progreso) => emitir({ progreso })).catch((error: unknown) => ({
+    exito: false,
+    motivoFallo: 'desconocido' as const,
+    detalle: detalleSeguro('Error', error instanceof Error ? error.message : '', []),
+  }));
+  anotarFallo(operacion, resultado);
+  respuesta.end(`${JSON.stringify({ resultado })}\n`);
+}
+
+async function responderDescarga(respuesta: ServerResponse, operacion: string, cuerpo: CuerpoPeticion): Promise<void> {
+  responder(respuesta, 200, aRespuesta(await ejecutar(operacion, cuerpo)));
 }
 
 function operar(
@@ -124,12 +254,18 @@ function operar(
     : conexion.descargarDeclaracion(credenciales, contexto);
 }
 
-/** Seals the access only when it worked and the user actually asked for it. */
-function conSobre(
-  resultado: ResultadoDescarga,
+/**
+ * Seals the access only when it worked and the user actually asked for it.
+ *
+ * Vale para cualquier operación, no solo las descargas: si presentar no sellara
+ * el sobre, marcar "recordar mi acceso" no guardaría nada y el usuario tendría
+ * que escribir la contraseña en cada intento.
+ */
+function conSobre<T extends { exito: boolean; cifrado?: SobreCifrado }>(
+  resultado: T,
   contexto: ContextoOperacionDian,
   clara: string,
-): ResultadoDescarga {
+): T {
   const debeGuardar = resultado.exito && contexto.recordarAcceso === true && !contexto.cifrado;
   if (!debeGuardar || !CLAVE_MAESTRA) {
     return resultado;
@@ -147,8 +283,11 @@ async function atenderOperacion(
   }
   enCurso += 1;
   try {
-    const cuerpo = JSON.parse(await leerCuerpo(peticion)) as CuerpoPeticion;
-    responder(respuesta, 200, aRespuesta(await ejecutar(operacion, cuerpo)));
+    const enFlujo = operacion === 'diligenciar' || operacion === 'presentar';
+    const cuerpo = JSON.parse(await leerCuerpo(peticion, LIMITE_CUERPO[enFlujo ? 'diligenciar' : 'descarga'])) as CuerpoPeticion;
+    await (enFlujo
+      ? transmitirDiligenciamiento(respuesta, cuerpo, operacion === 'presentar' ? 'presentar' : 'diligenciar')
+      : responderDescarga(respuesta, operacion, cuerpo));
   } catch (error) {
     // No raw error leaves this process: it could carry the portal's dump.
     const detalle = detalleSeguro('Error', error instanceof Error ? error.message : '', []);
@@ -166,7 +305,7 @@ function enrutar(peticion: IncomingMessage, respuesta: ServerResponse): void {
   if (!autorizado(peticion)) {
     return responder(respuesta, 401, { exito: false, motivoFallo: 'servicio_no_disponible' });
   }
-  if (peticion.method === 'POST' && (ruta === '/dian/exogena' || ruta === '/dian/declaracion')) {
+  if (peticion.method === 'POST' && ['/dian/exogena', '/dian/declaracion', '/dian/diligenciar', '/dian/presentar'].includes(ruta)) {
     return void atenderOperacion(ruta.split('/')[2] ?? '', peticion, respuesta);
   }
   return responder(respuesta, 404, { exito: false, motivoFallo: 'desconocido' });

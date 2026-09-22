@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Editor 210 (fixture de prueba)</title>
+    <style>
+      .oculto {
+        display: none;
+      }
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Written by hand from research/09 §2-3. Every value is made up. -->
+    <!-- Ya firmada en un intento anterior: el editor abre aquí y solo falta presentar. -->
+    <!-- Como en MUISCA: estas acciones no son <button>, y por eso se buscan por su texto. -->
+    <div id="panelFirmada" class="oculto">
+      <span id="verFirmada" role="button">Ver declaración firmada</span>
+      <span id="presentarFirmada" role="button">Presentar</span>
+      <span id="editarFormulario" role="button">Editar formulario</span>
+    </div>
+
+    <div id="pregunta">
+      <p>¿Cuál fue su tiempo de permanencia en Colombia durante el año 2025?</p>
+      <input type="radio" id="rbSi" name="rbTiempoPermanencia" value="1" class="ng-pristine" />
+      <label for="rbSi">Mayor a 183 días</label>
+      <label><input type="radio" id="rbNo" name="rbTiempoPermanencia" value="0" /> Menor o igual a 183 días</label>
+    </div>
+
+    <div id="modalResidente" class="modal oculto"><p>Usted es residente fiscal</p><span id="btnResidente">Siguiente</span></div>
+    <div id="modalConsultar" class="modal oculto"><span id="btnConsultar">Sí, consultar</span><span>No, gracias</span></div>
+    <div id="modalContinuar" class="modal oculto"><span id="btnContinuar">Si</span><span>No</span></div>
+    <div id="modalAviso" class="modal oculto"><p>Complete las casillas 286 y 24</p><span id="btnEntendido">Entendido</span></div>
+    <div id="modalGuardado" class="modal oculto" role="dialog"><p>Borrador guardado exitosamente</p><button id="cerrarGuardado">close</button></div>
+
+    <div id="formulario" class="oculto">
+      <!-- El stepper no es pulsable y SIEMPRE trae "Presentar" como texto: no es el botón. -->
+      <ol><li>Formulario 210</li><li><span>Firmar</span></li><li><span>Presentar</span></li></ol>
+      <button id="guardar"><span>save</span></button>
+      <div id="seccion"></div>
+      <button id="anterior"><mat-icon>chevron_left</mat-icon>Anterior</button>
+      <!-- Like MUISCA: the icon ligature is part of the text ("Siguientechevron_right"). -->
+      <button id="siguiente">Siguiente<mat-icon>chevron_right</mat-icon></button>
+      <!-- Last section only, like MUISCA: saves and moves on to the signing step. -->
+      <button id="continuar" class="oculto">Guardar y continuar</button>
+      <p id="aviso"></p>
+    </div>
+
+    <!-- "Firmar formulario": la pantalla tras "Guardar y continuar", y también donde abre
+         el portal cuando el borrador ya está completo. El stepper de arriba repite "Presentar". -->
+    <div id="panelFirma" class="oculto">
+      <h2>Firmar formulario</h2>
+      <ol><li>Formulario 210</li><li><span>Firmar</span></li><li><span>Presentar</span></li></ol>
+      <button id="verBorrador">Ver borrador</button>
+      <a id="enlaceBorrador" class="oculto" href="/borrador/4444444444444.pdf" download="borrador.pdf">pdf</a>
+      <button id="abrirFirma">Firmar</button>
+      <button id="volverAlFormulario">Editar formulario</button>
+      <button id="siguienteFirma" class="oculto">Siguiente<mat-icon>chevron_right</mat-icon></button>
+      <button id="salirFirma">Salir</button>
+    </div>
+
+    <!-- MUISCA pregunta primero quién firma; la contraseña llega después de "Autorizar". -->
+    <div id="dialogoAutorizar" class="modal oculto" role="dialog">
+      <p>Persona que va a firmar: Nombre: JUANA PEREZ PEREZ NIT: 1000000001</p>
+      <button id="autorizarFirmante">Autorizar</button>
+    </div>
+
+    <div id="dialogoConfirmarFirma" class="modal oculto" role="dialog">
+      <p>¿Desea firmar de manera electrónica su declaración de renta?</p>
+      <button id="confirmarFirmante">Firmar</button>
+      <button id="desautorizar">Desautorizar</button>
+    </div>
+
+    <!-- Con el firmante ya autorizado el portal no ofrece "Autorizar" sino
+         "Desautorizar", abre a la vez un panel de ayuda que no lleva a ninguna
+         parte y deja los botones inertes mientras consulta el certificado. -->
+    <div id="dialogoAyuda" class="modal oculto" role="dialog" style="z-index: 10">
+      <h4>Ayuda</h4>
+      <p>Consultando información</p>
+    </div>
+
+    <div id="dialogoAutorizado" class="modal oculto" role="dialog">
+      <button id="cerrarAutorizado">close</button>
+      <h4>Consultando información</h4>
+      <p>Nombre: JUANA PEREZ PEREZ NIT: 1000000001 Representante legal Certificado</p>
+      <p>¿Desea firmar de manera electrónica su declaración de renta?</p>
+      <button id="firmarAutorizado" disabled>Firmar</button>
+      <button id="desautorizar2" disabled>Desautorizar</button>
+      <iframe id="marcoFirma" class="oculto" src="/firma-marco" style="position: absolute; inset: 0; width: 100%; height: 100%; border: 0"></iframe>
+    </div>
+
+    <div id="dialogoFirma" class="modal oculto" role="dialog">
+      <label for="claveFirma">Contraseña de la firma electrónica</label><input type="password" id="claveFirma" />
+      <span id="bloqueCodigo" class="oculto">
+        <label for="codigoFirma">Código de verificación</label><input type="text" id="codigoFirma" />
+        <!-- Como en el correo del portal: texto con "solicitud" que NO pide nada. -->
+        <p id="senueloSolicitud">Si no realizaste esta solicitud comunícate con nosotros.</p>
+        <a href="#" id="solicitarCodigo">Solicítela aquí</a>
+      </span>
+      <button id="firmarDefinitivo">Firmar</button>
+      <button id="cancelarFirma">Cancelar</button>
+    </div>
+
+    <div id="panelPresentar" class="pantalla oculto">
+      <h2>Declaración firmada</h2>
+      <button id="presentarAhora">Presentar</button>
+    </div>
+
+    <div id="dialogoPresentar" class="modal oculto" role="dialog">
+      <p>¿Confirma la presentación de la declaración?</p>
+      <button id="confirmarPresentar">Sí</button>
+      <button id="cancelarPresentar">No</button>
+    </div>
+
+    <div id="panelAcuse" class="oculto">
+      <h2>Acuse de recibo</h2>
+      <p>Su declaración fue presentada</p>
+      <button id="descargarAcuse">picture_as_pdf</button>
+      <a id="enlaceAcuse" class="oculto" href="/acuse/4444444444444.pdf" download="acuse-4444444444444.pdf">acuse</a>
+    </div>
+
+    <script>
+      const DESVIO = __DESVIO__;
+      const CORTO = __CORTO__;
+      const CON_CODIGO = __CON_CODIGO__;
+      const YA_FIRMADA = __YA_FIRMADA__;
+      const EN_FIRMA = __EN_FIRMA__;
+      const AUTORIZADA = __AUTORIZADA__;
+      const EN_MARCO = __EN_MARCO__;
+      const YA_FIRMO = __YA_FIRMO__;
+      const DEMORA_FIRMA_MS = 6000;
+      const valores = { '5': '1000000001', '286': '', '24': '6810', '297': '5,000,000', '29': '100,000,000', '30': '0', '58': '0', '59': '0', '60': '0', '74': '9,000,000' };
+      const TODAS = [
+        [['5', 'ro'], ['286', 'genero'], ['24', 'actividad']],
+        [['297', 'in'], ['28', 'calc']],
+        [['29', 'in'], ['30', 'in'], ['31', 'texto']],
+        [['58', 'in'], ['59', 'in'], ['60', 'in'], ['61', 'calc'], ['74', 'in']],
+        [['91', 'calc'], ['94', 'in']],
+        [['111', 'calc'], ['126', 'in']],
+      ];
+      // 'recorrido_corto': the form ends before patrimonio, as if the robot lost the "Siguiente" button.
+      const SECCIONES = CORTO ? TODAS.slice(0, 2) : TODAS;
+      let actual = 0;
+      const $ = (id) => document.getElementById(id);
+      const numero = (c) => Number(String(valores[c] ?? '0').replace(/\D/g, '')) || 0;
+      const miles = (n) => n.toLocaleString('en-US');
+      const calcular = () => {
+        valores['28'] = miles(Math.round(numero('297') * 0.01 / 1000) * 1000);
+        valores['31'] = miles(numero('29') - numero('30') + DESVIO);
+        valores['61'] = miles(numero('58') - numero('59') - numero('60'));
+        valores['91'] = valores['61'];
+        valores['111'] = miles(numero('91') - numero('28'));
+      };
+      const opciones = (lista) => lista.map(([v, t]) => `<option value="${v}">${t}</option>`).join('');
+      const campo = ([c, tipo]) => {
+        if (tipo === 'genero') return `<select id="cs_id_286">${opciones([['', ''], ['1', '1 - Femenino'], ['2', '2 - Masculino']])}</select>`;
+        if (tipo === 'actividad') return `<select id="cs_id_24">${opciones([['0020', '0020 - PENSIONADOS'], ['6810', '6810 - INMOBILIARIAS']])}</select>`;
+        // Some MUISCA boxes are plain text, not inputs.
+        if (tipo === 'texto') return `<label>${c}. Casilla</label><span id="cs_id_${c}">${valores[c] ?? '0'}</span>`;
+        const soloLectura = tipo === 'in' ? '' : 'readonly';
+        return `<label>${c}. Casilla</label><input id="cs_id_${c}" value="${valores[c] ?? '0'}" ${soloLectura} />`;
+      };
+      const pintar = () => {
+        calcular();
+        $('seccion').innerHTML = SECCIONES[actual].map(campo).join('');
+        if ($('cs_id_286')) $('cs_id_286').value = valores['286'];
+        if ($('cs_id_24')) $('cs_id_24').value = valores['24'];
+        $('siguiente').classList.toggle('oculto', actual === SECCIONES.length - 1);
+        $('continuar').classList.toggle('oculto', actual !== SECCIONES.length - 1);
+      };
+      document.addEventListener('change', (e) => {
+        if (!e.target.id?.startsWith('cs_id_')) return;
+        valores[e.target.id.replace('cs_id_', '')] = e.target.value;
+        pintar();
+      });
+      const mostrar = (id, visible) => $(id).classList.toggle('oculto', !visible);
+      // Like Angular in MUISCA: handlers bind a moment after the input shows up. An earlier click
+      // is lost but leaves the radio checked, and clicking a checked radio fires no change.
+      setTimeout(() => {
+        $('rbSi').addEventListener('change', () => {
+          $('rbSi').classList.remove('ng-pristine');
+          mostrar('modalResidente', true);
+        });
+      }, 2500);
+      $('btnResidente').addEventListener('click', () => { mostrar('modalResidente', false); mostrar('pregunta', false); mostrar('modalConsultar', true); });
+      $('btnConsultar').addEventListener('click', () => { mostrar('modalConsultar', false); mostrar('modalContinuar', true); });
+      $('btnContinuar').addEventListener('click', () => {
+        mostrar('modalContinuar', false);
+        mostrar('formulario', true);
+        pintar();
+        mostrar('modalAviso', true);
+      });
+      $('btnEntendido').addEventListener('click', () => mostrar('modalAviso', false));
+      $('siguiente').addEventListener('click', () => {
+        if (actual === 0 && !valores['286']) { $('aviso').textContent = 'La casilla 286 es obligatoria'; return; }
+        actual += 1;
+        pintar();
+      });
+      $('anterior').addEventListener('click', () => { actual = Math.max(0, actual - 1); pintar(); });
+      $('verBorrador').addEventListener('click', () => $('enlaceBorrador').click());
+      addEventListener('message', (e) => {
+        if (e.data !== 'firmado') return;
+        mostrar('dialogoAyuda', false);
+        mostrar('dialogoAutorizado', false);
+        mostrar('siguienteFirma', true);
+      });
+      const abrirFirmaAutorizada = () => {
+        mostrar('dialogoAyuda', true);
+        mostrar('dialogoAutorizado', true);
+        // 'firma_en_marco': los de fuera NUNCA habilitan; los buenos están dentro del marco.
+        if (EN_MARCO) return mostrar('marcoFirma', true);
+        setTimeout(() => {
+          $('firmarAutorizado').disabled = false;
+          $('desautorizar2').disabled = false;
+        }, DEMORA_FIRMA_MS);
+      };
+      $('abrirFirma').addEventListener('click', () => {
+        if (AUTORIZADA || EN_MARCO) return abrirFirmaAutorizada();
+        mostrar('dialogoAutorizar', true);
+      });
+      $('firmarAutorizado').addEventListener('click', () => {
+        mostrar('dialogoAyuda', false);
+        mostrar('dialogoAutorizado', false);
+        mostrar('dialogoFirma', true);
+      });
+      $('autorizarFirmante').addEventListener('click', () => {
+        mostrar('dialogoAutorizar', false);
+        mostrar('dialogoConfirmarFirma', true);
+      });
+      $('confirmarFirmante').addEventListener('click', () => {
+        mostrar('dialogoConfirmarFirma', false);
+        mostrar('bloqueCodigo', CON_CODIGO);
+        mostrar('dialogoFirma', true);
+      });
+      $('solicitarCodigo').addEventListener('click', () => fetch('/editor/solicitar-codigo', { method: 'POST' }));
+      // Signing needs the password, and the code when the portal asks for it.
+      $('firmarDefinitivo').addEventListener('click', async () => {
+        if (!$('claveFirma').value) return;
+        if (CON_CODIGO && !$('codigoFirma').value) return;
+        await fetch('/editor/firmar', { method: 'POST', body: $('codigoFirma').value });
+        mostrar('dialogoFirma', false);
+        // Igual que MUISCA: sigue en "Firmar formulario"; "Siguiente" lleva a Presentar.
+        mostrar('siguienteFirma', true);
+      });
+      $('siguienteFirma').addEventListener('click', () => {
+        mostrar('panelFirma', false);
+        mostrar('panelPresentar', true);
+      });
+      $('cancelarFirma').addEventListener('click', () => mostrar('dialogoFirma', false));
+      $('presentarAhora').addEventListener('click', () => mostrar('dialogoPresentar', true));
+      $('confirmarPresentar').addEventListener('click', async () => {
+        await fetch('/editor/presentar', { method: 'POST' });
+        mostrar('dialogoPresentar', false);
+        mostrar('panelPresentar', false);
+        mostrar('panelAcuse', true);
+      });
+      $('descargarAcuse').addEventListener('click', () => $('enlaceAcuse').click());
+      $('presentarFirmada').addEventListener('click', () => mostrar('dialogoPresentar', true));
+      // Volver al formulario: el robot nunca firma algo que no verificó en esa corrida.
+      $('volverAlFormulario').addEventListener('click', () => {
+        mostrar('panelFirma', false);
+        mostrar('pregunta', true);
+      });
+      if (EN_FIRMA || AUTORIZADA || EN_MARCO || YA_FIRMO) {
+        mostrar('pregunta', false);
+        mostrar('panelFirma', true);
+      }
+      // El portal no delata la firma en este paso: sigue rotulando "Ver borrador".
+      if (YA_FIRMO) mostrar('siguienteFirma', true);
+      if (YA_FIRMADA) {
+        mostrar('pregunta', false);
+        mostrar('panelFirmada', true);
+      }
+      const guardar = () => {
+        calcular();
+        return fetch('/editor/guardar', { method: 'POST', body: JSON.stringify(valores) });
+      };
+      $('guardar').addEventListener('click', async () => {
+        await guardar();
+        mostrar('modalGuardado', true);
+      });
+      $('cerrarGuardado').addEventListener('click', () => mostrar('modalGuardado', false));
+      $('continuar').addEventListener('click', async () => {
+        await guardar();
+        mostrar('formulario', false);
+        mostrar('panelFirma', true);
+        // Like MUISCA: saving again reopens the notice, which covers "Firmar".
+        mostrar('modalGuardado', true);
+      });
+    </script>
+  </body>
+</html>

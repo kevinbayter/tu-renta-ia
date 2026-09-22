@@ -29,7 +29,7 @@ describe('guardar la declaración de un tercero', () => {
   it('asegura la persona sin tocar su email ni su teléfono', async () => {
     const respuesta = await guardar(false);
     expect(respuesta.status).toBe(200);
-    expect(repositorio.asegurarPersona).toHaveBeenCalledWith('usuario-1', TITULAR);
+    expect(repositorio.asegurarPersona).toHaveBeenCalledWith('usuario-1', { ...TITULAR, genero: '' });
     expect(repositorio.guardarPersona).not.toHaveBeenCalled();
   });
 

@@ -1,3 +1,4 @@
+import { extraerValidado } from '@turenta/core';
 import { jsonSchemaTurnoEntrevista, turnoEntrevistaSchema } from '@turenta/shared';
 import { NextResponse } from 'next/server';
 
@@ -46,13 +47,13 @@ async function ejecutarTurno(cuerpo: CuerpoEntrevista): Promise<TurnoEntrevista>
     .slice(0, -1)
     .map((m) => `${m.rol === 'user' ? 'Usuario' : 'Tú'}: ${m.contenido}`)
     .join('\n');
-  const bruto = await obtenerLlm().extraerEstructurado({
+  const entrada = {
     system: construirSystem(cuerpo.respuestas, cuerpo.resumenDocumentos, historial),
     user: ultimo?.contenido ?? 'Hola, empecemos.',
     jsonSchema: jsonSchemaTurnoEntrevista as Record<string, unknown>,
-    esfuerzo: 'low',
-  });
-  return turnoEntrevistaSchema.parse(bruto);
+    esfuerzo: 'low' as const,
+  };
+  return extraerValidado(obtenerLlm(), entrada, turnoEntrevistaSchema);
 }
 
 function construirSystem(respuestas: RespuestasEntrevista, resumenDocumentos: string, historial: string): string {
@@ -61,7 +62,7 @@ Tu trabajo: completar SOLO los datos que NO están en los documentos, conversand
 
 REGLA DE ORO — NO RE-PREGUNTAR LO YA CONOCIDO:
 - Si un dato ya aparece en DOCUMENTOS o ya tiene valor distinto de cero en RESPUESTAS, NUNCA pidas que lo digite.
-  En su lugar CONFÍRMALO citando el valor: "Según tu exógena, tus rendimientos de cesantías fueron $382.694 — ¿confirmas o lo ajustamos?".
+  En su lugar CONFÍRMALO citando el valor: "Según tu exógena, tus rendimientos de cesantías fueron $1.234.567 — ¿confirmas o lo ajustamos?".
 - Si el usuario confirma, captura el campo con ese mismo valor en camposCapturados y pasa al siguiente tema.
 - Si dice que falta algo, pregunta solo por lo adicional y suma.
 - Agrupa varias confirmaciones simples en un mismo turno si son del mismo tema.
@@ -79,12 +80,14 @@ REGLAS GENERALES:
 
 CAMPOS DELICADOS (errores que NO puedes cometer):
 - mesesConRelacionLaboral: si los certificados 220 traen período de certificación, ya se calculó desde ahí — solo confírmalo citando los períodos. Si no hay períodos, pregúntalo siempre: el 12 inicial es un valor por defecto, NO un dato.
+- SIN CERTIFICADOS 220 LABORALES en DOCUMENTOS: NUNCA digas que "aparecen meses laborales"; pregunta una sola vez si tuvo algún empleo con salario en el año y, si no, captura mesesConRelacionLaboral=0. Si además no factura honorarios (solo pensiones, arriendos o rendimientos), NO preguntes por dependientes (tieneDependiente387/dependientesAdicionales336) ni por medicina prepagada: esas deducciones solo se restan de rentas de trabajo (arts. 103, 387 y 336 E.T.).
 - El saldo a favor del año anterior YA se lee de la exógena y se aplica automáticamente: NUNCA lo captures en ningún campo. Si el usuario lo menciona, dile que ya está aplicado.
 - anticipoLiquidadoAnioAnterior es ÚNICAMENTE la casilla "anticipo por el año gravable siguiente" de su declaración del año pasado. NO es el saldo a favor. Si el usuario no tiene esa casilla a la mano, déjala en 0.
 - Si confirma dependientes económicos: captura tieneDependiente387=1 Y dependientesAdicionales336=cuántos dependientes tiene (máximo 4). Pregunta cuántos son.
 - declaracionesPrevias necesita el número exacto: si dice "sí he declarado antes" sin decir cuántas, pregúntale cuántas.
 - PENSIONES: si el resumen de documentos indica pensiones (Pensiones Ejemplo u otro fondo), ya se declaran automáticamente en la cédula de pensiones — NO las captures como salario ni como activo. Solo confirma cuántos meses recibió mesada en el año (mesesConPension, normalmente 12).
-- INGRESOS NO LABORALES (arriendos/mandato): si el resumen los indica, YA vienen precargados y DEDUPLICADOS (el mismo ingreso suele aparecer dos veces en exógena: inmobiliaria + pagador). Confirma el valor en ingresosNoLaborales — NUNCA lo dupliques — y pregunta por costos con soporte (predial del inmueble arrendado, administración) para costosNoLaborales.
+- ARRIENDOS (con o sin inmobiliaria) son RENTAS DE CAPITAL: van en ingresosArrendamientos, NUNCA en ingresosNoLaborales. Si el resumen los indica YA vienen precargados y DEDUPLICADOS (el mismo ingreso suele aparecer dos veces en exógena: inmobiliaria + pagador) — confírmalos, NUNCA los dupliques. Pide el certificado de la inmobiliaria y captura: costosArrendamientos = predial SOLO del inmueble arrendado (el de la vivienda propia NO cuenta) + comisión de la inmobiliaria con su IVA + administración que pague el dueño, todo con soporte; retencionArrendamientos = retención en la fuente del certificado. Si arrienda sin inmobiliaria, pregunta el canon total del año.
+- INGRESOS NO LABORALES (ingresosNoLaborales/costosNoLaborales): solo lo que no es arriendo, salario, honorarios, pensión ni rendimiento. Si el resumen trae mandato sin inmobiliaria, pregunta qué es antes de dejarlo ahí.
 - DONACIONES (donacionesEsal): pregunta si donó a alguna fundación o entidad sin ánimo de lucro Y tiene el certificado de la donación. Solo captura el valor si confirma que tiene el certificado — sin él la DIAN rechaza el descuento.
 - PATRIMONIO DEL AÑO ANTERIOR (patrimonioLiquidoAnterior): si YA viene precargado desde su declaración anterior (verás "DECLARACIÓN ANTERIOR YA LEÍDA" en los documentos), NO lo preguntes — ya está resuelto. Solo si NO está: menciónale de forma tranquila que si tiene a mano el PDF de su declaración del año pasado puede subirlo y tomamos los datos de ahí (es opcional); si no la tiene, pregúntale el patrimonio líquido (casilla 31) SIN alarmarlo — explica que sirve para que su declaración cuadre con la anterior, nunca hables de sanciones ni requerimientos. Si su patrimonio creció mucho más que sus ingresos, pregunta por herencias, préstamos recibidos, gananciales o valorizaciones y captúralos en justificacionesPatrimoniales.
 - Al preguntar por bienes al 31 de diciembre, menciona ejemplos que la gente olvida: bienes personales (muebles, enseres, electrodomésticos), vehículos, y cuentas por cobrar (dinero que le deban).

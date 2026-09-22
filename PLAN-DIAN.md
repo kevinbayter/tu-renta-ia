@@ -44,6 +44,15 @@ autorización registra **ambas identidades**.
 - **Transporte**: las credenciales viajan de la UI al worker por HTTPS y una sesión de un
   solo uso identificada por token efímero; se limpian con `finally` garantizado.
 
+**Declaraciones de terceros (19-sep-2026)**: se habilita conectar la cuenta de otra persona
+**con sus propias credenciales** (en MUISCA es "A nombre propio" de esa persona; el robot no
+cambia). El operador nunca firma "soy el titular": el texto de autorización v3 tiene una
+variante donde declara que la persona le entregó su usuario y contraseña y lo autorizó, y esa
+variante queda en la huella de la evidencia. El servidor verifica la titularidad antes de tocar
+el portal (`errorDeTitularidad` en core): con la cédula propia solo la cuenta propia, y con la
+de otra persona solo alguien para quien el usuario ya elabora una declaración. El ingreso "A
+nombre de un tercero" (el operador con SUS credenciales como representante) sigue sin mapear.
+
 ## 3. Fases
 
 ### Fase 1 — Conexión de solo lectura: exógena
@@ -83,23 +92,34 @@ líquido anterior, impuesto neto y anticipo (comparación patrimonial del art. 2
 
 ### Fase 3 — Presentar el 210 con un clic
 
-**Solo si Fases 1-2 llevan al menos una temporada estables.** Nada de esta fase está
-implementado: el flujo de escritura del portal no se ha tocado siquiera en el mapeo, a
-propósito, porque entrar ahí crea borradores reales en la cuenta del usuario.
+**Implementado en local (19-sep-2026), pendiente de estrenar contra una cuenta real.**
+El mapeo del portal está en [`research/09`](research/09-presentacion-210-muisca.md).
 
-**Requisitos previos (bloqueantes)**:
+**Requisitos previos (bloqueantes antes de ofrecerlo a terceros)**:
 
 - [ ] Concepto de abogado tributarista sobre el modelo y los textos de autorización
 - [ ] Póliza de responsabilidad civil profesional
 - [ ] Revisión de las condiciones de uso del portal MUISCA (leerlas dentro del portal)
 
-**Alcance**: diligenciar las casillas, firmar con la contraseña del usuario, obtener acuse y
-recibo 490.
+**Requisito del titular**: firma electrónica vigente. Sin ella el portal no abre siquiera
+el formulario y TuRenta responde `sin_firma_electronica` con las instrucciones para
+generarla. No es algo que el robot pueda resolver: el código va al correo/celular del RUT.
 
-- Doble confirmación: resumen de lo que se va a presentar + "esto es definitivo".
-- Vista previa idéntica a lo que quedará radicado.
-- Descarga inmediata del acuse con sello DIAN y del 490.
-- Registro de auditoría inmutable de la operación.
+**Flujo** (`presentarDeclaracion` → `llegarAFirma210` + `firmar-210-muisca.ts`):
+
+1. Diligencia las 15 secciones y compara TODO lo que calcula el portal.
+2. No guarda si el recorrido quedó incompleto (anclas 31, 91 y 111) o si hay diferencias.
+3. Guarda, pulsa "Guardar y continuar" y abre la firma.
+4. Firma con la contraseña de la cuenta —que la DIAN unificó con la de la firma electrónica
+   desde sep-2023— y con el código dinámico solo si el portal lo exige. Si lo exige y no lo
+   tenemos, NO firma: lo solicita y TuRenta se lo pide al usuario.
+5. Presenta (paso aparte de firmar) y descarga el acuse.
+6. Sin acuse no se da por presentada: Resolución 000227 de 2025, art. 1.7.4.2 num. 7.
+
+- Doble confirmación: autorización con alcance `presentar_declaracion` + resumen "esto es
+  definitivo" antes de radicar.
+- Descarga inmediata del acuse; el 490 (pago) queda pendiente para quien tenga saldo a pagar.
+- Registro de auditoría: `AutorizacionDian` con hash del texto aceptado y desenlace.
 
 ## 4. Seguridad (transversal)
 
@@ -121,7 +141,9 @@ recibo 490.
    que la responsabilidad de lo declarado es suya, que revisó el borrador.
 3. **Actualización de Términos y Privacidad**: sección de conexión con la DIAN.
 
-Todos deben ser revisados por abogado antes de Fase 3.
+El texto 2 ya está redactado en `core/dian/autorizacion.ts` (alcance `presentar_declaracion`,
+versión v4): incluye que la declaración quedará presentada y que solo se corrige con una
+declaración de corrección. Falta la revisión de abogado antes de abrirlo a terceros.
 
 ## 6. Lo que NO haremos
 
@@ -169,6 +191,16 @@ adecuado para conectarse a la DIAN a nombre de terceros.
 # Un token compartido entre la app y el worker (no es una contraseña de usuario)
 export WORKER_DIAN_TOKEN="$(openssl rand -hex 32)"
 docker compose -f docker-compose.prod.yml up -d --build
+```
+
+**En local, igual que en producción** (misma imagen de Playwright, mismo aislamiento):
+
+```bash
+# .env.dian.local (gitignored) — solo lo lee el contenedor del worker:
+#   WORKER_DIAN_TOKEN=<openssl rand -hex 32>
+#   DIAN_CRED_KEY=<openssl rand -hex 32>
+# .env.local — la web: WORKER_DIAN_URL=http://127.0.0.1:8787 y el mismo WORKER_DIAN_TOKEN
+docker compose --profile dian up -d --build worker-dian
 ```
 
 Variables que lee `apps/web`:

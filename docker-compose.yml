@@ -17,5 +17,20 @@ services:
       timeout: 3s
       retries: 10
 
+  # Mismo worker que producción (Dockerfile.worker-dian). Solo arranca con
+  # `--profile dian`; sus secretos van en .env.dian.local, fuera del .env.local de la web.
+  worker-dian:
+    profiles: [dian]
+    build:
+      context: .
+      dockerfile: Dockerfile.worker-dian
+    container_name: turenta-worker-dian
+    restart: unless-stopped
+    env_file: .env.dian.local
+    environment:
+      WORKER_DIAN_CONCURRENCIA: '2'
+    ports:
+      - '127.0.0.1:8787:8080'
+
 volumes:
   turenta_pgdata:

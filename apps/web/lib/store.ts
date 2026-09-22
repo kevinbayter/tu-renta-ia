@@ -15,6 +15,12 @@ export interface ConsentimientoDian {
   otorgadoEn: number;
 }
 
+export interface Presentacion {
+  numeroFormulario: string;
+  presentadaEn: string;
+  nombreAcuse: string;
+}
+
 interface EstadoDeclaracion {
   paso: PasoWizard;
   documentos: DocumentoProcesado[];
@@ -27,6 +33,10 @@ interface EstadoDeclaracion {
   esPropia: boolean | null;
   declaracionId: string | null;
   consentimientoDian: ConsentimientoDian | null;
+  /** Presente solo cuando la declaración ya quedó radicada ante la DIAN. */
+  presentacion: Presentacion | null;
+  /** Número del borrador en el portal: evita navegar el menú de MUISCA. */
+  borradorDian: { numeroFormulario: string } | null;
 
   irAPaso: (paso: PasoWizard) => void;
   registrarConsentimientoDian: (consentimiento: ConsentimientoDian) => void;
@@ -41,6 +51,8 @@ interface EstadoDeclaracion {
   agregarMensaje: (mensaje: MensajeChat) => void;
   marcarEntrevistaCompleta: () => void;
   guardarResultado: (resultado: ResultadoDeclaracion) => void;
+  registrarPresentacion: (presentacion: Presentacion) => void;
+  registrarBorradorDian: (numeroFormulario: string) => void;
   hidratar: (estado: Partial<EstadoDeclaracion>) => void;
   reiniciar: () => void;
 }
@@ -56,6 +68,8 @@ const ESTADO_INICIAL = {
   esPropia: null as boolean | null,
   declaracionId: null as string | null,
   consentimientoDian: null as ConsentimientoDian | null,
+  presentacion: null as Presentacion | null,
+  borradorDian: null as { numeroFormulario: string } | null,
 };
 
 type SetEstado = (
@@ -82,6 +96,8 @@ function accionesGenerales(set: SetEstado): Partial<EstadoDeclaracion> {
     agregarMensaje: (mensaje) => set((s) => ({ mensajes: [...s.mensajes, mensaje] })),
     marcarEntrevistaCompleta: () => set({ entrevistaCompleta: true }),
     guardarResultado: (resultado) => set({ resultado }),
+    registrarPresentacion: (presentacion) => set({ presentacion }),
+    registrarBorradorDian: (numeroFormulario) => set({ borradorDian: { numeroFormulario } }),
     hidratar: (estado) => set(sanearExogenaUnica(estado)),
     reiniciar: () => set(ESTADO_INICIAL),
   };

@@ -8,6 +8,8 @@ import type {
 
 interface DatosCasillas {
   facturaElectronica: number;
+  /** Casilla 297 (anexo): compras con factura electrónica; el portal calcula la 28 desde aquí. */
+  comprasFacturaElectronica: number;
   patrimonioBruto: number;
   deudas: number;
   patrimonioLiquido: number;
@@ -30,10 +32,16 @@ export function mapearCasillas(d: DatosCasillas): Record<string, number> {
     ...casillasConsolidacion(d.cedula),
     ...casillasPensiones(d.pensiones),
     ...casillasDividendos(d.dividendos),
+    ...casillaRentaGravableTotal(d),
     ...casillasGananciasOcasionales(d.gananciasOcasionales),
     ...casillasLiquidacion(d.liquidacion),
     ...casillasDependientes(d),
   };
+}
+
+/** 111: la base a la que se aplica la tabla del art. 241 (art. 331: general + pensiones + dividendos). */
+function casillaRentaGravableTotal(d: DatosCasillas): Record<string, number> {
+  return { '111': d.cedula.rentaLiquidaGravable + d.pensiones.rentaLiquidaGravable + d.dividendos.baseParaTabla };
 }
 
 /** 107/108: subcédulas de dividendos 2017+ (num. 3 y par. 2 del art. 49). */
@@ -66,6 +74,7 @@ function casillasPensiones(p: ResultadoRentasPensiones): Record<string, number> 
 function casillasPatrimonio(d: DatosCasillas): Record<string, number> {
   return {
     '28': d.facturaElectronica,
+    '297': d.comprasFacturaElectronica,
     '29': d.patrimonioBruto,
     '30': d.deudas,
     '31': d.patrimonioLiquido,
@@ -110,6 +119,7 @@ function casillasCapital(cedula: ResultadoCedulaGeneral): Record<string, number>
   return {
     '58': k.ingresosBrutos,
     '59': k.incrngoComponenteInflacionario,
+    '60': k.costosYGastos,
     '61': k.rentaLiquida,
     '67': k.deduccionGmf,
     '68': k.deduccionGmf,

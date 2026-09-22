@@ -156,6 +156,7 @@ describe('caso dorado — referencia AG2025 Ana Ramírez', () => {
     expect(c['92']).toBe(47_097_000);
     expect(c['93']).toBe(60_689_000);
     expect(c['97']).toBe(60_689_000);
+    expect(c['111']).toBe(60_689_000);
     expect(c['116']).toBe(1_217_000);
     expect(c['121']).toBe(1_217_000);
     expect(c['126']).toBe(1_217_000);

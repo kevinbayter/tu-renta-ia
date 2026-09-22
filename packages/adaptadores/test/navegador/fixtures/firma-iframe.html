@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Firma (marco del portal)</title>
+  </head>
+  <body>
+    <!-- Escrito a mano desde research/09 §5. Como en MUISCA, los botones que de
+         verdad responden viven dentro del marco, no en la página que lo abre. -->
+    <p>Nombre: JUANA PEREZ PEREZ NIT: 1000000001 Representante legal Certificado</p>
+    <p>¿Desea firmar de manera electrónica su declaración de renta?</p>
+    <button id="firmarEnMarco">Firmar</button>
+    <button id="desautorizarEnMarco">Desautorizar</button>
+    <!-- Campo ajeno, como los que el portal deja dentro del marco: NO es el código. -->
+    <input type="text" id="buscar" placeholder="Buscar en el portal" />
+    <div id="clave" style="display: none">
+      <!-- Como en /firmaelectronica/firma.html: el botón para pedir el código
+           lleva solo la palabra "aquí"; la frase que lo explica queda fuera. -->
+      <p>Si no ha recibido el código, solicítela <button id="solicitarEnMarco">aquí</button></p>
+      <label for="txtOTP">Escriba el código</label><input type="text" id="txtOTP" />
+      <label for="claveMarco">Contraseña de la firma electrónica</label>
+      <input type="password" id="claveMarco" />
+      <button id="firmarDefinitivoMarco">Firmar</button>
+      <button id="volverMarco">Volver</button>
+    </div>
+    <script>
+      const $ = (id) => document.getElementById(id);
+      $('firmarEnMarco').addEventListener('click', () => {
+        $('firmarEnMarco').style.display = 'none';
+        $('desautorizarEnMarco').style.display = 'none';
+        $('clave').style.display = 'block';
+      });
+      $('solicitarEnMarco').addEventListener('click', () => fetch('/editor/solicitar-codigo', { method: 'POST' }));
+      $('firmarDefinitivoMarco').addEventListener('click', async () => {
+        if (!$('claveMarco').value || !$('txtOTP').value) return;
+        await fetch('/editor/firmar', { method: 'POST', body: $('txtOTP').value });
+        parent.postMessage('firmado', '*');
+      });
+    </script>
+  </body>
+</html>

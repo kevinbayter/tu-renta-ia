@@ -35,7 +35,12 @@ function depurarModo(perfil: PerfilFiscal, c: ConstantesAnio, modo: ModoHonorari
   // Base del 40% (art. 336-4): ingresos − INCRNGO − costos y gastos procedentes.
   const limiteGlobal = calcularLimiteGlobal(
     trabajo.ingresosBrutos + honorarios.ingresosBrutos + capital.ingresosBrutos + noLaborales.ingresosBrutos,
-    trabajo.incrngo + honorarios.incrngo + honorarios.costos + capital.incrngoComponenteInflacionario + noLaborales.costosYGastos,
+    trabajo.incrngo +
+      honorarios.incrngo +
+      honorarios.costos +
+      capital.incrngoComponenteInflacionario +
+      capital.costosYGastos +
+      noLaborales.costosYGastos,
     c,
   );
   const asignaciones = asignarLimite(trabajo, honorarios, capital, limiteGlobal);

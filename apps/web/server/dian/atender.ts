@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { descargarDeLaDian } from './descarga';
 import { accesoDe } from './acceso-guardado';
 import { huellaDe, leerCuerpo, titularDelCuerpo, validarSolicitud } from './peticion';
+import { verificarTitularidad } from './titularidad';
 import { leerSesion } from '@/server/sesion';
 
 import type { Operacion } from './descarga';
@@ -41,6 +42,10 @@ async function ejecutar(
   usuarioId: string,
   request: Request,
 ): Promise<NextResponse> {
+  const ajena = await verificarTitularidad(usuarioId, solicitud);
+  if (ajena !== null) {
+    return respuesta({ mensaje: ajena }, 403);
+  }
   try {
     const { resultado, esperarSegundos } = await descargarDeLaDian(
       operacion,

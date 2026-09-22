@@ -1,3 +1,4 @@
+import { esGeneroValido } from '@turenta/core';
 import { NextResponse } from 'next/server';
 
 import { obtenerRepositorio } from '@/server/composicion';
@@ -32,6 +33,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     identificacion: (cuerpo.identificacion ?? '').replace(/\D/g, ''),
     email: (cuerpo.email ?? '').trim(),
     telefono: (cuerpo.telefono ?? '').trim(),
+    genero: cuerpo.genero ?? '',
   });
   await repositorio.registrarActividad(sesion.usuarioId, {
     tipo: 'persona_guardada',
@@ -59,6 +61,9 @@ function validar(cuerpo: Partial<Omit<PersonaAdministrada, 'id'>>): string | nul
   }
   if ((cuerpo.identificacion ?? '').replace(/\D/g, '').length < 5) {
     return 'La cédula debe tener al menos 5 dígitos';
+  }
+  if (!esGeneroValido(cuerpo.genero ?? '')) {
+    return 'Indica el género';
   }
   return null;
 }

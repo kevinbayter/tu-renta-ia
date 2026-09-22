@@ -25,6 +25,10 @@ export interface Declarante {
   nombres: string;
   apellidos: string;
   identificacion: string;
+  /** Casilla 286 del 210; se pide al registrar a la persona. */
+  genero?: string;
+  /** Casilla 24 del 210; vacío = la sugerida por sus ingresos. */
+  actividadEconomica?: string;
 }
 
 export type { RespuestasEntrevista, ResultadoDeclaracion };
@@ -40,6 +44,9 @@ export const RESPUESTAS_INICIALES: RespuestasEntrevista = {
   gmfTotalPagado: 0,
   rendimientosAdicionalesConComponente: 0,
   rendimientosSinComponente: 0,
+  ingresosArrendamientos: 0,
+  costosArrendamientos: 0,
+  retencionArrendamientos: 0,
   ingresosNoLaborales: 0,
   costosNoLaborales: 0,
   activosManuales: [],

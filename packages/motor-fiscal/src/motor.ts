@@ -107,7 +107,8 @@ function calcularRetenciones(perfil: PerfilFiscal): number {
   const honorarios = perfil.honorarios?.retencionFuente ?? 0;
   const pensionales = perfil.rentasPensiones?.retencionFuente ?? 0;
   const noLaborales = perfil.rentasNoLaborales?.retencionFuente ?? 0;
-  return redondearMil(laborales + honorarios + perfil.rentasCapital.retencionFuente + pensionales + noLaborales);
+  const capital = perfil.rentasCapital.retencionFuente + (perfil.rentasCapital.arrendamientos?.retencionFuente ?? 0);
+  return redondearMil(laborales + honorarios + capital + pensionales + noLaborales);
 }
 
 function sumarActivos(perfil: PerfilFiscal): number {
@@ -125,6 +126,7 @@ function construirCasillas(
 ): Record<string, number> {
   return mapearCasillas({
     facturaElectronica: cedula.deduccionFacturaElectronica,
+    comprasFacturaElectronica: redondearMil(perfil.comprasFacturaElectronica),
     ...patrimonio,
     cedula,
     pensiones,

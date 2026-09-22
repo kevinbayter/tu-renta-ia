@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 
+import { SelectorGenero } from '@/components/ui/selector-genero';
+
 import type { PersonaAdministrada } from '@turenta/core';
 
 type DatosPersona = Omit<PersonaAdministrada, 'id'>;
 
-const VACIA: DatosPersona = { nombres: '', apellidos: '', identificacion: '', email: '', telefono: '' };
+const VACIA: DatosPersona = { nombres: '', apellidos: '', identificacion: '', email: '', telefono: '', genero: '' };
 
 const CAMPOS = [
   { campo: 'nombres', etiqueta: 'Nombre(s)', requerido: true },
@@ -28,7 +30,8 @@ export function ModalPersona({
 }) {
   const [datos, setDatos] = useState<DatosPersona>(inicial ?? VACIA);
   const [error, setError] = useState<string | null>(null);
-  const listo = datos.nombres.trim() && datos.apellidos.trim() && datos.identificacion.replace(/\D/g, '').length >= 5;
+  const listo =
+    datos.nombres.trim() && datos.apellidos.trim() && datos.identificacion.replace(/\D/g, '').length >= 5 && datos.genero;
 
   const guardar = async () => {
     const respuesta = await fetch('/api/personas', {
@@ -63,6 +66,7 @@ export function ModalPersona({
               />
             </label>
           ))}
+          <SelectorGenero valor={datos.genero ?? ''} alCambiar={(genero) => setDatos({ ...datos, genero })} />
         </div>
         {error && (
           <p role="alert" className="mt-3 text-sm text-error">

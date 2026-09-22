@@ -1,6 +1,6 @@
 import { documentosEsperados } from '../exogena/documentos-esperados';
 import { saldoAFavorAnterior } from '../exogena/interpretar';
-import { ingresosNoLaboralesReportados } from '../exogena/no-laborales';
+import { ingresosMandatoReportados } from '../exogena/mandato';
 
 import type { ExogenaParseada } from '../exogena/tipos';
 
@@ -37,6 +37,7 @@ interface EstadoWizard {
     anticipoLiquidadoAnioAnterior?: number;
     tieneDependiente387?: boolean;
     ingresosNoLaborales?: number;
+    ingresosArrendamientos?: number;
     patrimonioLiquidoAnterior?: number;
   };
 }
@@ -54,7 +55,7 @@ export function evaluarDeclaracion(estado: unknown): EvaluacionDeclaracion {
     reglaSinExogena,
     reglaExogenaAjena,
     reglaCertificadosFaltantes,
-    reglaNoLaboralesOmitidos,
+    reglaMandatoOmitido,
     reglaDiscrepancias,
     reglaEntrevista,
     reglaSinResultado,
@@ -130,13 +131,14 @@ function coincideNit(a: string, b: string): boolean {
   return a !== '' && b !== '' && (a.startsWith(b) || b.startsWith(a));
 }
 
-/** La exógena reporta ingresos no laborales (mandato/arriendos) y la declaración va en $0. */
-function reglaNoLaboralesOmitidos(e: EstadoWizard): Hallazgo | null {
+/** La exógena reporta ingresos por mandato (arriendos) y la declaración va en $0. */
+function reglaMandatoOmitido(e: EstadoWizard): Hallazgo | null {
   const exogena = exogenaDe(e);
-  if (!exogena || (e.respuestas?.ingresosNoLaborales ?? 0) > 0) {
+  const confirmados = (e.respuestas?.ingresosNoLaborales ?? 0) + (e.respuestas?.ingresosArrendamientos ?? 0);
+  if (!exogena || confirmados > 0) {
     return null;
   }
-  const reportados = ingresosNoLaboralesReportados(exogena);
+  const reportados = ingresosMandatoReportados(exogena);
   if (reportados.total === 0) {
     return null;
   }
@@ -144,7 +146,7 @@ function reglaNoLaboralesOmitidos(e: EstadoWizard): Hallazgo | null {
   return {
     recomendacion: {
       nivel: 'critica',
-      texto: `Tu exógena reporta $${reportados.total.toLocaleString('es-CO')} de ingresos no laborales (arriendos/mandato)${nota} y tu declaración va en $0: confírmalos en la entrevista o en Revisión — la DIAN cruza este dato.`,
+      texto: `Tu exógena reporta $${reportados.total.toLocaleString('es-CO')} de ingresos por mandato (arriendos)${nota} y tu declaración va en $0: confírmalos en la entrevista o en Revisión — la DIAN cruza este dato.`,
     },
     penalizacion: 25,
   };

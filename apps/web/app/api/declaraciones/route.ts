@@ -71,6 +71,7 @@ async function registrarGuardado(
       nombres: titular.nombres,
       apellidos: titular.apellidos,
       identificacion: titular.identificacion,
+      genero: titular.genero ?? '',
     })
     .catch(() => null);
 }

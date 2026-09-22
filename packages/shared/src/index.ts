@@ -20,3 +20,5 @@ export {
   jsonSchemaTurnoEntrevista,
 } from './entrevista/turno';
 export type { TurnoEntrevista, CampoEntrevista } from './entrevista/turno';
+export { ACTIVIDADES_ECONOMICAS_DIAN, nombreActividadEconomica } from './dian/actividades-economicas';
+export { actividadSugeridaSchema, jsonSchemaActividadSugerida, type ActividadSugerida } from './dian/actividad-sugerida';

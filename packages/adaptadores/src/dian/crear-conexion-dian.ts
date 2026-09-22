@@ -25,6 +25,14 @@ class ConexionDianDeshabilitada implements ConexionDianPort {
   descargarDeclaracion(): Promise<ResultadoDescarga> {
     return Promise.resolve(SIN_WORKER);
   }
+
+  diligenciarDeclaracion(): Promise<ResultadoDescarga> {
+    return Promise.resolve(SIN_WORKER);
+  }
+
+  presentarDeclaracion(): Promise<ResultadoDescarga> {
+    return Promise.resolve(SIN_WORKER);
+  }
 }
 
 export function crearConexionDianDesdeEnv(env: Record<string, string | undefined>): ConexionDianPort {

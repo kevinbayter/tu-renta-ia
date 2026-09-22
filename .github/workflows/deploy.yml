@@ -1,11 +1,10 @@
-# Push-to-deploy: on every push to main, rebuild and restart the stack on the
-# DigitalOcean droplet over SSH. Replaces the old Dokploy webhook; here a single
-# run redeploys web AND the DIAN worker (no more manual worker step).
+# Despliegue MANUAL: se lanza desde Actions → "Deploy to DigitalOcean" → Run
+# workflow. Antes corría en cada push a main; se quitó el 2026-09-21 porque un
+# push no debe poner en producción, por sí solo, un robot que firma y presenta
+# declaraciones ante la DIAN. Una sola corrida redespliega web Y worker.
 name: Deploy to DigitalOcean
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:

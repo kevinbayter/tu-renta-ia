@@ -8,8 +8,11 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     include: ['test/navegador/**/*.test.ts'],
-    // Levantar Chromium y navegar es más lento que un test unitario.
-    testTimeout: 60_000,
+    // Levantar Chromium y navegar es más lento que un test unitario; firmar y
+    // presentar recorre el formulario entero antes de llegar al acuse. El caso
+    // más largo es el del código que nunca llega: espera un minuto al aviso de
+    // la DIAN —como en producción— antes de rendirse y pedírselo al usuario.
+    testTimeout: 210_000,
     hookTimeout: 60_000,
   },
 });

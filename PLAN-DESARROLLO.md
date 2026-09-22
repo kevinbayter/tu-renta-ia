@@ -116,7 +116,7 @@ Principios (de research/04: qué hacen bien los competidores y dónde duele):
 
 - **Endpoint**: `https://opencode.ai/zen/v1` (compatible OpenAI, auth `Authorization: Bearer $OPENCODE_API_KEY`).
 - **Modelo principal**: `kimi-k3` (multimodal, 1M contexto, razonamiento configurable; $3/$15 por MTok, cache read $0.30). Verificar el ID exacto en el catálogo Zen al configurar; fallback de extracción visual: `kimi-k2.6` / `gemini-3.5-flash` vía el mismo gateway.
-- **Privacidad**: OpenCode Zen declara **zero-retention** en sus proveedores (excepto modelos free y OpenAI/Proveedor C 30 días) — mitiga el riesgo Ley 1581 identificado en research/05. Aun así: contrato de transmisión + autorización del titular informando procesamiento en el exterior (research/03 §2).
+- **Privacidad**: OpenCode Zen declara **zero-retention** en sus proveedores (excepto modelos free y algunos proveedores de EE. UU. con 30 días) — mitiga el riesgo Ley 1581 identificado en research/05. Aun así: contrato de transmisión + autorización del titular informando procesamiento en el exterior (research/03 §2).
 - **Usos**: (a) extracción structured output de PDFs con validación Zod + doble pasada en montos; (b) entrevista con tool calling (`registrar_dato`, `solicitar_documento`, `marcar_completo`); (c) explicación del resultado. Prompt caching activado (la entrevista reutiliza el system prompt).
 - **Secretos**: la key vive en `.env.local` (git-ignored) como `OPENCODE_API_KEY`. ⚠️ La key fue compartida por chat → **rotarla en el dashboard de OpenCode** y nunca commitearla. En prod: secret manager del hosting.
 - **Abstracción**: todo pasa por `LlmPort`; cambiar de modelo = cambiar env vars (`LLM_BASE_URL`, `LLM_MODEL`).

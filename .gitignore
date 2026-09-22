@@ -24,8 +24,6 @@ docs/
 # Bundle del worker DIAN para correrlo en local sin Docker (se regenera)
 .worker-local.mjs
 
-# Configuración local del panel de vista previa
-.modelo-c/
 
 # Prisma client generado (se regenera con pnpm --filter @turenta/adaptadores db:generate)
 packages/adaptadores/src/persistencia/generado/

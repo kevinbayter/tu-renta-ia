@@ -44,7 +44,17 @@ export function crearConexionDianDesdeEnv(env: Record<string, string | undefined
   return new ConexionDianRemota({ url, token });
 }
 
+const VARIABLES_DIAN = ['WORKER_DIAN_URL', 'WORKER_DIAN_TOKEN'] as const;
+
 /** Lets the UI hide the button instead of offering something that will fail. */
 export function conexionDianHabilitada(env: Record<string, string | undefined>): boolean {
-  return Boolean(env['WORKER_DIAN_URL'] && env['WORKER_DIAN_TOKEN']);
+  return variablesFaltantesDian(env).length === 0;
+}
+
+/**
+ * Cuáles faltan, por nombre: sin esto, quien clona el repositorio ve que el
+ * botón de presentar no aparece y no tiene ninguna pista de por qué.
+ */
+export function variablesFaltantesDian(env: Record<string, string | undefined>): string[] {
+  return VARIABLES_DIAN.filter((nombre) => !env[nombre]);
 }

@@ -41,12 +41,12 @@ interface Respuesta {
  */
 export function LlevarALaDian({ resultado }: { resultado: ResultadoDeclaracion }) {
   const [abierto, setAbierto] = useState(false);
-  const habilitada = useConexionHabilitada();
+  const { habilitada, faltan } = useConexionHabilitada();
   const genero = useDeclaracion((s) => s.declarante.genero ?? '');
   const presentacion = useDeclaracion((s) => s.presentacion);
   const actualizar = useDeclaracion((s) => s.actualizarDeclarante);
   if (!habilitada) {
-    return null;
+    return faltan.length > 0 ? <ConexionApagada faltan={faltan} /> : null;
   }
   if (presentacion) {
     return (
@@ -82,15 +82,36 @@ export function LlevarALaDian({ resultado }: { resultado: ResultadoDeclaracion }
   );
 }
 
-function useConexionHabilitada(): boolean {
-  const [habilitada, setHabilitada] = useState(false);
+interface EstadoConexion {
+  habilitada: boolean;
+  /** Solo llega fuera de producción: en producción ocultar el botón basta. */
+  faltan: string[];
+}
+
+function useConexionHabilitada(): EstadoConexion {
+  const [estado, setEstado] = useState<EstadoConexion>({ habilitada: false, faltan: [] });
   useEffect(() => {
     fetch('/api/dian/estado')
       .then((r) => r.json())
-      .then((d: { habilitada?: boolean }) => setHabilitada(d.habilitada === true))
-      .catch(() => setHabilitada(false));
+      .then((d: { habilitada?: boolean; faltan?: string[] }) =>
+        setEstado({ habilitada: d.habilitada === true, faltan: d.faltan ?? [] }),
+      )
+      .catch(() => setEstado({ habilitada: false, faltan: [] }));
   }, []);
-  return habilitada;
+  return estado;
+}
+
+/** Solo en desarrollo: sin esto el botón desaparecía sin decir por qué. */
+function ConexionApagada({ faltan }: { faltan: string[] }) {
+  return (
+    <div className="mt-4 rounded-3xl border border-dashed border-borde p-4 text-xs leading-relaxed text-texto-suave">
+      <p className="font-semibold text-foreground">Presentar ante la DIAN está apagado en este entorno</p>
+      <p className="mt-1">
+        Falta en <code>.env.local</code>: {faltan.map((v) => <code key={v} className="mr-1">{v}</code>)}. Luego levanta el
+        worker con <code>pnpm dev</code> (arranca web y worker juntos). Este aviso no se ve en producción.
+      </p>
+    </div>
+  );
 }
 
 function Dialogo({ resultado, alCerrar }: { resultado: ResultadoDeclaracion; alCerrar: () => void }) {

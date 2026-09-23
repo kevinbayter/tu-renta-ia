@@ -23,6 +23,7 @@ export {
 export {
   crearConexionDianDesdeEnv,
   conexionDianHabilitada,
+  variablesFaltantesDian,
 } from './dian/crear-conexion-dian';
 export { LimitadorDian } from './dian/limitador-dian';
 export {

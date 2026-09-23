@@ -6,7 +6,7 @@ import { Secreto } from '@turenta/core';
 import type { ContextoOperacionDian, CredencialesDian } from '@turenta/core';
 
 import { ConexionDianRemota } from '../../src/dian/conexion-dian-remota';
-import { crearConexionDianDesdeEnv, conexionDianHabilitada } from '../../src/dian/crear-conexion-dian';
+import { crearConexionDianDesdeEnv, conexionDianHabilitada, variablesFaltantesDian } from '../../src/dian/crear-conexion-dian';
 
 import type { Server } from 'node:http';
 
@@ -135,5 +135,15 @@ describe('fábrica desde el entorno', () => {
 
   it('una configuración a medias se trata como no habilitada', () => {
     expect(conexionDianHabilitada({ WORKER_DIAN_URL: 'http://worker:8080' })).toBe(false);
+  });
+
+  /**
+   * Quien clona el repositorio y no ve el botón de presentar necesita saber
+   * qué le falta; "no está habilitada" a secas no le dice nada.
+   */
+  it('dice por nombre qué variables faltan', () => {
+    expect(variablesFaltantesDian({})).toEqual(['WORKER_DIAN_URL', 'WORKER_DIAN_TOKEN']);
+    expect(variablesFaltantesDian({ WORKER_DIAN_URL: 'http://localhost:8787' })).toEqual(['WORKER_DIAN_TOKEN']);
+    expect(variablesFaltantesDian({ WORKER_DIAN_URL: 'http://localhost:8787', WORKER_DIAN_TOKEN: 'x' })).toEqual([]);
   });
 });

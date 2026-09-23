@@ -31,7 +31,11 @@ import type {
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
-const PUERTO = Number(process.env['PORT'] ?? 8080);
+/**
+ * En local el worker comparte `.env.local` con la web, que también lee `PORT`:
+ * por eso tiene su variable propia. En Docker no se define y rige `PORT` (8080).
+ */
+const PUERTO = Number(process.env['WORKER_DIAN_PUERTO'] ?? process.env['PORT'] ?? 8080);
 const TOKEN = process.env['WORKER_DIAN_TOKEN'] ?? '';
 /** Each connection is a Chromium: more than two at once is a visible spike. */
 const MAXIMO_CONCURRENTES = Number(process.env['WORKER_DIAN_CONCURRENCIA'] ?? 2);

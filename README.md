@@ -118,10 +118,17 @@ pnpm test          # tests de paquetes + tests de arquitectura
 pnpm lint          # reglas estrictas (max-depth 1, capas enforced)
 pnpm typecheck
 
+cp .env.example .env.local               # y completa los valores
 docker compose up -d                     # PostgreSQL local
 pnpm --filter @turenta/adaptadores db:push   # aplica el esquema
-pnpm --filter web dev                    # app en modo desarrollo
+pnpm --filter @turenta/adaptadores exec playwright install chromium   # navegador del worker DIAN
+pnpm dev                                 # web + worker DIAN, juntos
 ```
+
+La app funciona sin el worker: se diligencia la declaración y se descarga el
+borrador con la guía para presentarla a mano. El botón **Presentar ante la DIAN**
+aparece solo cuando la web tiene `WORKER_DIAN_URL` y `WORKER_DIAN_TOKEN`; si falta
+alguna, en desarrollo la propia pantalla dice cuál.
 
 Los secretos van en `.env.local` (nunca se commitea). Variables principales:
 
@@ -132,7 +139,9 @@ Los secretos van en `.env.local` (nunca se commitea). Variables principales:
 | `LLM_API_KEY` · `LLM_BASE_URL` · `LLM_MODEL` | Proveedor de IA (OpenAI-compatible). Hoy: DeepSeek V4.1 Flash (`https://api.deepseek.com`, `deepseek-flash`). |
 | `LLM_FORMATO_JSON`                           | `json_object` para DeepSeek (no soporta `json_schema`).                                                       |
 | `BREVO_API_KEY` · `EMAIL_FROM_ADDRESS`       | Correos de OTP y vencimientos.                                                                                |
-| `WORKER_DIAN_TOKEN` · `DIAN_CRED_KEY`        | Autenticación y cifrado del worker DIAN.                                                                      |
+| `WORKER_DIAN_URL` · `WORKER_DIAN_TOKEN`      | Dónde está el worker DIAN y el secreto compartido. **Sin ambas no aparece el botón de presentar.**            |
+| `WORKER_DIAN_PUERTO`                         | Puerto del worker en local (`8787`).                                                                          |
+| `DIAN_CRED_KEY`                              | Cifrado de la contraseña guardada con "recordar mi acceso" (64 caracteres hex).                               |
 
 ## ✦ El golden test
 
@@ -157,9 +166,15 @@ publica detrás de un proxy/túnel que termina el TLS:
 docker compose -f docker-compose.do.yml up -d --build
 ```
 
-La integración continua ([`.github/workflows`](.github/workflows)) redespliega en
-cada push a `main`. Requisitos mínimos: `DATABASE_URL` y `AUTH_SECRET`; antes del
-primer arranque, aplica el esquema con `db:push`.
+El despliegue es **manual**: se lanza desde Actions → _Deploy to DigitalOcean_ →
+_Run workflow_. Un push a `main` solo corre la integración continua; no pone en
+producción, por sí solo, un robot que firma y presenta declaraciones. Requisitos
+mínimos: `DATABASE_URL` y `AUTH_SECRET`; antes del primer arranque, aplica el
+esquema con `db:push`.
+
+Para probar el worker igual que en producción, sin instalar Chromium en tu
+máquina: `docker compose --profile dian up -d` (sus secretos van en
+`.env.dian.local`) y `WORKER_DIAN_URL=http://localhost:8787` en `.env.local`.
 
 ## ✦ Documentación
 
